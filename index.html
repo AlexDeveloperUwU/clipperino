@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clipperino</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: {
+              50: '#2d2d2d',
+              100: '#1e1e1e',
+              200: '#171717',
+              300: '#121212',
+              400: '#0a0a0a'
+            },
+            accent: {
+              100: '#3b82f6',
+              200: '#2563eb'
+            },
+            secondary: {
+              100: '#10b981',
+              200: '#059669'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="bg-dark-300 text-gray-100 min-h-screen font-sans">
+  <div class="container mx-auto px-4 py-8 max-w-8xl">
+    <header class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <h1 class="text-2xl font-bold text-white">Clipperino</h1>
+        <button id="playButton" class="text-xl text-gray-400 hover:text-white transition-colors">
+          <i class="fas fa-play"></i>
+        </button>
+      </div>
+    </header>
+
+    <div class="mb-6 border-b border-dark-50">
+      <div class="flex justify-between items-center">
+        <div class="flex">
+          <button id="editorTabBtn" class="px-4 py-2 text-sm font-medium border-b-2 border-accent-100 text-white">
+            Editor
+          </button>
+          <button id="viewerTabBtn" class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-white transition-colors">
+            Visor JSON
+          </button>
+        </div>
+        <div id="tabActions" class="flex items-center gap-3">
+          <div id="editorTabActions" class="">
+            <label id="csvFileLabel" for="csvFileInput" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-sm font-medium rounded-md cursor-pointer transition-colors flex items-center gap-2">
+              <i class="fas fa-file-import"></i>
+              <span>Importar CSV</span>
+            </label>
+            <button id="clearCsvBtn" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-sm font-medium rounded-md cursor-pointer transition-colors flex items-center gap-2 hidden">
+              <i class="fas fa-trash-alt"></i>
+              <span>Vaciar datos</span>
+            </button>
+            <input type="file" id="csvFileInput" class="hidden" accept=".csv">
+          </div>
+          <div id="viewerTabActions" class="hidden">
+            <label id="jsonFileLabel" for="jsonFileInput" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-sm font-medium rounded-md cursor-pointer transition-colors flex items-center gap-2">
+              <i class="fas fa-file-import"></i>
+              <span>Importar JSON</span>
+            </label>
+            <button id="clearJsonBtn" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-sm font-medium rounded-md cursor-pointer transition-colors flex items-center gap-2 hidden">
+              <i class="fas fa-trash-alt"></i>
+              <span>Vaciar datos</span>
+            </button>
+            <input type="file" id="jsonFileInput" class="hidden" accept=".json">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="editorTab" class="tab-content">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2">
+          <div class="bg-dark-200 rounded-lg overflow-hidden shadow-lg mb-6">
+            <div class="px-5 py-4 border-b border-dark-50 flex justify-between items-center">
+              <h2 class="text-lg font-semibold text-white">Transcripciones</h2>
+              <span id="status" class="text-sm text-gray-400">0 transcripciones cargadas</span>
+            </div>
+
+            <div class="overflow-y-auto" style="max-height: 400px;">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-left bg-dark-100">
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Inicio</th>
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Fin</th>
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Transcripción</th>
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="transcriptionsTable" class="divide-y divide-dark-50"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bg-dark-100 rounded-lg overflow-hidden shadow-lg mb-6 border-l-4 border-secondary-100">
+            <div class="px-5 py-4 border-b border-dark-50 flex justify-between items-center bg-dark-200">
+              <div class="flex items-center gap-2">
+                <i class="fas fa-check-circle text-secondary-100"></i>
+                <h2 class="text-lg font-semibold text-white">Líneas seleccionadas</h2>
+              </div>
+              <span id="selectedCount" class="px-2 py-1 bg-secondary-100/20 text-secondary-100 text-xs font-medium rounded-full">0 seleccionadas</span>
+            </div>
+
+            <div class="overflow-y-auto" style="max-height: 300px;">
+              <table class="w-full">
+                <thead>
+                  <tr class="text-left bg-dark-200">
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Inicio</th>
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Fin</th>
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Transcripción</th>
+                    <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="selectedTranscriptionsTable" class="divide-y divide-dark-50"></tbody>
+              </table>
+            </div>
+
+            <div class="px-5 py-3 bg-dark-200 border-t border-dark-50 flex justify-between">
+              <button id="clearAllBtn" class="text-sm text-gray-400 hover:text-white transition-colors">
+                Limpiar selección
+              </button>
+              <button id="addClipBtn" class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-white text-sm font-medium rounded-md transition-colors flex items-center gap-2">
+                <i class="fas fa-plus text-xs"></i>
+                <span>Añadir clip</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-1">
+          <div class="bg-dark-200 rounded-lg overflow-hidden shadow-lg mb-6">
+            <div class="px-5 py-4 border-b border-dark-50 flex justify-between items-center">
+              <h2 class="text-lg font-semibold text-white">Clips seleccionados</h2>
+              <span class="px-2 py-1 bg-dark-100 text-xs font-medium rounded-full" id="clipCount">0</span>
+            </div>
+
+            <div id="clipList" class="p-4 overflow-y-auto" style="max-height: 400px;"></div>
+
+            <div class="px-5 py-4 border-t border-dark-50">
+              <div class="grid grid-cols-1 gap-3">
+                <button id="exportJsonBtn" class="w-full px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-2">
+                  <i class="fas fa-file-code"></i>
+                  <span>Exportar JSON</span>
+                </button>
+                <button id="exportMarkdownBtn" class="w-full px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-medium rounded-md transition-colors flex items-center justify-center gap-2">
+                  <i class="fas fa-file-alt"></i>
+                  <span>Exportar Markdown</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewerTab" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1">
+          <div class="bg-dark-200 rounded-lg overflow-hidden shadow-lg mb-6">
+            <div class="px-5 py-4 border-b border-dark-50 flex justify-between items-center">
+              <h2 class="text-lg font-semibold text-white">Clips cargados</h2>
+              <span id="jsonStatus" class="text-sm text-gray-400">0 clips cargados</span>
+            </div>
+
+            <div id="jsonClipsList" class="p-4 overflow-y-auto" style="max-height: 600px;">
+              <p class="text-gray-400 text-center py-8">Selecciona un archivo JSON para visualizar los clips</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2">
+          <div class="bg-dark-200 rounded-lg overflow-hidden shadow-lg mb-6">
+            <div class="px-5 py-4 border-b border-dark-50 flex justify-between items-center">
+              <h2 class="text-lg font-semibold text-white">Detalle del clip</h2>
+              <span id="clipDetailStatus" class="text-sm text-gray-400">Selecciona un clip para ver detalles</span>
+            </div>
+
+            <div id="jsonInfoPanel" class="overflow-y-auto" style="max-height: 600px;">
+              <p class="text-gray-400 text-center py-8">Selecciona un clip para ver sus detalles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="nameClipModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-xl">
+      <h2 class="text-xl font-bold mb-4 text-white">Nombrar nuevo clip</h2>
+
+      <div class="mb-4">
+        <label for="clipName" class="block text-sm font-medium mb-1 text-gray-300">Nombre del clip</label>
+        <input type="text" id="clipName" placeholder="Introducción, Punto clave, etc." class="w-full p-3 bg-dark-100 border border-dark-50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-100 text-white">
+      </div>
+
+      <p id="selectedLinesInfo" class="text-sm text-gray-400 mb-6">Has seleccionado 0 líneas para este clip.</p>
+
+      <div class="flex justify-end gap-3">
+        <button id="cancelClipBtn" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded-md transition-colors">
+          Cancelar
+        </button>
+        <button id="saveClipBtn" class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-white text-sm font-medium rounded-md transition-colors">
+          Guardar clip
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="editClipNameModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-xl">
+      <h2 class="text-xl font-bold mb-4 text-white">Editar nombre del clip</h2>
+
+      <div class="mb-4">
+        <label for="editClipName" class="block text-sm font-medium mb-1 text-gray-300">Nuevo nombre</label>
+        <input type="text" id="editClipName" placeholder="Introducción, Punto clave, etc." class="w-full p-3 bg-dark-100 border border-dark-50 rounded-md focus:outline-none focus:ring-2 focus:ring-accent-100 text-white">
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button id="cancelEditBtn" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded-md transition-colors">
+          Cancelar
+        </button>
+        <button id="saveEditBtn" class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-medium rounded-md transition-colors">
+          Guardar cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
