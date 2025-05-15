@@ -1,10 +1,10 @@
-// Estado global de la aplicación
 export let transcriptions = [];
 export let clips = [];
 export let selectedTranscriptions = [];
 export let jsonClips = [];
 export let isPlaying = false;
 export let currentEditingClipIndex = -1;
+export let lastSelectedIndex = -1;
 
 export function setTranscriptions(newTranscriptions) {
   transcriptions = newTranscriptions;
@@ -28,4 +28,8 @@ export function setIsPlaying(newIsPlaying) {
 
 export function setCurrentEditingClipIndex(newIndex) {
   currentEditingClipIndex = newIndex;
+}
+
+export function setLastSelectedIndex(newIndex) {
+  lastSelectedIndex = newIndex;
 }

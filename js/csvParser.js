@@ -5,7 +5,12 @@ import { saveToLocalStorage } from "./storage.js";
 
 export function parseCSV(data, showLoadNotification = true) {
   const lines = data.split("\n");
-  const hasHeader = lines[0].includes("inicio") || lines[0].includes("Inicio");
+
+  const hasHeader =
+    lines[0].includes("Inicio") ||
+    lines[0].includes("inicio") ||
+    lines[0].includes("Transcripción") ||
+    lines[0].includes("transcripción");
 
   if (showLoadNotification && lines.length > 500) {
     showNotification(`Cargando ${lines.length} líneas, por favor espere...`);
@@ -24,13 +29,39 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
     const line = lines[i];
     if (!line.trim()) continue;
 
-    const parts = line.split(",");
-    if (parts.length < 3) continue;
+    let columns = [];
+    let inQuote = false;
+    let currentCol = "";
+
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
+
+      if (char === '"' && (j === 0 || line[j - 1] !== "\\")) {
+        inQuote = !inQuote;
+      } else if (char === "," && !inQuote) {
+        columns.push(currentCol.trim());
+        currentCol = "";
+      } else {
+        currentCol += char;
+      }
+    }
+
+    columns.push(currentCol.trim());
+
+    if (columns.length < 3) {
+      columns = line.split(",");
+    }
+
+    if (columns.length < 3) continue;
+
+    const inicio = columns[0].replace(/"/g, "").trim();
+    const fin = columns[1].replace(/"/g, "").trim();
+    const transcripcion = columns.slice(2).join(",").replace(/^"|"$/g, "").trim();
 
     results.push({
-      inicio: parts[0].trim(),
-      fin: parts[1].trim(),
-      transcripcion: parts.slice(2).join(",").trim().replace(/^"|"$/g, ""),
+      inicio,
+      fin,
+      transcripcion,
     });
   }
 

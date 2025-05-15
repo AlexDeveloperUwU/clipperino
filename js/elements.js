@@ -1,4 +1,3 @@
-// Referencias a elementos de la interfaz
 export const editorTabBtn = document.getElementById("editorTabBtn");
 export const viewerTabBtn = document.getElementById("viewerTabBtn");
 export const editorTab = document.getElementById("editorTab");
@@ -40,3 +39,5 @@ export const clearJsonBtn = document.getElementById("clearJsonBtn");
 
 export const editorTabActions = document.getElementById("editorTabActions");
 export const viewerTabActions = document.getElementById("viewerTabActions");
+
+export const exportEDLBtn = document.getElementById("exportEDLBtn");

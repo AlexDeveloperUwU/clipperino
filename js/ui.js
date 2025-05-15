@@ -19,6 +19,30 @@ export function initUI() {
   });
 
   playButton.addEventListener("click", togglePlay);
+
+  setupMultiSelectHelp();
+}
+
+function setupMultiSelectHelp() {
+  const multiSelectHelp = document.getElementById("multiSelectHelp");
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Shift" && !e.repeat) {
+      multiSelectHelp.classList.add("visible");
+    }
+  });
+
+  document.addEventListener("keyup", function (e) {
+    if (e.key === "Shift") {
+      multiSelectHelp.classList.remove("visible");
+    }
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") {
+      multiSelectHelp.classList.remove("visible");
+    }
+  });
 }
 
 export function switchTab(tabName) {

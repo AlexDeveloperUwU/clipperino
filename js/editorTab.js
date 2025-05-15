@@ -17,6 +17,7 @@ import {
   clipCount,
   exportJsonBtn,
   exportMarkdownBtn,
+  exportEDLBtn,
   editClipNameModal,
   editClipNameInput,
   cancelEditBtn,
@@ -30,15 +31,21 @@ import {
   setClips,
   currentEditingClipIndex,
   setCurrentEditingClipIndex,
+  lastSelectedIndex,
+  setLastSelectedIndex,
+  setTranscriptions,
 } from "./state.js";
 import { showNotification, debounce } from "./ui.js";
 import { parseCSV, calculateDuration } from "./csvParser.js";
 import { saveToLocalStorage } from "./storage.js";
+import { exportEDL } from "./edlExporter.js";
+import { updateSearchAfterRowsLoaded } from "./search.js";
 
 export function initEditorTab() {
   csvFileInput.addEventListener("change", handleFileUpload);
   exportJsonBtn.addEventListener("click", exportClips);
   exportMarkdownBtn.addEventListener("click", exportMarkdown);
+  exportEDLBtn.addEventListener("click", exportEDLFile);
   addClipBtn.addEventListener("click", openNameClipModal);
   clearAllBtn.addEventListener("click", clearSelectedTranscriptions);
   cancelClipBtn.addEventListener("click", closeNameClipModal);
@@ -138,7 +145,15 @@ export function renderTable() {
       if (selectBtn) {
         const row = selectBtn.closest("tr");
         const index = parseInt(row.dataset.index);
-        selectTranscription(index);
+
+        if (e.shiftKey && lastSelectedIndex !== null && lastSelectedIndex !== undefined && lastSelectedIndex !== -1) {
+          const startIdx = Math.min(lastSelectedIndex, index);
+          const endIdx = Math.max(lastSelectedIndex, index);
+          selectTranscriptionRange(startIdx, endIdx);
+        } else {
+          selectTranscription(index);
+          setLastSelectedIndex(index);
+        }
       }
     });
     transcriptionsTable.hasEventListener = true;
@@ -181,12 +196,47 @@ function loadMoreRows(startIndex) {
   }
 
   transcriptionsTable.appendChild(fragment);
+  updateSearchAfterRowsLoaded();
+}
+
+function selectTranscriptionRange(startIdx, endIdx) {
+  const newSelected = [...selectedTranscriptions];
+  let addedCount = 0;
+  
+  for (let i = startIdx; i <= endIdx; i++) {
+    if (i >= transcriptions.length) continue;
+    
+    const transcription = transcriptions[i];
+    const isAlreadySelected = newSelected.some(t => t.index === i);
+    
+    if (!isAlreadySelected) {
+      newSelected.push({
+        ...transcription,
+        index: i
+      });
+      addedCount++;
+    }
+  }
+  
+  setSelectedTranscriptions(newSelected);
+  setLastSelectedIndex(endIdx);
+  
+  // Dado que hay problemas con la actualización parcial, 
+  // volvemos a renderizar la tabla completa temporalmente
+  renderTable();
+  updateSelectedTable();
+  saveToLocalStorage();
+  
+  if (addedCount > 0) {
+    showNotification(`Se seleccionaron ${endIdx - startIdx + 1} líneas`);
+  }
 }
 
 function selectTranscription(index) {
+  if (index < 0 || index >= transcriptions.length) return;
+  
   const transcription = transcriptions[index];
   const existingIndex = selectedTranscriptions.findIndex((t) => t.index === index);
-
   const newSelected = [...selectedTranscriptions];
 
   if (existingIndex !== -1) {
@@ -199,13 +249,57 @@ function selectTranscription(index) {
   }
 
   setSelectedTranscriptions(newSelected);
-  renderTable();
+  setLastSelectedIndex(index);
+  
+  // Usar la actualización de fila única
+  updateSingleRow(index);
   updateSelectedTable();
   saveToLocalStorage();
 }
 
+// Nueva función para actualizar una sola fila
+function updateSingleRow(index) {
+  const row = document.querySelector(`tr[data-index="${index}"]`);
+  if (!row) return; // La fila no está en el DOM (fuera del área visible)
+
+  const isSelected = selectedTranscriptions.some((t) => t.index === index);
+
+  if (isSelected) {
+    row.classList.add("bg-accent-100/10");
+  } else {
+    row.classList.remove("bg-accent-100/10");
+  }
+
+  const selectBtn = row.querySelector(".select-btn");
+  if (selectBtn) {
+    if (isSelected) {
+      selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50");
+      selectBtn.classList.add("bg-accent-100");
+      selectBtn.textContent = "Seleccionado";
+    } else {
+      selectBtn.classList.remove("bg-accent-100");
+      selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50");
+      selectBtn.textContent = "Seleccionar";
+    }
+  }
+}
+
+// Nueva función para actualizar un rango de filas
+function updateRowRange(startIdx, endIdx) {
+  for (let i = startIdx; i <= endIdx; i++) {
+    updateSingleRow(i);
+  }
+}
+
 function clearSelectedTranscriptions() {
+  // Obtener todos los índices actualmente seleccionados
+  const selectedIndices = selectedTranscriptions.map((t) => t.index);
+
   setSelectedTranscriptions([]);
+  setLastSelectedIndex(-1);
+
+  // Para garantizar que la interfaz se actualiza correctamente,
+  // renderizamos la tabla completa
   renderTable();
   updateSelectedTable();
   saveToLocalStorage();
@@ -448,6 +542,21 @@ function exportMarkdown() {
   showNotification("Clips exportados en formato Markdown");
 }
 
+function exportEDLFile() {
+  if (clips.length === 0) {
+    showNotification("No hay clips para exportar");
+    return;
+  }
+
+  const result = exportEDL(clips);
+
+  if (result) {
+    showNotification("Clips exportados en formato EDL");
+  } else {
+    showNotification("Error al exportar clips en formato EDL");
+  }
+}
+
 export function updateClipCount() {
   clipCount.textContent = clips.length;
 }
@@ -504,17 +613,23 @@ function updateSelectedTable() {
 }
 
 function removeSelectedTranscription(index) {
+  // Obtener el índice real en las transcripciones
+  const realIndex = selectedTranscriptions[index]?.index;
+
   const newSelected = [...selectedTranscriptions];
   newSelected.splice(index, 1);
   setSelectedTranscriptions(newSelected);
 
+  // Actualizar la tabla completa para evitar errores visuales
   renderTable();
   updateSelectedTable();
   saveToLocalStorage();
 }
 
 function clearTranscriptions() {
+  setTranscriptions([]);
   setSelectedTranscriptions([]);
+  setLastSelectedIndex(-1);
   renderTable();
   updateSelectedTable();
   updateStatus();
