@@ -95,13 +95,19 @@ export function calculateDuration(start, end) {
     const endTotalSec = endMin * 60 + endSec;
     const durationSec = endTotalSec - startTotalSec;
 
-    if (durationSec <= 0) return "00:00";
+    if (durationSec <= 0) return { formatted: "00:00:00", totalSeconds: 0 };
 
-    const durationMin = Math.floor(durationSec / 60);
+    const durationHour = Math.floor(durationSec / 3600);
+    const durationMin = Math.floor((durationSec % 3600) / 60);
     const remainingSec = durationSec % 60;
 
-    return `${durationMin.toString().padStart(2, "0")}:${remainingSec.toString().padStart(2, "0")}`;
+    return {
+      formatted: `${durationHour.toString().padStart(2, "0")}:${durationMin.toString().padStart(2, "0")}:${remainingSec
+        .toString()
+        .padStart(2, "0")}`,
+      totalSeconds: durationSec,
+    };
   } catch (e) {
-    return "00:00";
+    return { formatted: "00:00:00", totalSeconds: 0 };
   }
 }

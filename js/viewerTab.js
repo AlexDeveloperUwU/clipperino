@@ -107,6 +107,9 @@ function showClipDetails(index) {
       <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
         <i class="fas fa-stop-circle mr-1 opacity-70"></i> ${clip.fin}
       </span>
+      <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
+        <i class="fas fa-clock mr-1 opacity-70"></i> ${clip.duration}
+      </span>
     </div>
   `;
 
@@ -156,15 +159,23 @@ function updateJsonInfo() {
     jsonClips.forEach((clip) => {
       totalLines += clip.transcriptions.length;
 
-      try {
-        const [min, sec] = clip.duration.split(":").map(Number);
-        totalDuration += min * 60 + sec;
-      } catch (e) {}
+      // Usar totalSeconds si está disponible, sino calcularlo
+      if (clip.totalSeconds) {
+        totalDuration += clip.totalSeconds;
+      } else {
+        try {
+          const [min, sec] = clip.duration.split(":").map(Number);
+          totalDuration += min * 60 + sec;
+        } catch (e) {}
+      }
     });
 
-    const durationMin = Math.floor(totalDuration / 60);
+    const durationHour = Math.floor(totalDuration / 3600);
+    const durationMin = Math.floor((totalDuration % 3600) / 60);
     const durationSec = totalDuration % 60;
-    const formattedDuration = `${durationMin.toString().padStart(2, "0")}:${durationSec.toString().padStart(2, "0")}`;
+    const formattedDuration = `${durationHour.toString().padStart(2, "0")}:${durationMin
+      .toString()
+      .padStart(2, "0")}:${durationSec.toString().padStart(2, "0")}`;
 
     jsonStatus.textContent = `${jsonClips.length} clips | ${totalLines} líneas | ${formattedDuration} duración total`;
   } else {

@@ -339,14 +339,17 @@ function saveClip() {
 
   const sortedTranscriptions = [...selectedTranscriptions].sort((a, b) => a.index - b.index);
 
+  const duration = calculateDuration(
+    sortedTranscriptions[0].inicio,
+    sortedTranscriptions[sortedTranscriptions.length - 1].fin
+  );
+
   const newClip = {
     name: clipName,
     inicio: sortedTranscriptions[0].inicio,
     fin: sortedTranscriptions[sortedTranscriptions.length - 1].fin,
-    duration: calculateDuration(
-      sortedTranscriptions[0].inicio,
-      sortedTranscriptions[sortedTranscriptions.length - 1].fin
-    ),
+    duration: duration.formatted,
+    totalSeconds: duration.totalSeconds,
     lines: sortedTranscriptions.length,
     transcriptions: sortedTranscriptions,
     timestamp: new Date().toISOString(),
@@ -470,6 +473,7 @@ function exportClips() {
     inicio: clip.inicio,
     fin: clip.fin,
     duration: clip.duration,
+    totalSeconds: clip.totalSeconds || 0,
     transcriptions: clip.transcriptions.map((t) => ({
       inicio: t.inicio,
       fin: t.fin,
@@ -622,11 +626,14 @@ function removeSelectedTranscription(index) {
 function clearTranscriptions() {
   setTranscriptions([]);
   setSelectedTranscriptions([]);
+  setClips([]);  
   setLastSelectedIndex(-1);
   renderTable();
   updateSelectedTable();
+  renderClips(); 
+  updateClipCount();  
   updateStatus();
   saveToLocalStorage();
   toggleImportButton();
-  showNotification("Datos eliminados correctamente");
+  showNotification("Todos los datos han sido eliminados correctamente");
 }
