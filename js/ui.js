@@ -6,6 +6,7 @@ import {
   editorTabActions,
   viewerTabActions,
   playButton,
+  currentYear,
 } from "./elements.js";
 import { isPlaying, setIsPlaying } from "./state.js";
 
@@ -21,6 +22,7 @@ export function initUI() {
   playButton.addEventListener("click", togglePlay);
 
   setupMultiSelectHelp();
+  updateYear();
 }
 
 function setupMultiSelectHelp() {
@@ -102,4 +104,10 @@ export function debounce(func, wait) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(context, args), wait);
   };
+}
+
+export function updateYear() {
+  if (currentYear) {
+    currentYear.textContent = new Date().getFullYear();
+  }
 }

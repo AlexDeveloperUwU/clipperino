@@ -41,3 +41,5 @@ export const editorTabActions = document.getElementById("editorTabActions");
 export const viewerTabActions = document.getElementById("viewerTabActions");
 
 export const exportEDLBtn = document.getElementById("exportEDLBtn");
+
+export const currentYear = document.getElementById("currentYear");

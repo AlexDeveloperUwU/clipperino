@@ -38,8 +38,8 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="bg-dark-300 text-gray-100 min-h-screen font-sans">
-  <div class="container mx-auto px-4 py-8 max-w-8xl">
+<body class="bg-dark-300 text-gray-100 min-h-screen font-sans flex flex-col">
+  <div class="container mx-auto px-4 py-8 max-w-8xl flex-grow">
     <header class="mb-6 flex items-center justify-between">
       <div class="flex items-center gap-4">
         <h1 class="text-2xl font-bold text-white">Clipperino</h1>
@@ -100,7 +100,7 @@
               </div>
             </div>
 
-            <div class="overflow-y-auto" style="max-height: 400px;">
+            <div class="overflow-y-auto max-h-[200px] sm:max-h-[250px] md:max-h-[280px] lg:max-h-[300px]">
               <table class="w-full">
                 <thead>
                   <tr class="text-left bg-dark-100">
@@ -124,7 +124,7 @@
               <span id="selectedCount" class="px-2 py-1 bg-secondary-100/20 text-secondary-100 text-xs font-medium rounded-full">0 seleccionadas</span>
             </div>
 
-            <div class="overflow-y-auto" style="max-height: 300px;">
+            <div class="overflow-y-auto max-h-[200px] sm:max-h-[250px] md:max-h-[280px] lg:max-h-[300px]">
               <table class="w-full">
                 <thead>
                   <tr class="text-left bg-dark-200">
@@ -157,7 +157,7 @@
               <span class="px-2 py-1 bg-dark-100 text-xs font-medium rounded-full" id="clipCount">0</span>
             </div>
 
-            <div id="clipList" class="p-4 overflow-y-auto" style="max-height: 400px;"></div>
+            <div id="clipList" class="p-4 overflow-y-auto max-h-[200px] sm:max-h-[250px] md:max-h-[280px] lg:max-h-[300px]"></div>
 
             <div class="px-5 py-4 border-t border-dark-50">
               <div class="grid grid-cols-1 gap-3">
@@ -189,7 +189,7 @@
               <span id="jsonStatus" class="text-sm text-gray-400">0 clips cargados</span>
             </div>
 
-            <div id="jsonClipsList" class="p-4 overflow-y-auto" style="max-height: 600px;">
+            <div id="jsonClipsList" class="p-4 overflow-y-auto max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[500px]">
               <p class="text-gray-400 text-center py-8">Selecciona un archivo JSON para visualizar los clips</p>
             </div>
           </div>
@@ -202,7 +202,7 @@
               <span id="clipDetailStatus" class="text-sm text-gray-400">Selecciona un clip para ver detalles</span>
             </div>
 
-            <div id="jsonInfoPanel" class="overflow-y-auto" style="max-height: 600px;">
+            <div id="jsonInfoPanel" class="overflow-y-auto max-h-[300px] sm:max-h-[350px] md:max-h-[400px] lg:max-h-[500px]">
               <p class="text-gray-400 text-center py-8">Selecciona un clip para ver sus detalles</p>
             </div>
           </div>
@@ -257,7 +257,12 @@
       </div>
     </div>
   </div>
-
+  <footer class="mt-auto py-4 text-center text-gray-400 text-sm">
+    <div class="container mx-auto px-4">
+      <p></p>
+      <p class="mt-2">Clipperino v1.0 | Desarrollado con <i class="fas fa-heart text-red-500 mx-1"></i> por <a href="https://alexdevuwu.com" class="text-accent-100 hover:underline">AlexDeveloperUwU</a> | Licenciado bajo <a href="https://www.gnu.org/licenses/agpl-3.0.html" class="text-accent-100 hover:underline">AGPL v3</a></p>
+    </div>
+  </footer>
   <script type="module" src="js/main.js"></script>
 </body>
 
