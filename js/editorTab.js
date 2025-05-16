@@ -87,7 +87,7 @@ export function renderTable() {
   transcriptionsTable.innerHTML = "";
 
   const totalRows = transcriptions.length;
-  const batchSize = 50;
+  const batchSize = 200;
 
   const fragment = document.createDocumentFragment();
 
@@ -163,7 +163,7 @@ export function renderTable() {
 }
 
 function loadMoreRows(startIndex) {
-  const batchSize = 30;
+  const batchSize = 50;
   const endIndex = Math.min(startIndex + batchSize, transcriptions.length);
 
   const fragment = document.createDocumentFragment();
@@ -202,65 +202,37 @@ function loadMoreRows(startIndex) {
 function selectTranscriptionRange(startIdx, endIdx) {
   const newSelected = [...selectedTranscriptions];
   let addedCount = 0;
-  
+
   for (let i = startIdx; i <= endIdx; i++) {
     if (i >= transcriptions.length) continue;
-    
+
     const transcription = transcriptions[i];
-    const isAlreadySelected = newSelected.some(t => t.index === i);
-    
+    const isAlreadySelected = newSelected.some((t) => t.index === i);
+
     if (!isAlreadySelected) {
       newSelected.push({
         ...transcription,
-        index: i
+        index: i,
       });
       addedCount++;
     }
   }
-  
+
   setSelectedTranscriptions(newSelected);
   setLastSelectedIndex(endIdx);
-  
-  // Dado que hay problemas con la actualización parcial, 
-  // volvemos a renderizar la tabla completa temporalmente
-  renderTable();
+
+  updateRowRange(startIdx, endIdx);
   updateSelectedTable();
   saveToLocalStorage();
-  
+
   if (addedCount > 0) {
-    showNotification(`Se seleccionaron ${endIdx - startIdx + 1} líneas`);
+    showNotification(`Se seleccionaron ${addedCount} líneas`);
   }
 }
 
-function selectTranscription(index) {
-  if (index < 0 || index >= transcriptions.length) return;
-  
-  const transcription = transcriptions[index];
-  const existingIndex = selectedTranscriptions.findIndex((t) => t.index === index);
-  const newSelected = [...selectedTranscriptions];
-
-  if (existingIndex !== -1) {
-    newSelected.splice(existingIndex, 1);
-  } else {
-    newSelected.push({
-      ...transcription,
-      index,
-    });
-  }
-
-  setSelectedTranscriptions(newSelected);
-  setLastSelectedIndex(index);
-  
-  // Usar la actualización de fila única
-  updateSingleRow(index);
-  updateSelectedTable();
-  saveToLocalStorage();
-}
-
-// Nueva función para actualizar una sola fila
 function updateSingleRow(index) {
   const row = document.querySelector(`tr[data-index="${index}"]`);
-  if (!row) return; // La fila no está en el DOM (fuera del área visible)
+  if (!row) return;
 
   const isSelected = selectedTranscriptions.some((t) => t.index === index);
 
@@ -284,22 +256,42 @@ function updateSingleRow(index) {
   }
 }
 
-// Nueva función para actualizar un rango de filas
 function updateRowRange(startIdx, endIdx) {
   for (let i = startIdx; i <= endIdx; i++) {
     updateSingleRow(i);
   }
 }
 
+function selectTranscription(index) {
+  if (index < 0 || index >= transcriptions.length) return;
+
+  const transcription = transcriptions[index];
+  const existingIndex = selectedTranscriptions.findIndex((t) => t.index === index);
+  const newSelected = [...selectedTranscriptions];
+
+  if (existingIndex !== -1) {
+    newSelected.splice(existingIndex, 1);
+  } else {
+    newSelected.push({
+      ...transcription,
+      index,
+    });
+  }
+
+  setSelectedTranscriptions(newSelected);
+  setLastSelectedIndex(index);
+
+  updateSingleRow(index);
+  updateSelectedTable();
+  saveToLocalStorage();
+}
+
 function clearSelectedTranscriptions() {
-  // Obtener todos los índices actualmente seleccionados
   const selectedIndices = selectedTranscriptions.map((t) => t.index);
 
   setSelectedTranscriptions([]);
   setLastSelectedIndex(-1);
 
-  // Para garantizar que la interfaz se actualiza correctamente,
-  // renderizamos la tabla completa
   renderTable();
   updateSelectedTable();
   saveToLocalStorage();
@@ -613,15 +605,16 @@ function updateSelectedTable() {
 }
 
 function removeSelectedTranscription(index) {
-  // Obtener el índice real en las transcripciones
   const realIndex = selectedTranscriptions[index]?.index;
 
   const newSelected = [...selectedTranscriptions];
   newSelected.splice(index, 1);
   setSelectedTranscriptions(newSelected);
 
-  // Actualizar la tabla completa para evitar errores visuales
-  renderTable();
+  if (realIndex !== undefined) {
+    updateSingleRow(realIndex);
+  }
+
   updateSelectedTable();
   saveToLocalStorage();
 }
