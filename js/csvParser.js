@@ -89,16 +89,19 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
 
 export function calculateDuration(start, end) {
   try {
-    let startHour = 0, startMin = 0, startSec = 0;
-    let endHour = 0, endMin = 0, endSec = 0;
+    let startHour = 0,
+      startMin = 0,
+      startSec = 0;
+    let endHour = 0,
+      endMin = 0,
+      endSec = 0;
 
     const startParts = start.trim().split(":").map(Number);
     const endParts = end.trim().split(":").map(Number);
 
     if (startParts.length === 2) {
       [startMin, startSec] = startParts;
-    }
-    else if (startParts.length === 3) {
+    } else if (startParts.length === 3) {
       [startHour, startMin, startSec] = startParts;
     }
 
@@ -108,8 +111,8 @@ export function calculateDuration(start, end) {
       [endHour, endMin, endSec] = endParts;
     }
 
-    const startTotalSec = (startHour * 3600) + (startMin * 60) + startSec;
-    const endTotalSec = (endHour * 3600) + (endMin * 60) + endSec;
+    const startTotalSec = startHour * 3600 + startMin * 60 + startSec;
+    const endTotalSec = endHour * 3600 + endMin * 60 + endSec;
     const durationSec = endTotalSec - startTotalSec;
 
     if (durationSec <= 0) return { formatted: "00:00:00", totalSeconds: 0 };
@@ -119,7 +122,9 @@ export function calculateDuration(start, end) {
     const remainingSec = durationSec % 60;
 
     return {
-      formatted: `${String(durationHour).padStart(2, "0")}:${String(durationMin).padStart(2, "0")}:${String(remainingSec).padStart(2, "0")}`,
+      formatted: `${String(durationHour).padStart(2, "0")}:${String(durationMin).padStart(2, "0")}:${String(
+        remainingSec
+      ).padStart(2, "0")}`,
       totalSeconds: durationSec,
     };
   } catch (e) {

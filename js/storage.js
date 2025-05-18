@@ -7,7 +7,7 @@ import {
   setSelectedTranscriptions,
   setJsonClips,
 } from "./state.js";
-import { renderTable, updateStatus } from "./editorTab.js";
+import { renderTable, updateStatus, navigateToLine } from "./editorTab.js";
 import { renderJsonClips, toggleJsonImportButton } from "./viewerTab.js";
 
 export function initStorage() {
@@ -33,8 +33,23 @@ function loadFromLocalStorage() {
 
     if (savedTranscriptions) {
       setTranscriptions(JSON.parse(savedTranscriptions));
-      renderTable();
       updateStatus();
+
+      const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line"));
+
+      if (!isNaN(lastViewedLine) && lastViewedLine >= 0) {
+        console.log("Se encontró última línea vista:", lastViewedLine);
+        setTimeout(() => {
+          if (typeof navigateToLine === "function") {
+            navigateToLine(lastViewedLine);
+          } else {
+            console.error("Error: navigateToLine no es una función");
+            renderTable();
+          }
+        }, 200);
+      } else {
+        renderTable();
+      }
     }
 
     if (savedClips) {
@@ -46,7 +61,12 @@ function loadFromLocalStorage() {
 
     if (savedSelected) {
       setSelectedTranscriptions(JSON.parse(savedSelected));
-      renderTable();
+    }
+
+    if (transcriptions.length > 0) {
+      setTimeout(() => {
+        renderTable();
+      }, 0);
     }
 
     if (savedJsonClips) {
@@ -57,5 +77,9 @@ function loadFromLocalStorage() {
     }
   } catch (e) {
     console.error("Error loading from localStorage:", e);
+    // En caso de error, asegurarnos de que al menos se muestre la tabla
+    if (transcriptions.length > 0) {
+      renderTable();
+    }
   }
 }

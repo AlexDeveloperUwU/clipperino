@@ -185,11 +185,11 @@ function updateSearchResults(searchTerm) {
     const transcriptionCell = row.querySelector("td:nth-child(3)");
     if (transcriptionCell) {
       transcriptionCell.innerHTML = transcriptionCell.textContent;
-      
+
       // Después de restablecer el contenido, verificamos si la fila estaba seleccionada
       const index = parseInt(row.dataset.index);
       const isSelected = selectedTranscriptions.some((t) => t.index === index);
-      
+
       // Aseguramos que el botón mantiene el estilo correcto
       const selectBtn = row.querySelector(".select-btn");
       if (selectBtn) {

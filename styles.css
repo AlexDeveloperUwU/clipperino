@@ -55,6 +55,21 @@
   }
 }
 
+@keyframes flash {
+  0% { background-color: rgba(59, 130, 246, 0.8); }
+  50% { background-color: rgba(59, 130, 246, 0.4); }
+  100% { background-color: rgba(59, 130, 246, 0.3); }
+}
+
+@keyframes highlightFade {
+  0% {
+    background-color: rgba(var(--accent-color-rgb), 0.2);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
 .fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }
@@ -96,33 +111,35 @@ input[type="checkbox"]:focus {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
+/* Estilo para ayuda de selección múltiple - CORREGIDO */
 .multi-select-help {
   position: fixed;
-  bottom: 20px;
+  bottom: -50px; /* Posicionado completamente fuera de la vista */
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: rgba(30, 30, 30, 0.9);
   color: white;
   padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 20px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 50;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: bottom 0.3s ease-out;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none; /* Evita que bloquee interacciones */
 }
 
 .multi-select-help.visible {
-  opacity: 1;
+  bottom: 20px; /* Sube a esta posición cuando es visible */
 }
 
 .multi-select-help kbd {
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 2px 6px;
-  border-radius: 4px;
+  background-color: rgba(50, 50, 50, 0.9);
+  border-radius: 3px;
+  border: 1px solid rgba(100, 100, 100, 0.3);
+  padding: 1px 4px;
   font-family: monospace;
 }
 
@@ -135,19 +152,25 @@ tr {
 }
 
 .in-clip {
-  opacity: 0.5;
-  background-color: rgba(255, 255, 255, 0.03);
+  border-left: 3px solid rgba(16, 185, 129, 0.7) !important;
+  background-color: rgba(16, 185, 129, 0.05) !important;
 }
 
 .highlight-row {
-  animation: highlightFade 2s ease-out;
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  animation: flash 2s 1;
 }
 
-@keyframes highlightFade {
-  0% {
-    background-color: rgba(var(--accent-color-rgb), 0.2);
-  }
-  100% {
-    background-color: transparent;
-  }
+.with-clip-icon::before {
+  content: '📎';
+  margin-right: 4px;
+  opacity: 0.8;
+}
+
+.bg-accent-100\/10 {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+tr.in-clip td:first-child {
+  padding-left: 12px !important;
 }

@@ -42,6 +42,12 @@ import { exportEDL } from "./edlExporter.js";
 import { updateSearchAfterRowsLoaded } from "./search.js";
 
 export function initEditorTab() {
+  // Asegurarse de que todas las funciones estén definidas antes de usarlas
+  initEventListeners();
+  window.renderClips = renderClips;
+}
+
+function initEventListeners() {
   csvFileInput.addEventListener("change", handleFileUpload);
   exportJsonBtn.addEventListener("click", exportClips);
   exportMarkdownBtn.addEventListener("click", exportMarkdown);
@@ -67,29 +73,6 @@ export function initEditorTab() {
       saveEditedClipName();
     }
   });
-
-  window.renderClips = renderClips;
-
-  document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-      const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line")) || -1;
-      if (lastViewedLine > -1) {
-        const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
-        if (tableContainer) {
-          const batchSize = Math.ceil(lastViewedLine / 200) * 200;
-          loadBatch(0, batchSize);
-          setTimeout(() => {
-            const targetRow = document.querySelector(`tr[data-index="${lastViewedLine}"]`);
-            if (targetRow) {
-              targetRow.scrollIntoView({ behavior: "instant", block: "center" });
-              targetRow.classList.add("highlight-row");
-              setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
-            }
-          }, 100);
-        }
-      }
-    }, 0);
-  });
 }
 
 function handleFileUpload(event) {
@@ -104,20 +87,63 @@ function handleFileUpload(event) {
   }
 }
 
+// Mejorada para garantizar que siempre pueda navegar correctamente
+export function navigateToLine(lineIndex) {
+  if (lineIndex < 0 || transcriptions.length === 0) return;
+
+  console.log(`Intentando navegar a línea ${lineIndex} de ${transcriptions.length} líneas`);
+
+  // Asegurar que el índice no exceda el número de transcripciones
+  const targetIndex = Math.min(lineIndex, transcriptions.length - 1);
+
+  // Necesitamos cargar suficientes filas para que la fila objetivo sea visible
+  transcriptionsTable.innerHTML = "";
+
+  // Calcular cuántos lotes necesitamos para llegar a nuestra fila
+  const batchSize = 200;
+  const batchesToLoad = Math.floor(targetIndex / batchSize) + 1;
+
+  console.log(`Cargando ${batchesToLoad} lotes para llegar a la línea ${targetIndex}`);
+
+  // Cargar todos los lotes necesarios
+  for (let i = 0; i < batchesToLoad; i++) {
+    loadBatch(i * batchSize, batchSize);
+  }
+
+  // Esperar a que el DOM se actualice antes de intentar desplazarse
+  setTimeout(() => {
+    const targetRow = document.querySelector(`tr[data-index="${targetIndex}"]`);
+    if (targetRow) {
+      console.log("Fila encontrada, desplazando...");
+
+      // Asegurarnos de que la tabla tenga suficiente altura para desplazarse
+      const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
+      if (tableContainer) {
+        // Usar scrollIntoView con opciones básicas para mayor compatibilidad
+        targetRow.scrollIntoView();
+      }
+
+      // Resaltar la fila para que sea fácil de ver
+      targetRow.classList.add("highlight-row");
+      setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
+    } else {
+      console.warn(`No se encontró la fila objetivo con índice ${targetIndex}`);
+    }
+  }, 100);
+}
+
+// Modificada para usar la función navigateToLine mejorada
 export function renderTable(scrollToIndex = -1) {
   transcriptionsTable.innerHTML = "";
+
+  if (scrollToIndex > -1) {
+    return navigateToLine(scrollToIndex);
+  }
 
   const totalRows = transcriptions.length;
   const batchSize = 200;
 
-  if (scrollToIndex > batchSize) {
-    const batchesToLoad = Math.floor(scrollToIndex / batchSize);
-    for (let i = 0; i <= batchesToLoad; i++) {
-      loadBatch(i * batchSize, batchSize);
-    }
-  } else {
-    loadBatch(0, batchSize);
-  }
+  loadBatch(0, batchSize);
 
   const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
   if (tableContainer) {
@@ -197,7 +223,7 @@ function loadBatch(startIndex, batchSize) {
       <td class="px-5 py-3 text-sm text-right">
         ${
           isInClip
-            ? '<span class="text-xs text-gray-500">En uso</span>'
+            ? '<span class="text-xs text-gray-500 with-clip-icon">En uso</span>'
             : `<button class="select-btn px-3 py-1 ${
                 isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
               } rounded text-xs font-medium transition-colors">
@@ -230,8 +256,13 @@ function loadMoreRows(startIndex) {
     row.dataset.index = i;
 
     const isSelected = selectedTranscriptions.some((t) => t.index === i);
+    const isInClip = isTranscriptionInClip(i);
+
     if (isSelected) {
       row.classList.add("bg-accent-100/10");
+    }
+    if (isInClip) {
+      row.classList.add("in-clip");
     }
 
     row.innerHTML = `
@@ -239,11 +270,15 @@ function loadMoreRows(startIndex) {
       <td class="px-5 py-3 text-sm">${item.fin}</td>
       <td class="px-5 py-3 text-sm">${item.transcripcion}</td>
       <td class="px-5 py-3 text-sm text-right">
-        <button class="select-btn px-3 py-1 ${
-          isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
-        } rounded text-xs font-medium transition-colors">
-          ${isSelected ? "Seleccionado" : "Seleccionar"}
-        </button>
+        ${
+          isInClip
+            ? '<span class="text-xs text-gray-500 with-clip-icon">En uso</span>'
+            : `<button class="select-btn px-3 py-1 ${
+                isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
+              } rounded text-xs font-medium transition-colors">
+              ${isSelected ? "Seleccionado" : "Seleccionar"}
+            </button>`
+        }
       </td>
     `;
 
@@ -338,6 +373,7 @@ function selectTranscription(index) {
 
   // Guardar la última línea vista
   localStorage.setItem("clipperino_last_viewed_line", index.toString());
+  console.log("Última línea vista guardada:", index);
 
   updateSingleRow(index);
   updateSelectedTable();

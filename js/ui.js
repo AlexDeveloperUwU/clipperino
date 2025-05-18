@@ -27,22 +27,38 @@ export function initUI() {
 
 function setupMultiSelectHelp() {
   const multiSelectHelp = document.getElementById("multiSelectHelp");
+  if (!multiSelectHelp) return;
+
+  multiSelectHelp.classList.remove("visible");
+
+  let shiftPressed = false;
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Shift" && !e.repeat) {
+    if (e.key === "Shift" && !shiftPressed) {
+      shiftPressed = true;
       multiSelectHelp.classList.add("visible");
     }
   });
 
   document.addEventListener("keyup", function (e) {
     if (e.key === "Shift") {
+      shiftPressed = false;
       multiSelectHelp.classList.remove("visible");
     }
   });
 
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "hidden") {
+      shiftPressed = false;
       multiSelectHelp.classList.remove("visible");
+    }
+  });
+
+  document.addEventListener("click", function () {
+    if (shiftPressed) {
+      setTimeout(() => {
+        multiSelectHelp.classList.remove("visible");
+      }, 1000);
     }
   });
 }

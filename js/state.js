@@ -37,10 +37,10 @@ export function setLastSelectedIndex(newIndex) {
 
 export function setLastViewedLineIndex(index) {
   lastViewedLineIndex = index;
-  localStorage.setItem('clipperino_last_viewed_line', index);
+  localStorage.setItem("clipperino_last_viewed_line", index);
 }
 
 export function clearLastViewedLine() {
   lastViewedLineIndex = -1;
-  localStorage.removeItem('clipperino_last_viewed_line');
+  localStorage.removeItem("clipperino_last_viewed_line");
 }
