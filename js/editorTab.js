@@ -69,6 +69,13 @@ export function initEditorTab() {
   });
 
   window.renderClips = renderClips;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line")) || -1;
+    if (lastViewedLine > -1) {
+      renderTable(lastViewedLine);
+    }
+  });
 }
 
 function handleFileUpload(event) {
@@ -83,44 +90,20 @@ function handleFileUpload(event) {
   }
 }
 
-export function renderTable() {
+export function renderTable(scrollToIndex = -1) {
   transcriptionsTable.innerHTML = "";
 
   const totalRows = transcriptions.length;
   const batchSize = 200;
 
-  const fragment = document.createDocumentFragment();
-
-  const visibleRows = Math.min(totalRows, batchSize);
-
-  for (let i = 0; i < visibleRows; i++) {
-    const item = transcriptions[i];
-    const row = document.createElement("tr");
-    row.className = "hover:bg-dark-100 transition-colors";
-    row.dataset.index = i;
-
-    const isSelected = selectedTranscriptions.some((t) => t.index === i);
-    if (isSelected) {
-      row.classList.add("bg-accent-100/10");
+  if (scrollToIndex > batchSize) {
+    const batchesToLoad = Math.floor(scrollToIndex / batchSize);
+    for (let i = 0; i <= batchesToLoad; i++) {
+      loadBatch(i * batchSize, batchSize);
     }
-
-    row.innerHTML = `
-      <td class="px-5 py-3 text-sm">${item.inicio}</td>
-      <td class="px-5 py-3 text-sm">${item.fin}</td>
-      <td class="px-5 py-3 text-sm">${item.transcripcion}</td>
-      <td class="px-5 py-3 text-sm text-right">
-        <button class="select-btn px-3 py-1 ${
-          isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
-        } rounded text-xs font-medium transition-colors">
-          ${isSelected ? "Seleccionado" : "Seleccionar"}
-        </button>
-      </td>
-    `;
-
-    fragment.appendChild(row);
+  } else {
+    loadBatch(0, batchSize);
   }
-
-  transcriptionsTable.appendChild(fragment);
 
   const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
   if (tableContainer) {
@@ -135,6 +118,17 @@ export function renderTable() {
         lastRowIndex < totalRows - 1
       ) {
         loadMoreRows(lastRowIndex + 1);
+      }
+    }, 100);
+  }
+
+  if (scrollToIndex > -1) {
+    setTimeout(() => {
+      const targetRow = document.querySelector(`tr[data-index="${scrollToIndex}"]`);
+      if (targetRow) {
+        targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+        targetRow.classList.add("highlight-row");
+        setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
       }
     }, 100);
   }
@@ -160,6 +154,49 @@ export function renderTable() {
   }
 
   updateSelectedTable();
+}
+
+function loadBatch(startIndex, batchSize) {
+  const endIndex = Math.min(startIndex + batchSize, transcriptions.length);
+  const fragment = document.createDocumentFragment();
+
+  for (let i = startIndex; i < endIndex; i++) {
+    const item = transcriptions[i];
+    const row = document.createElement("tr");
+    row.className = "hover:bg-dark-100 transition-colors";
+    row.dataset.index = i;
+
+    const isSelected = selectedTranscriptions.some((t) => t.index === i);
+    const isInClip = isTranscriptionInClip(i);
+
+    if (isSelected) {
+      row.classList.add("bg-accent-100/10");
+    }
+    if (isInClip) {
+      row.classList.add("in-clip");
+    }
+
+    row.innerHTML = `
+      <td class="px-5 py-3 text-sm">${item.inicio}</td>
+      <td class="px-5 py-3 text-sm">${item.fin}</td>
+      <td class="px-5 py-3 text-sm ${isInClip ? "text-gray-400" : ""}">${item.transcripcion}</td>
+      <td class="px-5 py-3 text-sm text-right">
+        <button class="select-btn px-3 py-1 ${
+          isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
+        } rounded text-xs font-medium transition-colors ${isInClip ? "opacity-50" : ""}">
+          ${isSelected ? "Seleccionado" : "Seleccionar"}
+        </button>
+      </td>
+    `;
+
+    fragment.appendChild(row);
+  }
+
+  transcriptionsTable.appendChild(fragment);
+}
+
+function isTranscriptionInClip(index) {
+  return clips.some((clip) => clip.transcriptions.some((t) => t.index === index));
 }
 
 function loadMoreRows(startIndex) {
@@ -626,12 +663,12 @@ function removeSelectedTranscription(index) {
 function clearTranscriptions() {
   setTranscriptions([]);
   setSelectedTranscriptions([]);
-  setClips([]);  
+  setClips([]);
   setLastSelectedIndex(-1);
   renderTable();
   updateSelectedTable();
-  renderClips(); 
-  updateClipCount();  
+  renderClips();
+  updateClipCount();
   updateStatus();
   saveToLocalStorage();
   toggleImportButton();
