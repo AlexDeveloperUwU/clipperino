@@ -88,11 +88,27 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
 
 export function calculateDuration(start, end) {
   try {
-    const [startMin, startSec] = start.split(":").map(Number);
-    const [endMin, endSec] = end.split(":").map(Number);
+    let startHour = 0, startMin = 0, startSec = 0;
+    let endHour = 0, endMin = 0, endSec = 0;
 
-    const startTotalSec = startMin * 60 + startSec;
-    const endTotalSec = endMin * 60 + endSec;
+    const startParts = start.trim().split(":").map(Number);
+    const endParts = end.trim().split(":").map(Number);
+
+    if (startParts.length === 2) {
+      [startMin, startSec] = startParts;
+    }
+    else if (startParts.length === 3) {
+      [startHour, startMin, startSec] = startParts;
+    }
+
+    if (endParts.length === 2) {
+      [endMin, endSec] = endParts;
+    } else if (endParts.length === 3) {
+      [endHour, endMin, endSec] = endParts;
+    }
+
+    const startTotalSec = (startHour * 3600) + (startMin * 60) + startSec;
+    const endTotalSec = (endHour * 3600) + (endMin * 60) + endSec;
     const durationSec = endTotalSec - startTotalSec;
 
     if (durationSec <= 0) return { formatted: "00:00:00", totalSeconds: 0 };
@@ -102,12 +118,11 @@ export function calculateDuration(start, end) {
     const remainingSec = durationSec % 60;
 
     return {
-      formatted: `${durationHour.toString().padStart(2, "0")}:${durationMin.toString().padStart(2, "0")}:${remainingSec
-        .toString()
-        .padStart(2, "0")}`,
+      formatted: `${String(durationHour).padStart(2, "0")}:${String(durationMin).padStart(2, "0")}:${String(remainingSec).padStart(2, "0")}`,
       totalSeconds: durationSec,
     };
   } catch (e) {
+    console.error("Error calculating duration:", e, { start, end });
     return { formatted: "00:00:00", totalSeconds: 0 };
   }
 }

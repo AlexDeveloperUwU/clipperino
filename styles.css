@@ -135,20 +135,14 @@ tr {
 }
 
 .in-clip {
-  position: relative;
+  opacity: 0.5;
+  background-color: rgba(255, 255, 255, 0.03);
 }
-.in-clip::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 3px;
-  height: 100%;
-  background-color: rgba(var(--accent-color-rgb), 0.3);
-}
+
 .highlight-row {
   animation: highlightFade 2s ease-out;
 }
+
 @keyframes highlightFade {
   0% {
     background-color: rgba(var(--accent-color-rgb), 0.2);

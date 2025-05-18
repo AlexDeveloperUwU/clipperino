@@ -179,13 +179,17 @@ function loadBatch(startIndex, batchSize) {
     row.innerHTML = `
       <td class="px-5 py-3 text-sm">${item.inicio}</td>
       <td class="px-5 py-3 text-sm">${item.fin}</td>
-      <td class="px-5 py-3 text-sm ${isInClip ? "text-gray-400" : ""}">${item.transcripcion}</td>
+      <td class="px-5 py-3 text-sm">${item.transcripcion}</td>
       <td class="px-5 py-3 text-sm text-right">
-        <button class="select-btn px-3 py-1 ${
-          isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
-        } rounded text-xs font-medium transition-colors ${isInClip ? "opacity-50" : ""}">
-          ${isSelected ? "Seleccionado" : "Seleccionar"}
-        </button>
+        ${
+          isInClip
+            ? '<span class="text-xs text-gray-500">En uso</span>'
+            : `<button class="select-btn px-3 py-1 ${
+                isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
+              } rounded text-xs font-medium transition-colors">
+            ${isSelected ? "Seleccionado" : "Seleccionar"}
+          </button>`
+        }
       </td>
     `;
 
