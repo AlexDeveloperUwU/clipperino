@@ -71,10 +71,24 @@ export function initEditorTab() {
   window.renderClips = renderClips;
 
   document.addEventListener("DOMContentLoaded", () => {
-    const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line")) || -1;
-    if (lastViewedLine > -1) {
-      renderTable(lastViewedLine);
-    }
+    setTimeout(() => {
+      const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line")) || -1;
+      if (lastViewedLine > -1) {
+        const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
+        if (tableContainer) {
+          const batchSize = Math.ceil(lastViewedLine / 200) * 200;
+          loadBatch(0, batchSize);
+          setTimeout(() => {
+            const targetRow = document.querySelector(`tr[data-index="${lastViewedLine}"]`);
+            if (targetRow) {
+              targetRow.scrollIntoView({ behavior: "instant", block: "center" });
+              targetRow.classList.add("highlight-row");
+              setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
+            }
+          }, 100);
+        }
+      }
+    }, 0);
   });
 }
 
@@ -321,6 +335,9 @@ function selectTranscription(index) {
 
   setSelectedTranscriptions(newSelected);
   setLastSelectedIndex(index);
+
+  // Guardar la última línea vista
+  localStorage.setItem("clipperino_last_viewed_line", index.toString());
 
   updateSingleRow(index);
   updateSelectedTable();

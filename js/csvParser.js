@@ -1,5 +1,5 @@
 import { showNotification } from "./ui.js";
-import { setTranscriptions, transcriptions } from "./state.js";
+import { setTranscriptions, transcriptions, clearLastViewedLine } from "./state.js";
 import { renderTable, updateStatus } from "./editorTab.js";
 import { saveToLocalStorage } from "./storage.js";
 
@@ -17,6 +17,7 @@ export function parseCSV(data, showLoadNotification = true) {
   }
 
   setTimeout(() => {
+    clearLastViewedLine();
     processCSVBatches(lines, hasHeader ? 1 : 0, [], showLoadNotification);
   }, 10);
 }
