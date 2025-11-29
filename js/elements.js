@@ -42,3 +42,6 @@ export const viewerTabActions = document.getElementById("viewerTabActions");
 export const exportEDLBtn = document.getElementById("exportEDLBtn");
 
 export const currentYear = document.getElementById("currentYear");
+
+export const editorDragOverlay = document.getElementById("editorDragOverlay");
+export const viewerDragOverlay = document.getElementById("viewerDragOverlay");

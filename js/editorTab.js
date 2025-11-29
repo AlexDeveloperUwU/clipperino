@@ -22,6 +22,8 @@ import {
   editClipNameInput,
   cancelEditBtn,
   saveEditBtn,
+  editorTab,
+  editorDragOverlay
 } from "./elements.js";
 import {
   transcriptions,
@@ -43,6 +45,7 @@ import { updateSearchAfterRowsLoaded } from "./search.js";
 
 export function initEditorTab() {
   initEventListeners();
+  initDragAndDrop();
   window.renderClips = renderClips;
 }
 
@@ -72,6 +75,72 @@ function initEventListeners() {
       saveEditedClipName();
     }
   });
+}
+
+function initDragAndDrop() {
+  if (!editorTab) return;
+
+  let dragCounter = 0;
+
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    editorTab.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  editorTab.addEventListener('dragenter', (e) => {
+    dragCounter++;
+    showDragOverlay();
+  }, false);
+
+  editorTab.addEventListener('dragleave', (e) => {
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      hideDragOverlay();
+    }
+  }, false);
+
+  editorTab.addEventListener('drop', handleDrop, false);
+
+  function handleDrop(e) {
+    dragCounter = 0;
+    hideDragOverlay();
+
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const text = e.target.result;
+          parseCSV(text, true);
+        };
+        reader.readAsText(file);
+      } else {
+        showNotification("Invalid file type. Please drop a CSV file.");
+      }
+    }
+  }
+
+  function showDragOverlay() {
+    if (editorDragOverlay) {
+      editorDragOverlay.classList.remove("opacity-0", "scale-95");
+      editorDragOverlay.classList.add("opacity-100", "scale-100");
+    }
+  }
+
+  function hideDragOverlay() {
+    if (editorDragOverlay) {
+      editorDragOverlay.classList.remove("opacity-100", "scale-100");
+      editorDragOverlay.classList.add("opacity-0", "scale-95");
+    }
+  }
 }
 
 function handleFileUpload(event) {

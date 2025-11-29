@@ -1,10 +1,95 @@
-import { jsonFileInput, jsonClipsList, jsonStatus, jsonInfoPanel, jsonFileLabel, clearJsonBtn } from "./elements.js";
+import {
+  jsonFileInput,
+  jsonClipsList,
+  jsonStatus,
+  jsonInfoPanel,
+  jsonFileLabel,
+  clearJsonBtn,
+  viewerTab,
+  viewerDragOverlay
+} from "./elements.js";
 import { jsonClips, setJsonClips } from "./state.js";
 import { showNotification } from "./ui.js";
 
 export function initViewerTab() {
   jsonFileInput.addEventListener("change", handleJsonFileUpload);
   clearJsonBtn.addEventListener("click", clearJsonData);
+  initDragAndDrop();
+}
+
+function initDragAndDrop() {
+  if (!viewerTab) return;
+
+  let dragCounter = 0;
+
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    viewerTab.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  viewerTab.addEventListener('dragenter', (e) => {
+    dragCounter++;
+    showDragOverlay();
+  }, false);
+
+  viewerTab.addEventListener('dragleave', (e) => {
+    dragCounter--;
+    if (dragCounter <= 0) {
+      dragCounter = 0;
+      hideDragOverlay();
+    }
+  }, false);
+
+  viewerTab.addEventListener('drop', handleDrop, false);
+
+  function handleDrop(e) {
+    dragCounter = 0;
+    hideDragOverlay();
+
+    const dt = e.dataTransfer;
+    const files = dt.files;
+
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.name.toLowerCase().endsWith('.json')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const jsonData = JSON.parse(e.target.result);
+            setJsonClips(jsonData);
+            renderJsonClips(jsonData, true);
+            updateJsonInfo();
+            saveJsonToLocalStorage();
+            toggleJsonImportButton();
+          } catch (error) {
+            showNotification("Error processing JSON file");
+            console.error("Error parsing JSON:", error);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        showNotification("Invalid file type. Please drop a JSON file.");
+      }
+    }
+  }
+
+  function showDragOverlay() {
+    if (viewerDragOverlay) {
+      viewerDragOverlay.classList.remove("opacity-0", "scale-95");
+      viewerDragOverlay.classList.add("opacity-100", "scale-100");
+    }
+  }
+
+  function hideDragOverlay() {
+    if (viewerDragOverlay) {
+      viewerDragOverlay.classList.remove("opacity-100", "scale-100");
+      viewerDragOverlay.classList.add("opacity-0", "scale-95");
+    }
+  }
 }
 
 function handleJsonFileUpload(event) {
