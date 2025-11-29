@@ -62,7 +62,7 @@ export function convertClipsToEDL(clips) {
     }
 
     edlContent += `${startEditNumber}  001      V     C        ${startTime} ${startTimeNextFrame} ${startTime} ${startTimeNextFrame}  \n`;
-    edlContent += `${description} |C:${clipColor} |M:${clip.name} - Inicio |D:1\n\n`;
+    edlContent += `${description} |C:${clipColor} |M:${clip.name} - Start |D:1\n\n`;
 
     editNumber++;
 
@@ -71,7 +71,7 @@ export function convertClipsToEDL(clips) {
     const endTimeNextFrame = endTime.slice(0, -2) + "01";
 
     edlContent += `${endEditNumber}  001      V     C        ${endTime} ${endTimeNextFrame} ${endTime} ${endTimeNextFrame}  \n`;
-    edlContent += `${description} |C:${clipColor} |M:${clip.name} - Fin |D:1\n\n`;
+    edlContent += `${description} |C:${clipColor} |M:${clip.name} - End |D:1\n\n`;
 
     editNumber++;
   });
@@ -97,7 +97,7 @@ export function exportEDL(clips) {
     URL.revokeObjectURL(url);
     return true;
   } catch (error) {
-    console.error("Error al exportar EDL:", error);
+    console.error("Error exporting EDL:", error);
     return false;
   }
 }

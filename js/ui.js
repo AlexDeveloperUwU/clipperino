@@ -5,10 +5,8 @@ import {
   viewerTab,
   editorTabActions,
   viewerTabActions,
-  playButton,
   currentYear,
 } from "./elements.js";
-import { isPlaying, setIsPlaying } from "./state.js";
 
 export function initUI() {
   editorTabBtn.addEventListener("click", () => {
@@ -19,10 +17,12 @@ export function initUI() {
     switchTab("viewer");
   });
 
-  playButton.addEventListener("click", togglePlay);
-
   setupMultiSelectHelp();
   updateYear();
+
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 }
 
 function setupMultiSelectHelp() {
@@ -67,39 +67,44 @@ export function switchTab(tabName) {
   if (tabName === "editor") {
     editorTab.classList.remove("hidden");
     viewerTab.classList.add("hidden");
-    editorTabBtn.classList.add("border-accent-100", "text-white");
-    editorTabBtn.classList.remove("border-transparent", "text-gray-400");
-    viewerTabBtn.classList.add("border-transparent", "text-gray-400");
-    viewerTabBtn.classList.remove("border-accent-100", "text-white");
+
+    editorTabBtn.classList.add("bg-dark-100", "text-white");
+    editorTabBtn.classList.remove("text-gray-400", "hover:text-white", "hover:bg-dark-50");
+
+    viewerTabBtn.classList.add("text-gray-400", "hover:text-white", "hover:bg-dark-50");
+    viewerTabBtn.classList.remove("bg-dark-100", "text-white");
+
     editorTabActions.classList.remove("hidden");
     viewerTabActions.classList.add("hidden");
   } else {
     editorTab.classList.add("hidden");
     viewerTab.classList.remove("hidden");
-    viewerTabBtn.classList.add("border-accent-100", "text-white");
-    viewerTabBtn.classList.remove("border-transparent", "text-gray-400");
-    editorTabBtn.classList.add("border-transparent", "text-gray-400");
-    editorTabBtn.classList.remove("border-accent-100", "text-white");
+
+    viewerTabBtn.classList.add("bg-dark-100", "text-white");
+    viewerTabBtn.classList.remove("text-gray-400", "hover:text-white", "hover:bg-dark-50");
+
+    editorTabBtn.classList.add("text-gray-400", "hover:text-white", "hover:bg-dark-50");
+    editorTabBtn.classList.remove("bg-dark-100", "text-white");
+
     viewerTabActions.classList.remove("hidden");
     editorTabActions.classList.add("hidden");
   }
-}
 
-export function togglePlay() {
-  setIsPlaying(!isPlaying);
-  playButton.innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+  if (window.lucide) window.lucide.createIcons();
 }
 
 export function showNotification(message) {
   const notification = document.createElement("div");
   notification.className =
-    "fixed bottom-4 right-4 bg-dark-50 text-white px-4 py-3 rounded-lg shadow-lg z-50 fade-in flex items-center";
+    "fixed bottom-4 right-4 bg-dark-50 text-white px-4 py-3 rounded-lg shadow-lg z-50 fade-in flex items-center border border-dark-50";
   notification.innerHTML = `
-    <i class="fas fa-info-circle mr-2 text-accent-100"></i>
+    <i data-lucide="info" class="mr-2 text-accent-100 w-5 h-5"></i>
     <span>${message}</span>
   `;
 
   document.body.appendChild(notification);
+
+  if (window.lucide) window.lucide.createIcons();
 
   setTimeout(() => {
     notification.style.opacity = "0";

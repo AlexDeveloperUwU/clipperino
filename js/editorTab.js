@@ -42,7 +42,6 @@ import { exportEDL } from "./edlExporter.js";
 import { updateSearchAfterRowsLoaded } from "./search.js";
 
 export function initEditorTab() {
-  // Asegurarse de que todas las funciones estén definidas antes de usarlas
   initEventListeners();
   window.renderClips = renderClips;
 }
@@ -87,52 +86,36 @@ function handleFileUpload(event) {
   }
 }
 
-// Mejorada para garantizar que siempre pueda navegar correctamente
 export function navigateToLine(lineIndex) {
   if (lineIndex < 0 || transcriptions.length === 0) return;
 
-  console.log(`Intentando navegar a línea ${lineIndex} de ${transcriptions.length} líneas`);
-
-  // Asegurar que el índice no exceda el número de transcripciones
   const targetIndex = Math.min(lineIndex, transcriptions.length - 1);
-
-  // Necesitamos cargar suficientes filas para que la fila objetivo sea visible
   transcriptionsTable.innerHTML = "";
 
-  // Calcular cuántos lotes necesitamos para llegar a nuestra fila
   const batchSize = 200;
   const batchesToLoad = Math.floor(targetIndex / batchSize) + 1;
 
-  console.log(`Cargando ${batchesToLoad} lotes para llegar a la línea ${targetIndex}`);
-
-  // Cargar todos los lotes necesarios
   for (let i = 0; i < batchesToLoad; i++) {
     loadBatch(i * batchSize, batchSize);
   }
 
-  // Esperar a que el DOM se actualice antes de intentar desplazarse
+  // Refresh icons after batch load
+  if (window.lucide) window.lucide.createIcons();
+
   setTimeout(() => {
     const targetRow = document.querySelector(`tr[data-index="${targetIndex}"]`);
     if (targetRow) {
-      console.log("Fila encontrada, desplazando...");
-
-      // Asegurarnos de que la tabla tenga suficiente altura para desplazarse
-      const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
+      const tableContainer = document.getElementById("transcriptionsContainer");
       if (tableContainer) {
-        // Usar scrollIntoView con opciones básicas para mayor compatibilidad
-        targetRow.scrollIntoView();
+        targetRow.scrollIntoView({ block: 'center' });
       }
 
-      // Resaltar la fila para que sea fácil de ver
       targetRow.classList.add("highlight-row");
       setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
-    } else {
-      console.warn(`No se encontró la fila objetivo con índice ${targetIndex}`);
     }
   }, 100);
 }
 
-// Modificada para usar la función navigateToLine mejorada
 export function renderTable(scrollToIndex = -1) {
   transcriptionsTable.innerHTML = "";
 
@@ -145,21 +128,30 @@ export function renderTable(scrollToIndex = -1) {
 
   loadBatch(0, batchSize);
 
-  const tableContainer = transcriptionsTable.closest(".overflow-y-auto");
+  if (window.lucide) window.lucide.createIcons();
+
+  const tableContainer = document.getElementById("transcriptionsContainer");
+
   if (tableContainer) {
-    tableContainer.onscroll = debounce(function () {
+    if (tableContainer._scrollHandler) {
+      tableContainer.removeEventListener("scroll", tableContainer._scrollHandler);
+    }
+
+    tableContainer._scrollHandler = debounce(function () {
       const lastRow = transcriptionsTable.lastElementChild;
       if (!lastRow) return;
 
       const lastRowIndex = parseInt(lastRow.dataset.index);
 
       if (
-        tableContainer.scrollTop + tableContainer.clientHeight > tableContainer.scrollHeight - 200 &&
+        tableContainer.scrollTop + tableContainer.clientHeight > tableContainer.scrollHeight - 300 &&
         lastRowIndex < totalRows - 1
       ) {
         loadMoreRows(lastRowIndex + 1);
       }
     }, 100);
+
+    tableContainer.addEventListener("scroll", tableContainer._scrollHandler);
   }
 
   if (scrollToIndex > -1) {
@@ -203,7 +195,7 @@ function loadBatch(startIndex, batchSize) {
   for (let i = startIndex; i < endIndex; i++) {
     const item = transcriptions[i];
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-100 transition-colors";
+    row.className = "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
     row.dataset.index = i;
 
     const isSelected = selectedTranscriptions.some((t) => t.index === i);
@@ -217,19 +209,17 @@ function loadBatch(startIndex, batchSize) {
     }
 
     row.innerHTML = `
-      <td class="px-5 py-3 text-sm">${item.inicio}</td>
-      <td class="px-5 py-3 text-sm">${item.fin}</td>
-      <td class="px-5 py-3 text-sm">${item.transcripcion}</td>
-      <td class="px-5 py-3 text-sm text-right">
-        ${
-          isInClip
-            ? '<span class="text-xs text-gray-500 with-clip-icon">En uso</span>'
-            : `<button class="select-btn px-3 py-1 ${
-                isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
-              } rounded text-xs font-medium transition-colors">
-            ${isSelected ? "Seleccionado" : "Seleccionar"}
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
+      <td class="px-4 py-2 text-sm text-right">
+        ${isInClip
+        ? '<span class="text-xs text-secondary-100/70 with-clip-icon font-medium">Used</span>'
+        : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
+        } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
+            ${isSelected ? "Selected" : "Select"}
           </button>`
-        }
+      }
       </td>
     `;
 
@@ -252,7 +242,7 @@ function loadMoreRows(startIndex) {
   for (let i = startIndex; i < endIndex; i++) {
     const item = transcriptions[i];
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-100 transition-colors";
+    row.className = "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
     row.dataset.index = i;
 
     const isSelected = selectedTranscriptions.some((t) => t.index === i);
@@ -266,19 +256,17 @@ function loadMoreRows(startIndex) {
     }
 
     row.innerHTML = `
-      <td class="px-5 py-3 text-sm">${item.inicio}</td>
-      <td class="px-5 py-3 text-sm">${item.fin}</td>
-      <td class="px-5 py-3 text-sm">${item.transcripcion}</td>
-      <td class="px-5 py-3 text-sm text-right">
-        ${
-          isInClip
-            ? '<span class="text-xs text-gray-500 with-clip-icon">En uso</span>'
-            : `<button class="select-btn px-3 py-1 ${
-                isSelected ? "bg-accent-100" : "bg-dark-100 hover:bg-dark-50"
-              } rounded text-xs font-medium transition-colors">
-              ${isSelected ? "Seleccionado" : "Seleccionar"}
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
+      <td class="px-4 py-2 text-sm text-right">
+        ${isInClip
+        ? '<span class="text-xs text-secondary-100/70 with-clip-icon font-medium">Used</span>'
+        : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
+        } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
+              ${isSelected ? "Selected" : "Select"}
             </button>`
-        }
+      }
       </td>
     `;
 
@@ -287,6 +275,8 @@ function loadMoreRows(startIndex) {
 
   transcriptionsTable.appendChild(fragment);
   updateSearchAfterRowsLoaded();
+
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function selectTranscriptionRange(startIdx, endIdx) {
@@ -316,7 +306,7 @@ function selectTranscriptionRange(startIdx, endIdx) {
   saveToLocalStorage();
 
   if (addedCount > 0) {
-    showNotification(`Se seleccionaron ${addedCount} líneas`);
+    showNotification(`${addedCount} lines selected`);
   }
 }
 
@@ -335,13 +325,13 @@ function updateSingleRow(index) {
   const selectBtn = row.querySelector(".select-btn");
   if (selectBtn) {
     if (isSelected) {
-      selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50");
-      selectBtn.classList.add("bg-accent-100");
-      selectBtn.textContent = "Seleccionado";
+      selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50", "text-gray-300", "border-dark-50");
+      selectBtn.classList.add("bg-accent-100", "text-white");
+      selectBtn.textContent = "Selected";
     } else {
-      selectBtn.classList.remove("bg-accent-100");
-      selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50");
-      selectBtn.textContent = "Seleccionar";
+      selectBtn.classList.remove("bg-accent-100", "text-white");
+      selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50", "text-gray-300", "border-dark-50");
+      selectBtn.textContent = "Select";
     }
   }
 }
@@ -371,9 +361,7 @@ function selectTranscription(index) {
   setSelectedTranscriptions(newSelected);
   setLastSelectedIndex(index);
 
-  // Guardar la última línea vista
   localStorage.setItem("clipperino_last_viewed_line", index.toString());
-  console.log("Última línea vista guardada:", index);
 
   updateSingleRow(index);
   updateSelectedTable();
@@ -392,7 +380,7 @@ function clearSelectedTranscriptions() {
 }
 
 export function updateStatus() {
-  status.textContent = `${transcriptions.length} transcripciones cargadas`;
+  status.textContent = `${transcriptions.length} lines`;
   toggleImportButton();
 }
 
@@ -408,26 +396,31 @@ export function toggleImportButton() {
 
 function openNameClipModal() {
   if (selectedTranscriptions.length === 0) {
-    showNotification("Selecciona al menos una transcripción para crear un clip");
+    showNotification("Select at least one transcript to create a clip");
     return;
   }
 
   nameClipModal.classList.add("opacity-100", "pointer-events-auto");
+  nameClipModal.querySelector('div').classList.remove("scale-95");
+  nameClipModal.querySelector('div').classList.add("scale-100");
+
   clipNameInput.value = "";
-  selectedLinesInfo.textContent = `Has seleccionado ${selectedTranscriptions.length} líneas para este clip.`;
+  selectedLinesInfo.textContent = `You selected ${selectedTranscriptions.length} lines for this clip.`;
 
   setTimeout(() => clipNameInput.focus(), 100);
 }
 
 function closeNameClipModal() {
   nameClipModal.classList.remove("opacity-100", "pointer-events-auto");
+  nameClipModal.querySelector('div').classList.add("scale-95");
+  nameClipModal.querySelector('div').classList.remove("scale-100");
 }
 
 function saveClip() {
-  const clipName = clipNameInput.value.trim() || "Clip sin nombre";
+  const clipName = clipNameInput.value.trim() || "Untitled Clip";
 
   if (selectedTranscriptions.length === 0) {
-    showNotification("Selecciona al menos una transcripción para crear un clip");
+    showNotification("Select at least one transcript to create a clip");
     return;
   }
 
@@ -458,45 +451,50 @@ function saveClip() {
   clearSelectedTranscriptions();
   saveToLocalStorage();
 
-  showNotification("Clip guardado correctamente");
+  showNotification("Clip saved successfully");
 }
 
 export function renderClips() {
   clipList.innerHTML = "";
 
   if (clips.length === 0) {
-    clipList.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">No hay clips seleccionados</p>';
+    clipList.innerHTML = '<p class="text-xs text-gray-500 text-center py-10 flex flex-col gap-2 items-center"><i data-lucide="film" class="w-8 h-8 opacity-20"></i><span>No clips created</span></p>';
+    if (window.lucide) window.lucide.createIcons();
     return;
   }
 
   clips.forEach((clip, index) => {
     const clipDiv = document.createElement("div");
-    clipDiv.className = "clip-item bg-dark-100 rounded-lg p-4 mb-3 relative";
+    clipDiv.className = "clip-item bg-dark-200 border border-dark-50 rounded p-3 relative hover:border-dark-50/80 transition-all";
 
     clipDiv.innerHTML = `
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-medium text-white flex items-center gap-2">
-          ${clip.name}
-          <button class="edit-clip-name-btn text-gray-400 hover:text-accent-100 transition-colors" data-index="${index}">
-            <i class="fas fa-edit text-xs"></i>
+        <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-6">
+          <span class="truncate">${clip.name}</span>
+          <button class="edit-clip-name-btn text-gray-500 hover:text-accent-100 transition-colors" data-index="${index}">
+            <i data-lucide="pencil" class="w-3 h-3"></i>
           </button>
         </h3>
-        <button class="remove-clip-btn text-gray-500 hover:text-red-400 transition-colors">
-          <i class="fas fa-times"></i>
+        <button class="remove-clip-btn text-gray-500 hover:text-red-400 transition-colors absolute top-3 right-3">
+          <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
-      <div class="flex flex-wrap gap-2 mb-2">
-        <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i class="fas fa-play-circle mr-1 opacity-70"></i> ${clip.inicio}
+      <div class="flex flex-wrap gap-1.5 mb-2">
+        <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
+          ${clip.inicio}
         </span>
-        <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i class="fas fa-stop-circle mr-1 opacity-70"></i> ${clip.fin}
+        <span class="text-gray-600 text-[10px] self-center">to</span>
+        <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
+          ${clip.fin}
         </span>
-        <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i class="fas fa-clock mr-1 opacity-70"></i> ${clip.duration}
+        <span class="bg-accent-100/10 text-accent-100 text-[10px] px-1.5 py-0.5 rounded font-mono ml-auto">
+          ${clip.duration}
         </span>
       </div>
-      <div class="text-xs text-gray-400">${clip.lines} líneas</div>
+      <div class="text-[10px] text-gray-500 flex justify-between items-center mt-1 pt-1 border-t border-dark-50/50">
+        <span>${clip.lines} lines</span>
+        <span class="opacity-50">#${index + 1}</span>
+      </div>
     `;
 
     const removeBtn = clipDiv.querySelector(".remove-clip-btn");
@@ -507,6 +505,9 @@ export function renderClips() {
 
     clipList.appendChild(clipDiv);
   });
+
+  // Init icons
+  if (window.lucide) window.lucide.createIcons();
 
   updateClipCount();
 }
@@ -527,12 +528,16 @@ function openEditClipNameModal(index) {
 
   editClipNameInput.value = clip.name;
   editClipNameModal.classList.add("opacity-100", "pointer-events-auto");
+  editClipNameModal.querySelector('div').classList.remove("scale-95");
+  editClipNameModal.querySelector('div').classList.add("scale-100");
 
   setTimeout(() => editClipNameInput.focus(), 100);
 }
 
 function closeEditClipNameModal() {
   editClipNameModal.classList.remove("opacity-100", "pointer-events-auto");
+  editClipNameModal.querySelector('div').classList.add("scale-95");
+  editClipNameModal.querySelector('div').classList.remove("scale-100");
   setCurrentEditingClipIndex(-1);
 }
 
@@ -541,7 +546,7 @@ function saveEditedClipName() {
 
   const newName = editClipNameInput.value.trim();
   if (!newName) {
-    showNotification("El nombre del clip no puede estar vacío");
+    showNotification("Clip name cannot be empty");
     return;
   }
 
@@ -553,12 +558,12 @@ function saveEditedClipName() {
   closeEditClipNameModal();
   saveToLocalStorage();
 
-  showNotification("Nombre del clip actualizado");
+  showNotification("Clip name updated");
 }
 
 function exportClips() {
   if (clips.length === 0) {
-    showNotification("No hay clips para exportar");
+    showNotification("No clips to export");
     return;
   }
 
@@ -588,25 +593,25 @@ function exportClips() {
 
   URL.revokeObjectURL(url);
 
-  showNotification("Clips exportados en formato JSON");
+  showNotification("Clips exported as JSON");
 }
 
 function exportMarkdown() {
   if (clips.length === 0) {
-    showNotification("No hay clips para exportar");
+    showNotification("No clips to export");
     return;
   }
 
-  let mdContent = "# Clips exportados\n\n";
+  let mdContent = "# Exported Clips\n\n";
 
   clips.forEach((clip) => {
     mdContent += `# Clip: ${clip.name}\n`;
-    mdContent += `## Información\n`;
-    mdContent += `- Inicio: ${clip.inicio}\n`;
-    mdContent += `- Fin: ${clip.fin}\n`;
-    mdContent += `- Duración: ${clip.duration}\n\n`;
+    mdContent += `## Info\n`;
+    mdContent += `- Start: ${clip.inicio}\n`;
+    mdContent += `- End: ${clip.fin}\n`;
+    mdContent += `- Duration: ${clip.duration}\n\n`;
 
-    mdContent += `## Líneas\n`;
+    mdContent += `## Lines\n`;
 
     const sortedTranscriptions = [...clip.transcriptions].sort((a, b) => a.index - b.index);
 
@@ -629,21 +634,21 @@ function exportMarkdown() {
 
   URL.revokeObjectURL(url);
 
-  showNotification("Clips exportados en formato Markdown");
+  showNotification("Clips exported as Markdown");
 }
 
 function exportEDLFile() {
   if (clips.length === 0) {
-    showNotification("No hay clips para exportar");
+    showNotification("No clips to export");
     return;
   }
 
   const result = exportEDL(clips);
 
   if (result) {
-    showNotification("Clips exportados en formato EDL");
+    showNotification("Clips exported as EDL");
   } else {
-    showNotification("Error al exportar clips en formato EDL");
+    showNotification("Error exporting clips as EDL");
   }
 }
 
@@ -653,16 +658,20 @@ export function updateClipCount() {
 
 function updateSelectedTable() {
   selectedTranscriptionsTable.innerHTML = "";
-  selectedCount.textContent = `${selectedTranscriptions.length} seleccionadas`;
+  selectedCount.textContent = `${selectedTranscriptions.length} lines`;
 
   if (selectedTranscriptions.length === 0) {
     const emptyRow = document.createElement("tr");
     emptyRow.innerHTML = `
-      <td colspan="4" class="px-5 py-4 text-sm text-center text-gray-400">
-        No hay líneas seleccionadas
+      <td colspan="4" class="px-5 py-8 text-sm text-center text-gray-500">
+        <div class="flex flex-col items-center gap-2 opacity-50">
+          <i data-lucide="mouse-pointer-2" class="w-5 h-5"></i>
+          <span>Select lines from the table above</span>
+        </div>
       </td>
     `;
     selectedTranscriptionsTable.appendChild(emptyRow);
+    if (window.lucide) window.lucide.createIcons();
     return;
   }
 
@@ -672,15 +681,15 @@ function updateSelectedTable() {
 
   sortedTranscriptions.forEach((item, i) => {
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-50 transition-colors bg-secondary-100/5";
+    row.className = "hover:bg-dark-50 transition-colors bg-secondary-100/5 border-b border-dark-50/30";
 
     row.innerHTML = `
-      <td class="px-5 py-3 text-sm">${item.inicio}</td>
-      <td class="px-5 py-3 text-sm">${item.fin}</td>
-      <td class="px-5 py-3 text-sm">${item.transcripcion}</td>
-      <td class="px-5 py-3 text-sm text-right">
-        <button class="remove-selected-btn px-3 py-1 bg-dark-200 hover:bg-dark-50 rounded text-xs font-medium transition-colors text-secondary-100 hover:text-white" data-index="${i}">
-          <i class="fas fa-minus-circle"></i> Quitar
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
+      <td class="px-4 py-2 text-sm text-right">
+        <button class="remove-selected-btn px-2 py-1 bg-dark-100 hover:bg-dark-50 rounded text-xs font-medium transition-colors text-gray-400 hover:text-red-400 border border-dark-50" data-index="${i}">
+          <i data-lucide="minus" class="w-3 h-3"></i>
         </button>
       </td>
     `;
@@ -689,6 +698,9 @@ function updateSelectedTable() {
   });
 
   selectedTranscriptionsTable.appendChild(fragment);
+
+  // Init icons
+  if (window.lucide) window.lucide.createIcons();
 
   if (!selectedTranscriptionsTable.hasEventListener) {
     selectedTranscriptionsTable.addEventListener("click", function (e) {
@@ -729,5 +741,5 @@ function clearTranscriptions() {
   updateStatus();
   saveToLocalStorage();
   toggleImportButton();
-  showNotification("Todos los datos han sido eliminados correctamente");
+  showNotification("All data cleared successfully");
 }

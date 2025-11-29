@@ -9,7 +9,7 @@ export function initSearch() {
   const searchInput = document.getElementById("searchInput");
 
   if (!searchInput) {
-    console.error("Elemento de búsqueda no encontrado");
+    console.error("Search element not found");
     return;
   }
 
@@ -52,26 +52,26 @@ function addSearchNavButtons() {
   if (!searchContainer) return;
 
   const buttonsContainer = document.createElement("div");
-  buttonsContainer.className = "absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2";
+  buttonsContainer.className = "absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1";
 
   const prevButton = document.createElement("button");
   prevButton.className = "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
-  prevButton.innerHTML = '<i class="fas fa-chevron-up text-xs"></i>';
-  prevButton.title = "Resultado anterior";
+  prevButton.innerHTML = '<i data-lucide="chevron-up" class="w-4 h-4"></i>';
+  prevButton.title = "Previous Result";
   prevButton.id = "prevSearchResult";
   prevButton.addEventListener("click", navigateToPrevResult);
 
   const nextButton = document.createElement("button");
   nextButton.className = "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
-  nextButton.innerHTML = '<i class="fas fa-chevron-down text-xs"></i>';
-  nextButton.title = "Siguiente resultado";
+  nextButton.innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
+  nextButton.title = "Next Result";
   nextButton.id = "nextSearchResult";
   nextButton.addEventListener("click", navigateToNextResult);
 
   const clearButton = document.createElement("button");
   clearButton.className = "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
-  clearButton.innerHTML = '<i class="fas fa-times text-xs"></i>';
-  clearButton.title = "Limpiar búsqueda";
+  clearButton.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i>';
+  clearButton.title = "Clear Search";
   clearButton.id = "clearSearch";
   clearButton.addEventListener("click", () => {
     searchInput.value = "";
@@ -79,7 +79,7 @@ function addSearchNavButtons() {
   });
 
   const resultCounter = document.createElement("span");
-  resultCounter.className = "text-xs text-gray-400 inline-flex items-center";
+  resultCounter.className = "text-xs text-gray-400 inline-flex items-center mr-1";
   resultCounter.id = "searchResultCounter";
   resultCounter.textContent = "0/0";
 
@@ -90,7 +90,10 @@ function addSearchNavButtons() {
 
   searchContainer.appendChild(buttonsContainer);
 
-  searchInput.style.paddingRight = "100px";
+  searchInput.style.paddingRight = "110px";
+
+  // Init icons for buttons
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function performSearch(searchTerm) {
@@ -186,21 +189,21 @@ function updateSearchResults(searchTerm) {
     if (transcriptionCell) {
       transcriptionCell.innerHTML = transcriptionCell.textContent;
 
-      // Después de restablecer el contenido, verificamos si la fila estaba seleccionada
+      // Reset content logic, check if selected
       const index = parseInt(row.dataset.index);
       const isSelected = selectedTranscriptions.some((t) => t.index === index);
 
-      // Aseguramos que el botón mantiene el estilo correcto
+      // Re-apply correct button state
       const selectBtn = row.querySelector(".select-btn");
       if (selectBtn) {
         if (isSelected) {
           selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50");
           selectBtn.classList.add("bg-accent-100");
-          selectBtn.textContent = "Seleccionado";
+          selectBtn.textContent = "Selected";
         } else {
           selectBtn.classList.remove("bg-accent-100");
           selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50");
-          selectBtn.textContent = "Seleccionar";
+          selectBtn.textContent = "Select";
         }
       }
     }
@@ -228,9 +231,9 @@ function updateSearchResults(searchTerm) {
   });
 
   if (matchCount > 0) {
-    showNotification(`Se encontraron ${matchCount} coincidencias`);
+    showNotification(`Found ${matchCount} matches`);
   } else if (searchTerm.length >= 2) {
-    showNotification("No se encontraron coincidencias");
+    showNotification("No matches found");
   }
 }
 

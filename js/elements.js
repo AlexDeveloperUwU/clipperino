@@ -12,7 +12,6 @@ export const status = document.getElementById("status");
 export const clipCount = document.getElementById("clipCount");
 export const addClipBtn = document.getElementById("addClipBtn");
 export const clearAllBtn = document.getElementById("clearAllBtn");
-export const playButton = document.getElementById("playButton");
 
 export const nameClipModal = document.getElementById("nameClipModal");
 export const clipNameInput = document.getElementById("clipName");

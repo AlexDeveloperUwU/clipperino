@@ -20,7 +20,7 @@ function handleJsonFileUpload(event) {
         saveJsonToLocalStorage();
         toggleJsonImportButton();
       } catch (error) {
-        showNotification("Error al procesar el archivo JSON");
+        showNotification("Error processing JSON file");
         console.error("Error parsing JSON:", error);
       }
     };
@@ -31,12 +31,12 @@ function handleJsonFileUpload(event) {
 export function renderJsonClips(jsonData, showLoadNotification = true) {
   if (!Array.isArray(jsonData) || jsonData.length === 0) {
     jsonClipsList.innerHTML =
-      '<p class="text-gray-400 text-center py-8">No se encontraron clips en el archivo JSON</p>';
-    jsonStatus.textContent = "0 clips cargados";
+      '<p class="text-gray-400 text-center py-8">No clips found in JSON file</p>';
+    jsonStatus.textContent = "0 loaded";
     return;
   }
 
-  jsonStatus.textContent = `${jsonData.length} clips cargados`;
+  jsonStatus.textContent = `${jsonData.length} clips loaded`;
   jsonClipsList.innerHTML = "";
 
   jsonData.forEach((clip, index) => {
@@ -51,16 +51,16 @@ export function renderJsonClips(jsonData, showLoadNotification = true) {
       </div>
       <div class="flex flex-wrap gap-2 mb-2">
         <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i class="fas fa-play-circle mr-1 opacity-70"></i> ${clip.inicio}
+          <i data-lucide="play-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.inicio}
         </span>
         <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i class="fas fa-stop-circle mr-1 opacity-70"></i> ${clip.fin}
+          <i data-lucide="stop-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.fin}
         </span>
         <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i class="fas fa-clock mr-1 opacity-70"></i> ${clip.duration}
+          <i data-lucide="clock" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.duration}
         </span>
       </div>
-      <div class="text-xs text-gray-400">${clip.transcriptions.length} líneas</div>
+      <div class="text-xs text-gray-400">${clip.transcriptions.length} lines</div>
     `;
 
     clipDiv.addEventListener("click", () => {
@@ -74,6 +74,9 @@ export function renderJsonClips(jsonData, showLoadNotification = true) {
     jsonClipsList.appendChild(clipDiv);
   });
 
+  // Init icons
+  if (window.lucide) window.lucide.createIcons();
+
   if (jsonData.length > 0) {
     showClipDetails(0);
     const firstClip = jsonClipsList.querySelector(".clip-item");
@@ -83,7 +86,7 @@ export function renderJsonClips(jsonData, showLoadNotification = true) {
   }
 
   if (showLoadNotification) {
-    showNotification(`${jsonData.length} clips cargados correctamente`);
+    showNotification(`${jsonData.length} clips loaded successfully`);
   }
 }
 
@@ -92,7 +95,7 @@ function showClipDetails(index) {
   if (!clip) return;
 
   const clipDetailStatus = document.getElementById("clipDetailStatus");
-  clipDetailStatus.textContent = `${clip.transcriptions.length} líneas | ${clip.duration} duración`;
+  clipDetailStatus.textContent = `${clip.transcriptions.length} lines | ${clip.duration} duration`;
 
   jsonInfoPanel.innerHTML = "";
 
@@ -102,13 +105,13 @@ function showClipDetails(index) {
     <h3 class="text-lg font-semibold text-white">${clip.name}</h3>
     <div class="flex flex-wrap gap-2 mt-2">
       <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-        <i class="fas fa-play-circle mr-1 opacity-70"></i> ${clip.inicio}
+        <i data-lucide="play-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.inicio}
       </span>
       <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-        <i class="fas fa-stop-circle mr-1 opacity-70"></i> ${clip.fin}
+        <i data-lucide="stop-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.fin}
       </span>
       <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-        <i class="fas fa-clock mr-1 opacity-70"></i> ${clip.duration}
+        <i data-lucide="clock" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.duration}
       </span>
     </div>
   `;
@@ -119,9 +122,9 @@ function showClipDetails(index) {
   const thead = document.createElement("thead");
   thead.innerHTML = `
     <tr class="text-left bg-dark-100">
-      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Inicio</th>
-      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Fin</th>
-      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Transcripción</th>
+      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Start</th>
+      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">End</th>
+      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Transcript</th>
     </tr>
   `;
 
@@ -149,6 +152,9 @@ function showClipDetails(index) {
 
   jsonInfoPanel.appendChild(clipHeader);
   jsonInfoPanel.appendChild(table);
+
+  // Init icons
+  if (window.lucide) window.lucide.createIcons();
 }
 
 function updateJsonInfo() {
@@ -159,7 +165,6 @@ function updateJsonInfo() {
     jsonClips.forEach((clip) => {
       totalLines += clip.transcriptions.length;
 
-      // Usar totalSeconds si está disponible, sino calcularlo
       if (clip.totalSeconds) {
         totalDuration += clip.totalSeconds;
       } else {
@@ -177,9 +182,9 @@ function updateJsonInfo() {
       .toString()
       .padStart(2, "0")}:${durationSec.toString().padStart(2, "0")}`;
 
-    jsonStatus.textContent = `${jsonClips.length} clips | ${totalLines} líneas | ${formattedDuration} duración total`;
+    jsonStatus.textContent = `${jsonClips.length} clips | ${totalLines} lines | ${formattedDuration} total duration`;
   } else {
-    jsonStatus.textContent = "0 clips cargados";
+    jsonStatus.textContent = "0 clips loaded";
   }
 }
 
@@ -194,13 +199,13 @@ function saveJsonToLocalStorage() {
 function clearJsonData() {
   setJsonClips([]);
   jsonClipsList.innerHTML =
-    '<p class="text-gray-400 text-center py-8">Selecciona un archivo JSON para visualizar los clips</p>';
+    '<p class="text-gray-400 text-center py-8">Select a JSON file to view clips</p>';
   jsonInfoPanel.innerHTML =
-    '<p class="text-gray-400 text-center py-6">Carga un archivo JSON para ver la información</p>';
-  jsonStatus.textContent = "0 clips cargados";
+    '<p class="text-gray-400 text-center py-6">Load a JSON file to see information</p>';
+  jsonStatus.textContent = "0 loaded";
   saveJsonToLocalStorage();
   toggleJsonImportButton();
-  showNotification("Datos JSON eliminados correctamente");
+  showNotification("JSON data cleared successfully");
 }
 
 export function toggleJsonImportButton() {

@@ -1,22 +1,27 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 3px;
+  background: rgba(18, 18, 18, 1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  border: 2px solid rgba(18, 18, 18, 1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) rgba(18, 18, 18, 1);
 }
 
 @keyframes fadeIn {
@@ -56,9 +61,15 @@
 }
 
 @keyframes flash {
-  0% { background-color: rgba(59, 130, 246, 0.8); }
-  50% { background-color: rgba(59, 130, 246, 0.4); }
-  100% { background-color: rgba(59, 130, 246, 0.3); }
+  0% {
+    background-color: rgba(59, 130, 246, 0.8);
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.4);
+  }
+  100% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
 }
 
 @keyframes highlightFade {
@@ -86,19 +97,15 @@
   background-color: rgba(245, 158, 11, 0.35) !important;
   box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.5);
   position: relative;
-  width: 16px;
-  height: 16px;
   cursor: pointer;
 }
 
-/* Estilos para los botones de búsqueda */
 #searchResultCounter {
   font-family: monospace;
   min-width: 32px;
   text-align: center;
 }
 
-/* Efecto hover para los botones de búsqueda */
 #prevSearchResult:hover,
 #nextSearchResult:hover,
 #clearSearch:hover {
@@ -111,13 +118,12 @@ input[type="checkbox"]:focus {
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
-/* Estilo para ayuda de selección múltiple - CORREGIDO */
 .multi-select-help {
   position: fixed;
-  bottom: -50px; /* Posicionado completamente fuera de la vista */
+  bottom: -50px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: rgba(30, 30, 30, 0.9);
+  background-color: rgba(30, 30, 30, 0.95);
   color: white;
   padding: 8px 16px;
   border-radius: 20px;
@@ -125,14 +131,15 @@ input[type="checkbox"]:focus {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: bottom 0.3s ease-out;
+  transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  pointer-events: none; /* Evita que bloquee interacciones */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .multi-select-help.visible {
-  bottom: 20px; /* Sube a esta posición cuando es visible */
+  bottom: 40px;
 }
 
 .multi-select-help kbd {
@@ -144,11 +151,11 @@ input[type="checkbox"]:focus {
 }
 
 tr {
-  transition: background-color 0.2s ease;
+  transition: background-color 0.1s ease;
 }
 
 .select-btn {
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .in-clip {
@@ -158,12 +165,13 @@ tr {
 
 .highlight-row {
   background-color: rgba(59, 130, 246, 0.3) !important;
-  animation: flash 2s 1;
+  animation: flash 1.5s ease-out;
 }
 
 .with-clip-icon::before {
-  content: '📎';
+  content: "📌";
   margin-right: 4px;
+  font-size: 10px;
   opacity: 0.8;
 }
 
@@ -173,4 +181,8 @@ tr {
 
 tr.in-clip td:first-child {
   padding-left: 12px !important;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
 }

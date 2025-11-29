@@ -6,14 +6,18 @@ import { saveToLocalStorage } from "./storage.js";
 export function parseCSV(data, showLoadNotification = true) {
   const lines = data.split("\n");
 
+  const headerLine = lines[0].toLowerCase();
   const hasHeader =
-    lines[0].includes("Inicio") ||
-    lines[0].includes("inicio") ||
-    lines[0].includes("Transcripción") ||
-    lines[0].includes("transcripción");
+    headerLine.includes("inicio") ||
+    headerLine.includes("start") ||
+    headerLine.includes("begin") ||
+    headerLine.includes("transcripción") ||
+    headerLine.includes("transcripcion") ||
+    headerLine.includes("transcript") ||
+    headerLine.includes("content");
 
   if (showLoadNotification && lines.length > 500) {
-    showNotification(`Cargando ${lines.length} líneas, por favor espere...`);
+    showNotification(`Loading ${lines.length} lines, please wait...`);
   }
 
   setTimeout(() => {
@@ -68,7 +72,7 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
 
   if (showLoadNotification && lines.length > 1000 && endIndex < lines.length) {
     const progress = Math.round((endIndex / lines.length) * 100);
-    showNotification(`Procesando: ${progress}% completado...`);
+    showNotification(`Processing: ${progress}% completed...`);
   }
 
   if (endIndex < lines.length) {
@@ -82,7 +86,7 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
     saveToLocalStorage();
 
     if (showLoadNotification && lines.length > 500) {
-      showNotification(`${transcriptions.length} transcripciones cargadas correctamente`);
+      showNotification(`${transcriptions.length} transcripts loaded successfully`);
     }
   }
 }
