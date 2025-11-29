@@ -6,14 +6,18 @@ import {
   jsonFileLabel,
   clearJsonBtn,
   viewerTab,
-  viewerDragOverlay
+  viewerDragOverlay,
+  viewerTabBtn,
+  viewerClipsHeader,
+  viewerHeaderIcon
 } from "./elements.js";
-import { jsonClips, setJsonClips } from "./state.js";
+import { jsonClips, setJsonClips, clips } from "./state.js";
 import { showNotification } from "./ui.js";
 
 export function initViewerTab() {
   jsonFileInput.addEventListener("change", handleJsonFileUpload);
   clearJsonBtn.addEventListener("click", clearJsonData);
+  viewerTabBtn.addEventListener("click", () => renderViewer());
   initDragAndDrop();
 }
 
@@ -61,10 +65,8 @@ function initDragAndDrop() {
           try {
             const jsonData = JSON.parse(e.target.result);
             setJsonClips(jsonData);
-            renderJsonClips(jsonData, true);
-            updateJsonInfo();
+            renderViewer(jsonData, true);
             saveJsonToLocalStorage();
-            toggleJsonImportButton();
           } catch (error) {
             showNotification("Error processing JSON file");
             console.error("Error parsing JSON:", error);
@@ -100,10 +102,8 @@ function handleJsonFileUpload(event) {
       try {
         const jsonData = JSON.parse(e.target.result);
         setJsonClips(jsonData);
-        renderJsonClips(jsonData, true);
-        updateJsonInfo();
+        renderViewer(jsonData, true);
         saveJsonToLocalStorage();
-        toggleJsonImportButton();
       } catch (error) {
         showNotification("Error processing JSON file");
         console.error("Error parsing JSON:", error);
@@ -113,47 +113,92 @@ function handleJsonFileUpload(event) {
   }
 }
 
-export function renderJsonClips(jsonData, showLoadNotification = true) {
-  if (!Array.isArray(jsonData) || jsonData.length === 0) {
+export function renderViewer(data = null, showLoadNotification = false) {
+  let clipsToRender = [];
+  let source = "";
+
+  if (data) {
+    clipsToRender = data;
+    source = "json";
+  } else if (jsonClips.length > 0) {
+    clipsToRender = jsonClips;
+    source = "json";
+  } else if (clips.length > 0) {
+    clipsToRender = clips;
+    source = "editor";
+  }
+
+  if (viewerClipsHeader && viewerHeaderIcon) {
+    if (source === "json") {
+      viewerClipsHeader.innerHTML = `<i data-lucide="download" class="text-gray-500 w-4 h-4"></i> Imported Clips`;
+      jsonFileLabel.classList.add("hidden");
+      clearJsonBtn.classList.remove("hidden");
+    } else if (source === "editor") {
+      viewerClipsHeader.innerHTML = `<i data-lucide="clapperboard" class="text-gray-500 w-4 h-4"></i> Created Clips`;
+      jsonFileLabel.classList.remove("hidden");
+      clearJsonBtn.classList.add("hidden");
+    } else {
+      viewerClipsHeader.innerHTML = `<i data-lucide="download" class="text-gray-500 w-4 h-4"></i> Clips`;
+      jsonFileLabel.classList.remove("hidden");
+      clearJsonBtn.classList.add("hidden");
+    }
+  }
+
+  if (clipsToRender.length === 0) {
     jsonClipsList.innerHTML =
-      '<p class="text-gray-400 text-center py-8">No clips found in JSON file</p>';
+      '<p class="text-xs text-gray-500 text-center py-10 flex flex-col gap-2 items-center"><i data-lucide="film" class="w-8 h-8 opacity-20"></i><span>No clips found</span></p>';
     jsonStatus.textContent = "0 loaded";
+    jsonInfoPanel.innerHTML =
+      '<div class="flex flex-col items-center justify-center h-full text-gray-500"><p class="text-sm">Load a JSON file or create clips to view details</p></div>';
+
+    if (window.lucide) window.lucide.createIcons();
     return;
   }
 
-  jsonStatus.textContent = `${jsonData.length} clips loaded`;
+  jsonStatus.textContent = `${clipsToRender.length} clips loaded`;
   jsonClipsList.innerHTML = "";
 
-  jsonData.forEach((clip, index) => {
+  clipsToRender.forEach((clip, index) => {
     const clipDiv = document.createElement("div");
     clipDiv.className =
-      "clip-item bg-dark-100 rounded-lg p-4 mb-3 relative hover:bg-dark-50 transition-colors cursor-pointer";
+      "clip-item bg-dark-200 border border-dark-50 rounded p-3 relative hover:border-dark-50/80 transition-all cursor-pointer mb-2";
     clipDiv.dataset.index = index;
 
     clipDiv.innerHTML = `
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-medium text-white">${clip.name}</h3>
+        <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-2">
+          <span class="truncate">${clip.name}</span>
+        </h3>
       </div>
-      <div class="flex flex-wrap gap-2 mb-2">
-        <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i data-lucide="play-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.inicio}
+      <div class="flex flex-wrap gap-1.5 mb-2">
+        <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
+          ${clip.inicio}
         </span>
-        <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i data-lucide="stop-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.fin}
+        <span class="text-gray-600 text-[10px] self-center">to</span>
+        <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
+          ${clip.fin}
         </span>
-        <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-          <i data-lucide="clock" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.duration}
+        <span class="bg-accent-100/10 text-accent-100 text-[10px] px-1.5 py-0.5 rounded font-mono ml-auto">
+          ${clip.duration}
         </span>
       </div>
-      <div class="text-xs text-gray-400">${clip.transcriptions.length} lines</div>
+      <div class="text-[10px] text-gray-500 flex justify-between items-center mt-1 pt-1 border-t border-dark-50/50">
+        <span>${clip.transcriptions.length} lines</span>
+        <span class="opacity-50">#${index + 1}</span>
+      </div>
     `;
 
     clipDiv.addEventListener("click", () => {
-      showClipDetails(index);
+      showClipDetails(clip);
 
       const allClips = jsonClipsList.querySelectorAll(".clip-item");
-      allClips.forEach((c) => c.classList.remove("bg-accent-100/10"));
-      clipDiv.classList.add("bg-accent-100/10");
+      allClips.forEach((c) => {
+        c.classList.remove("border-accent-100", "bg-dark-100");
+        c.classList.add("border-dark-50", "bg-dark-200");
+      });
+
+      clipDiv.classList.remove("border-dark-50", "bg-dark-200");
+      clipDiv.classList.add("border-accent-100", "bg-dark-100");
     });
 
     jsonClipsList.appendChild(clipDiv);
@@ -161,21 +206,22 @@ export function renderJsonClips(jsonData, showLoadNotification = true) {
 
   if (window.lucide) window.lucide.createIcons();
 
-  if (jsonData.length > 0) {
-    showClipDetails(0);
+  if (clipsToRender.length > 0) {
+    showClipDetails(clipsToRender[0]);
+    updateJsonInfo(clipsToRender);
     const firstClip = jsonClipsList.querySelector(".clip-item");
     if (firstClip) {
-      firstClip.classList.add("bg-accent-100/10");
+      firstClip.classList.remove("border-dark-50", "bg-dark-200");
+      firstClip.classList.add("border-accent-100", "bg-dark-100");
     }
   }
 
   if (showLoadNotification) {
-    showNotification(`${jsonData.length} clips loaded successfully`);
+    showNotification(`${clipsToRender.length} clips loaded successfully`);
   }
 }
 
-function showClipDetails(index) {
-  const clip = jsonClips[index];
+function showClipDetails(clip) {
   if (!clip) return;
 
   const clipDetailStatus = document.getElementById("clipDetailStatus");
@@ -183,32 +229,19 @@ function showClipDetails(index) {
 
   jsonInfoPanel.innerHTML = "";
 
-  const clipHeader = document.createElement("div");
-  clipHeader.className = "px-5 py-3 bg-dark-100 border-b border-dark-50";
-  clipHeader.innerHTML = `
-    <h3 class="text-lg font-semibold text-white">${clip.name}</h3>
-    <div class="flex flex-wrap gap-2 mt-2">
-      <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-        <i data-lucide="play-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.inicio}
-      </span>
-      <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-        <i data-lucide="stop-circle" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.fin}
-      </span>
-      <span class="bg-dark-50 text-xs px-2 py-1 rounded-md text-gray-300">
-        <i data-lucide="clock" class="w-3 h-3 mr-1 inline opacity-70"></i> ${clip.duration}
-      </span>
-    </div>
-  `;
+  const tableContainer = document.createElement("div");
+  tableContainer.className = "flex-1 overflow-y-auto bg-dark-300 scrollbar-thin";
 
   const table = document.createElement("table");
-  table.className = "w-full";
+  table.className = "w-full border-collapse";
 
   const thead = document.createElement("thead");
+  thead.className = "sticky top-0 z-10 bg-dark-100 shadow-sm";
   thead.innerHTML = `
-    <tr class="text-left bg-dark-100">
-      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Start</th>
-      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">End</th>
-      <th class="px-5 py-3 text-xs font-medium text-gray-400 uppercase tracking-wider">Transcript</th>
+    <tr class="text-left">
+      <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">Start</th>
+      <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">End</th>
+      <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Transcript</th>
     </tr>
   `;
 
@@ -220,13 +253,13 @@ function showClipDetails(index) {
     sortedTranscriptions.sort((a, b) => a.index - b.index);
   }
 
-  sortedTranscriptions.forEach((t, i) => {
+  sortedTranscriptions.forEach((t) => {
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-50 transition-colors";
+    row.className = "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
     row.innerHTML = `
-      <td class="px-5 py-3 text-sm">${t.inicio}</td>
-      <td class="px-5 py-3 text-sm">${t.fin}</td>
-      <td class="px-5 py-3 text-sm">${t.transcripcion}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${t.inicio}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${t.fin}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${t.transcripcion}</td>
     `;
     tbody.appendChild(row);
   });
@@ -234,18 +267,19 @@ function showClipDetails(index) {
   table.appendChild(thead);
   table.appendChild(tbody);
 
-  jsonInfoPanel.appendChild(clipHeader);
-  jsonInfoPanel.appendChild(table);
+  tableContainer.appendChild(table);
+
+  jsonInfoPanel.appendChild(tableContainer);
 
   if (window.lucide) window.lucide.createIcons();
 }
 
-function updateJsonInfo() {
-  if (jsonClips.length > 0) {
+function updateJsonInfo(currentClips) {
+  if (currentClips && currentClips.length > 0) {
     let totalDuration = 0;
     let totalLines = 0;
 
-    jsonClips.forEach((clip) => {
+    currentClips.forEach((clip) => {
       totalLines += clip.transcriptions.length;
 
       if (clip.totalSeconds) {
@@ -265,7 +299,7 @@ function updateJsonInfo() {
       .toString()
       .padStart(2, "0")}:${durationSec.toString().padStart(2, "0")}`;
 
-    jsonStatus.textContent = `${jsonClips.length} clips | ${totalLines} lines | ${formattedDuration} total duration`;
+    jsonStatus.textContent = `${currentClips.length} clips | ${totalLines} lines | ${formattedDuration} total duration`;
   } else {
     jsonStatus.textContent = "0 clips loaded";
   }
@@ -281,22 +315,8 @@ function saveJsonToLocalStorage() {
 
 function clearJsonData() {
   setJsonClips([]);
-  jsonClipsList.innerHTML =
-    '<p class="text-gray-400 text-center py-8">Select a JSON file to view clips</p>';
-  jsonInfoPanel.innerHTML =
-    '<p class="text-gray-400 text-center py-6">Load a JSON file to see information</p>';
-  jsonStatus.textContent = "0 loaded";
+  renderViewer();
   saveJsonToLocalStorage();
-  toggleJsonImportButton();
-  showNotification("JSON data cleared successfully");
-}
-
-export function toggleJsonImportButton() {
-  if (jsonClips.length > 0) {
-    jsonFileLabel.classList.add("hidden");
-    clearJsonBtn.classList.remove("hidden");
-  } else {
-    jsonFileLabel.classList.remove("hidden");
-    clearJsonBtn.classList.add("hidden");
-  }
+  if (window.lucide) window.lucide.createIcons();
+  showNotification("JSON data cleared");
 }

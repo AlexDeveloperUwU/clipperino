@@ -35,6 +35,8 @@ export const jsonStatus = document.getElementById("jsonStatus");
 export const jsonInfoPanel = document.getElementById("jsonInfoPanel");
 export const jsonFileLabel = document.getElementById("jsonFileLabel");
 export const clearJsonBtn = document.getElementById("clearJsonBtn");
+export const viewerClipsHeader = document.getElementById("viewerClipsHeader");
+export const viewerHeaderIcon = document.getElementById("viewerHeaderIcon");
 
 export const editorTabActions = document.getElementById("editorTabActions");
 export const viewerTabActions = document.getElementById("viewerTabActions");

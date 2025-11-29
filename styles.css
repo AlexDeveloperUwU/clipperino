@@ -159,7 +159,6 @@ tr {
 }
 
 .in-clip {
-  border-left: 3px solid rgba(16, 185, 129, 0.7) !important;
   background-color: rgba(16, 185, 129, 0.05) !important;
 }
 
@@ -170,10 +169,6 @@ tr {
 
 .bg-accent-100\/10 {
   background-color: rgba(59, 130, 246, 0.15) !important;
-}
-
-tr.in-clip td:first-child {
-  padding-left: 12px !important;
 }
 
 .scrollbar-thin {

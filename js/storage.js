@@ -8,7 +8,7 @@ import {
   setJsonClips,
 } from "./state.js";
 import { renderTable, updateStatus, navigateToLine } from "./editorTab.js";
-import { renderJsonClips, toggleJsonImportButton } from "./viewerTab.js";
+import { renderViewer } from "./viewerTab.js";
 
 export function initStorage() {
   loadFromLocalStorage();
@@ -72,8 +72,9 @@ function loadFromLocalStorage() {
     if (savedJsonClips) {
       const parsedJsonClips = JSON.parse(savedJsonClips);
       setJsonClips(parsedJsonClips);
-      renderJsonClips(parsedJsonClips, false);
-      toggleJsonImportButton();
+      renderViewer(parsedJsonClips, false);
+    } else {
+      setTimeout(() => renderViewer(), 0);
     }
   } catch (e) {
     console.error("Error loading from localStorage:", e);
