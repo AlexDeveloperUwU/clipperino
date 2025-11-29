@@ -38,12 +38,12 @@ function loadFromLocalStorage() {
       const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line"));
 
       if (!isNaN(lastViewedLine) && lastViewedLine >= 0) {
-        console.log("Se encontró última línea vista:", lastViewedLine);
+        console.log("Last viewed line found:", lastViewedLine);
         setTimeout(() => {
           if (typeof navigateToLine === "function") {
             navigateToLine(lastViewedLine);
           } else {
-            console.error("Error: navigateToLine no es una función");
+            console.error("Error: navigateToLine is not a function");
             renderTable();
           }
         }, 200);
@@ -77,7 +77,6 @@ function loadFromLocalStorage() {
     }
   } catch (e) {
     console.error("Error loading from localStorage:", e);
-    // En caso de error, asegurarnos de que al menos se muestre la tabla
     if (transcriptions.length > 0) {
       renderTable();
     }

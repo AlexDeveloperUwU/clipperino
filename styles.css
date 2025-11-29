@@ -168,13 +168,6 @@ tr {
   animation: flash 1.5s ease-out;
 }
 
-.with-clip-icon::before {
-  content: "📌";
-  margin-right: 4px;
-  font-size: 10px;
-  opacity: 0.8;
-}
-
 .bg-accent-100\/10 {
   background-color: rgba(59, 130, 246, 0.15) !important;
 }

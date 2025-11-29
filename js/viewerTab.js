@@ -74,7 +74,6 @@ export function renderJsonClips(jsonData, showLoadNotification = true) {
     jsonClipsList.appendChild(clipDiv);
   });
 
-  // Init icons
   if (window.lucide) window.lucide.createIcons();
 
   if (jsonData.length > 0) {
@@ -153,7 +152,6 @@ function showClipDetails(index) {
   jsonInfoPanel.appendChild(clipHeader);
   jsonInfoPanel.appendChild(table);
 
-  // Init icons
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -171,7 +169,7 @@ function updateJsonInfo() {
         try {
           const [min, sec] = clip.duration.split(":").map(Number);
           totalDuration += min * 60 + sec;
-        } catch (e) {}
+        } catch (e) { }
       }
     });
 

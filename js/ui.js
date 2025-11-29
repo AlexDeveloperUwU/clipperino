@@ -7,6 +7,7 @@ import {
   viewerTabActions,
   currentYear,
 } from "./elements.js";
+import { isPlaying, setIsPlaying } from "./state.js";
 
 export function initUI() {
   editorTabBtn.addEventListener("click", () => {

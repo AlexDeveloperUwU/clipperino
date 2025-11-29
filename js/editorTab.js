@@ -99,7 +99,6 @@ export function navigateToLine(lineIndex) {
     loadBatch(i * batchSize, batchSize);
   }
 
-  // Refresh icons after batch load
   if (window.lucide) window.lucide.createIcons();
 
   setTimeout(() => {
@@ -214,7 +213,7 @@ function loadBatch(startIndex, batchSize) {
       <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
       <td class="px-4 py-2 text-sm text-right">
         ${isInClip
-        ? '<span class="text-xs text-secondary-100/70 with-clip-icon font-medium">Used</span>'
+        ? '<span class="text-xs text-gray-500 font-medium">Used</span>'
         : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
         } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
             ${isSelected ? "Selected" : "Select"}
@@ -261,7 +260,7 @@ function loadMoreRows(startIndex) {
       <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
       <td class="px-4 py-2 text-sm text-right">
         ${isInClip
-        ? '<span class="text-xs text-secondary-100/70 with-clip-icon font-medium">Used</span>'
+        ? '<span class="text-xs text-gray-500 font-medium">Used</span>'
         : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
         } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
               ${isSelected ? "Selected" : "Select"}
@@ -369,8 +368,6 @@ function selectTranscription(index) {
 }
 
 function clearSelectedTranscriptions() {
-  const selectedIndices = selectedTranscriptions.map((t) => t.index);
-
   setSelectedTranscriptions([]);
   setLastSelectedIndex(-1);
 
@@ -506,7 +503,6 @@ export function renderClips() {
     clipList.appendChild(clipDiv);
   });
 
-  // Init icons
   if (window.lucide) window.lucide.createIcons();
 
   updateClipCount();
@@ -681,7 +677,7 @@ function updateSelectedTable() {
 
   sortedTranscriptions.forEach((item, i) => {
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-50 transition-colors bg-secondary-100/5 border-b border-dark-50/30";
+    row.className = "hover:bg-dark-50 transition-colors border-b border-dark-50/30";
 
     row.innerHTML = `
       <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
@@ -689,7 +685,7 @@ function updateSelectedTable() {
       <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
       <td class="px-4 py-2 text-sm text-right">
         <button class="remove-selected-btn px-2 py-1 bg-dark-100 hover:bg-dark-50 rounded text-xs font-medium transition-colors text-gray-400 hover:text-red-400 border border-dark-50" data-index="${i}">
-          <i data-lucide="minus" class="w-3 h-3"></i>
+          Remove
         </button>
       </td>
     `;
@@ -699,7 +695,6 @@ function updateSelectedTable() {
 
   selectedTranscriptionsTable.appendChild(fragment);
 
-  // Init icons
   if (window.lucide) window.lucide.createIcons();
 
   if (!selectedTranscriptionsTable.hasEventListener) {
