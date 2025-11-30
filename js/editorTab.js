@@ -23,7 +23,9 @@ import {
   cancelEditBtn,
   saveEditBtn,
   editorTab,
-  editorDragOverlay
+  editorDragOverlay,
+  btnScrollTop,
+  btnScrollBottom
 } from "./elements.js";
 import {
   transcriptions,
@@ -43,6 +45,10 @@ import { saveToLocalStorage } from "./storage.js";
 import { exportEDL } from "./edlExporter.js";
 import { updateSearchAfterRowsLoaded } from "./search.js";
 
+let renderedStart = 0;
+let renderedEnd = 0;
+const BATCH_SIZE = 50;
+
 export function initEditorTab() {
   initEventListeners();
   initDragAndDrop();
@@ -61,6 +67,9 @@ function initEventListeners() {
   clearCsvBtn.addEventListener("click", clearTranscriptions);
   cancelEditBtn.addEventListener("click", closeEditClipNameModal);
   saveEditBtn.addEventListener("click", saveEditedClipName);
+
+  if (btnScrollTop) btnScrollTop.addEventListener("click", () => navigateToLine(0));
+  if (btnScrollBottom) btnScrollBottom.addEventListener("click", () => navigateToLine(transcriptions.length - 1));
 
   clipNameInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -158,30 +167,36 @@ function handleFileUpload(event) {
 export function navigateToLine(lineIndex) {
   if (lineIndex < 0 || transcriptions.length === 0) return;
 
-  const targetIndex = Math.min(lineIndex, transcriptions.length - 1);
+  const targetRow = document.querySelector(`tr[data-index="${lineIndex}"]`);
+
+  if (targetRow) {
+    targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    highlightRow(targetRow);
+    return;
+  }
+
   transcriptionsTable.innerHTML = "";
 
-  const batchSize = 200;
-  const batchesToLoad = Math.floor(targetIndex / batchSize) + 1;
+  renderedStart = Math.max(0, lineIndex - 50);
+  renderedEnd = Math.min(transcriptions.length, lineIndex + 50);
 
-  for (let i = 0; i < batchesToLoad; i++) {
-    loadBatch(i * batchSize, batchSize);
-  }
+  renderBatch(renderedStart, renderedEnd, 'append');
+  updateSearchAfterRowsLoaded();
 
   if (window.lucide) window.lucide.createIcons();
 
   setTimeout(() => {
-    const targetRow = document.querySelector(`tr[data-index="${targetIndex}"]`);
-    if (targetRow) {
-      const tableContainer = document.getElementById("transcriptionsContainer");
-      if (tableContainer) {
-        targetRow.scrollIntoView({ block: 'center' });
-      }
-
-      targetRow.classList.add("highlight-row");
-      setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
+    const row = document.querySelector(`tr[data-index="${lineIndex}"]`);
+    if (row) {
+      row.scrollIntoView({ block: 'center', behavior: 'auto' });
+      highlightRow(row);
     }
-  }, 100);
+  }, 50);
+}
+
+function highlightRow(row) {
+  row.classList.add("highlight-row");
+  setTimeout(() => row.classList.remove("highlight-row"), 2000);
 }
 
 export function renderTable(scrollToIndex = -1) {
@@ -191,73 +206,61 @@ export function renderTable(scrollToIndex = -1) {
     return navigateToLine(scrollToIndex);
   }
 
-  const totalRows = transcriptions.length;
-  const batchSize = 200;
+  renderedStart = 0;
+  renderedEnd = Math.min(transcriptions.length, BATCH_SIZE * 2);
 
-  loadBatch(0, batchSize);
+  renderBatch(renderedStart, renderedEnd, 'append');
 
   if (window.lucide) window.lucide.createIcons();
 
-  const tableContainer = document.getElementById("transcriptionsContainer");
-
-  if (tableContainer) {
-    if (tableContainer._scrollHandler) {
-      tableContainer.removeEventListener("scroll", tableContainer._scrollHandler);
-    }
-
-    tableContainer._scrollHandler = debounce(function () {
-      const lastRow = transcriptionsTable.lastElementChild;
-      if (!lastRow) return;
-
-      const lastRowIndex = parseInt(lastRow.dataset.index);
-
-      if (
-        tableContainer.scrollTop + tableContainer.clientHeight > tableContainer.scrollHeight - 300 &&
-        lastRowIndex < totalRows - 1
-      ) {
-        loadMoreRows(lastRowIndex + 1);
-      }
-    }, 100);
-
-    tableContainer.addEventListener("scroll", tableContainer._scrollHandler);
-  }
-
-  if (scrollToIndex > -1) {
-    setTimeout(() => {
-      const targetRow = document.querySelector(`tr[data-index="${scrollToIndex}"]`);
-      if (targetRow) {
-        targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
-        targetRow.classList.add("highlight-row");
-        setTimeout(() => targetRow.classList.remove("highlight-row"), 2000);
-      }
-    }, 100);
-  }
-
-  if (!transcriptionsTable.hasEventListener) {
-    transcriptionsTable.addEventListener("click", function (e) {
-      const selectBtn = e.target.closest(".select-btn");
-      if (selectBtn) {
-        const row = selectBtn.closest("tr");
-        const index = parseInt(row.dataset.index);
-
-        if (e.shiftKey && lastSelectedIndex !== null && lastSelectedIndex !== undefined && lastSelectedIndex !== -1) {
-          const startIdx = Math.min(lastSelectedIndex, index);
-          const endIdx = Math.max(lastSelectedIndex, index);
-          selectTranscriptionRange(startIdx, endIdx);
-        } else {
-          selectTranscription(index);
-          setLastSelectedIndex(index);
-        }
-      }
-    });
-    transcriptionsTable.hasEventListener = true;
-  }
-
+  setupScrollHandler();
   updateSelectedTable();
 }
 
-function loadBatch(startIndex, batchSize) {
-  const endIndex = Math.min(startIndex + batchSize, transcriptions.length);
+function setupScrollHandler() {
+  const tableContainer = document.getElementById("transcriptionsContainer");
+  if (!tableContainer) return;
+
+  if (tableContainer._scrollHandler) {
+    tableContainer.removeEventListener("scroll", tableContainer._scrollHandler);
+  }
+
+  tableContainer._scrollHandler = debounce(function () {
+    const scrollTop = tableContainer.scrollTop;
+    const scrollHeight = tableContainer.scrollHeight;
+    const clientHeight = tableContainer.clientHeight;
+
+    if (scrollTop + clientHeight > scrollHeight - 300) {
+      if (renderedEnd < transcriptions.length) {
+        const nextEnd = Math.min(transcriptions.length, renderedEnd + BATCH_SIZE);
+        renderBatch(renderedEnd, nextEnd, 'append');
+        renderedEnd = nextEnd;
+        updateSearchAfterRowsLoaded();
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+
+    if (scrollTop < 100) {
+      if (renderedStart > 0) {
+        const prevStart = Math.max(0, renderedStart - BATCH_SIZE);
+        const oldScrollHeight = tableContainer.scrollHeight;
+
+        renderBatch(prevStart, renderedStart, 'prepend');
+        renderedStart = prevStart;
+
+        const newScrollHeight = tableContainer.scrollHeight;
+        tableContainer.scrollTop = scrollTop + (newScrollHeight - oldScrollHeight);
+
+        updateSearchAfterRowsLoaded();
+        if (window.lucide) window.lucide.createIcons();
+      }
+    }
+  }, 50);
+
+  tableContainer.addEventListener("scroll", tableContainer._scrollHandler);
+}
+
+function renderBatch(startIndex, endIndex, direction) {
   const fragment = document.createDocumentFragment();
 
   for (let i = startIndex; i < endIndex; i++) {
@@ -282,7 +285,7 @@ function loadBatch(startIndex, batchSize) {
       <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
       <td class="px-4 py-2 text-sm text-right">
         ${isInClip
-        ? '<span class="text-xs text-gray-500 font-medium">Used</span>'
+        ? '<span class="inline-block px-2 py-1 text-xs font-medium text-gray-500 border border-transparent">Used</span>'
         : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
         } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
             ${isSelected ? "Selected" : "Select"}
@@ -294,57 +297,37 @@ function loadBatch(startIndex, batchSize) {
     fragment.appendChild(row);
   }
 
-  transcriptionsTable.appendChild(fragment);
+  if (direction === 'append') {
+    transcriptionsTable.appendChild(fragment);
+  } else {
+    transcriptionsTable.insertBefore(fragment, transcriptionsTable.firstChild);
+  }
+
+  if (!transcriptionsTable.hasEventListener) {
+    transcriptionsTable.addEventListener("click", handleTableClick);
+    transcriptionsTable.hasEventListener = true;
+  }
+}
+
+function handleTableClick(e) {
+  const selectBtn = e.target.closest(".select-btn");
+  if (selectBtn) {
+    const row = selectBtn.closest("tr");
+    const index = parseInt(row.dataset.index);
+
+    if (e.shiftKey && lastSelectedIndex !== null && lastSelectedIndex !== undefined && lastSelectedIndex !== -1) {
+      const startIdx = Math.min(lastSelectedIndex, index);
+      const endIdx = Math.max(lastSelectedIndex, index);
+      selectTranscriptionRange(startIdx, endIdx);
+    } else {
+      selectTranscription(index);
+      setLastSelectedIndex(index);
+    }
+  }
 }
 
 function isTranscriptionInClip(index) {
   return clips.some((clip) => clip.transcriptions.some((t) => t.index === index));
-}
-
-function loadMoreRows(startIndex) {
-  const batchSize = 50;
-  const endIndex = Math.min(startIndex + batchSize, transcriptions.length);
-
-  const fragment = document.createDocumentFragment();
-
-  for (let i = startIndex; i < endIndex; i++) {
-    const item = transcriptions[i];
-    const row = document.createElement("tr");
-    row.className = "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
-    row.dataset.index = i;
-
-    const isSelected = selectedTranscriptions.some((t) => t.index === i);
-    const isInClip = isTranscriptionInClip(i);
-
-    if (isSelected) {
-      row.classList.add("bg-accent-100/10");
-    }
-    if (isInClip) {
-      row.classList.add("in-clip");
-    }
-
-    row.innerHTML = `
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
-      <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
-      <td class="px-4 py-2 text-sm text-right">
-        ${isInClip
-        ? '<span class="text-xs text-gray-500 font-medium">Used</span>'
-        : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
-        } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
-              ${isSelected ? "Selected" : "Select"}
-            </button>`
-      }
-      </td>
-    `;
-
-    fragment.appendChild(row);
-  }
-
-  transcriptionsTable.appendChild(fragment);
-  updateSearchAfterRowsLoaded();
-
-  if (window.lucide) window.lucide.createIcons();
 }
 
 function selectTranscriptionRange(startIdx, endIdx) {

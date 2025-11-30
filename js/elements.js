@@ -54,6 +54,9 @@ export const editorDragOverlay = document.getElementById("editorDragOverlay");
 export const viewerDragOverlay = document.getElementById("viewerDragOverlay");
 
 export const videoFileInput = document.getElementById("videoFileInput");
+export const videoFileLabel = document.getElementById("videoFileLabel");
+export const videoFileLabelText = document.getElementById("videoFileLabelText");
+export const clearVideoBtn = document.getElementById("clearVideoBtn");
 export const previewVideoPlayer = document.getElementById("previewVideoPlayer");
 export const videoPlaceholder = document.getElementById("videoPlaceholder");
 export const placeholderTitle = document.getElementById("placeholderTitle");
@@ -66,7 +69,14 @@ export const playhead = document.getElementById("playhead");
 export const snapLine = document.getElementById("snapLine");
 export const snapIndicator = document.getElementById("snapIndicator");
 export const timelineDuration = document.getElementById("timelineDuration");
-export const videoNameDisplay = document.getElementById("videoNameDisplay");
 export const zoomInBtn = document.getElementById("zoomInBtn");
 export const zoomOutBtn = document.getElementById("zoomOutBtn");
 export const zoomInput = document.getElementById("zoomInput");
+
+export const playPauseBtn = document.getElementById("playPauseBtn");
+export const prevClipBtn = document.getElementById("prevClipBtn");
+export const nextClipBtn = document.getElementById("nextClipBtn");
+export const audioOutputSelect = document.getElementById("audioOutputSelect");
+
+export const btnScrollTop = document.getElementById("btnScrollTop");
+export const btnScrollBottom = document.getElementById("btnScrollBottom");

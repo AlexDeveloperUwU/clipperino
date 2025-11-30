@@ -1,5 +1,8 @@
 import {
   videoFileInput,
+  videoFileLabel,
+  videoFileLabelText,
+  clearVideoBtn,
   previewVideoPlayer,
   videoPlaceholder,
   placeholderTitle,
@@ -11,11 +14,14 @@ import {
   snapLine,
   snapIndicator,
   timelineDuration,
-  videoNameDisplay,
   previewTabBtn,
   zoomInBtn,
   zoomOutBtn,
-  zoomInput
+  zoomInput,
+  playPauseBtn,
+  prevClipBtn,
+  nextClipBtn,
+  audioOutputSelect
 } from "./elements.js";
 import { clips, videoMetadata, setVideoMetadata } from "./state.js";
 import { showNotification } from "./ui.js";
@@ -27,6 +33,7 @@ let isScrubbing = false;
 
 export function initPreviewTab() {
   videoFileInput.addEventListener("change", handleVideoUpload);
+  clearVideoBtn.addEventListener("click", clearVideo);
   previewTabBtn.addEventListener("click", () => renderTimeline());
 
   previewVideoPlayer.addEventListener("timeupdate", updatePlayhead);
@@ -39,7 +46,17 @@ export function initPreviewTab() {
       duration: previewVideoPlayer.duration
     });
     saveToLocalStorage();
+    toggleVideoControls(true);
   });
+
+  previewVideoPlayer.addEventListener("play", () => updatePlayPauseIcon(true));
+  previewVideoPlayer.addEventListener("pause", () => updatePlayPauseIcon(false));
+  previewVideoPlayer.addEventListener("ended", () => updatePlayPauseIcon(false));
+
+  playPauseBtn.addEventListener("click", togglePlay);
+  prevClipBtn.addEventListener("click", skipToPrevClip);
+  nextClipBtn.addEventListener("click", skipToNextClip);
+  audioOutputSelect.addEventListener("change", handleAudioChange);
 
   timelineContentWrapper.addEventListener("mousedown", handleScrubStart);
   window.addEventListener("mousemove", handleScrubMove);
@@ -48,14 +65,31 @@ export function initPreviewTab() {
   zoomInBtn.addEventListener("click", handleZoomIn);
   zoomOutBtn.addEventListener("click", handleZoomOut);
   zoomInput.addEventListener("change", handleZoomInput);
+
+  initAudioDevices();
 }
 
 export function checkVideoMetadata() {
   if (videoMetadata && videoMetadata.name) {
     placeholderTitle.textContent = "Video Reload Required";
     placeholderText.innerHTML = `Please re-load <strong class="text-white">${videoMetadata.name}</strong> to continue previewing.`;
-    videoNameDisplay.textContent = videoMetadata.name;
-    videoNameDisplay.classList.remove("hidden");
+    
+    videoFileLabel.classList.remove("hidden");
+    videoFileLabelText.textContent = "Re-Import Video";
+    clearVideoBtn.classList.remove("hidden");
+  } else {
+    toggleVideoControls(false);
+  }
+}
+
+function toggleVideoControls(hasVideo) {
+  if (hasVideo) {
+    videoFileLabel.classList.add("hidden");
+    clearVideoBtn.classList.remove("hidden");
+  } else {
+    videoFileLabel.classList.remove("hidden");
+    videoFileLabelText.textContent = "Load Video";
+    clearVideoBtn.classList.add("hidden");
   }
 }
 
@@ -66,9 +100,6 @@ function handleVideoUpload(event) {
     previewVideoPlayer.src = fileURL;
     videoPlaceholder.classList.add("hidden");
 
-    videoNameDisplay.textContent = file.name;
-    videoNameDisplay.classList.remove("hidden");
-
     setVideoMetadata({
       name: file.name,
       duration: 0
@@ -76,6 +107,124 @@ function handleVideoUpload(event) {
     saveToLocalStorage();
 
     showNotification(`Video loaded: ${file.name}`);
+    toggleVideoControls(true);
+  }
+}
+
+function clearVideo() {
+  previewVideoPlayer.pause();
+  previewVideoPlayer.src = "";
+  videoPlaceholder.classList.remove("hidden");
+
+  placeholderTitle.textContent = "No Video Loaded";
+  placeholderText.textContent = "Import a video file to preview your clips";
+
+  setVideoMetadata({ name: null, duration: 0 });
+  saveToLocalStorage();
+
+  toggleVideoControls(false);
+  showNotification("Video cleared");
+
+  timelineDuration.textContent = "00:00:00";
+}
+
+function togglePlay() {
+  if (previewVideoPlayer.paused) {
+    previewVideoPlayer.play();
+  } else {
+    previewVideoPlayer.pause();
+  }
+}
+
+function updatePlayPauseIcon(isPlaying) {
+  if (window.lucide) {
+    playPauseBtn.innerHTML = isPlaying
+      ? `<i data-lucide="pause" class="w-4 h-4 fill-current"></i>`
+      : `<i data-lucide="play" class="w-4 h-4 fill-current"></i>`;
+    window.lucide.createIcons();
+  }
+}
+
+function skipToNextClip() {
+  const currentTime = previewVideoPlayer.currentTime;
+  const sortedClips = [...clips].sort((a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio));
+
+  const nextClip = sortedClips.find(clip => timeStringToSeconds(clip.inicio) > currentTime + 0.5);
+
+  if (nextClip) {
+    previewVideoPlayer.currentTime = timeStringToSeconds(nextClip.inicio);
+    showNotification(`Skipped to: ${nextClip.name}`);
+  } else {
+    showNotification("No more clips ahead");
+  }
+}
+
+function skipToPrevClip() {
+  const currentTime = previewVideoPlayer.currentTime;
+  const sortedClips = [...clips].sort((a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio));
+
+  let prevClip = null;
+  for (let i = sortedClips.length - 1; i >= 0; i--) {
+    const start = timeStringToSeconds(sortedClips[i].inicio);
+    if (start < currentTime - 0.5) {
+      prevClip = sortedClips[i];
+      break;
+    }
+  }
+
+  if (prevClip) {
+    previewVideoPlayer.currentTime = timeStringToSeconds(prevClip.inicio);
+    showNotification(`Skipped back to: ${prevClip.name}`);
+  } else {
+    previewVideoPlayer.currentTime = 0;
+  }
+}
+
+async function initAudioDevices() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+    audioOutputSelect.innerHTML = '<option value="">Not Supported</option>';
+    audioOutputSelect.disabled = true;
+    return;
+  }
+
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => stream.getTracks().forEach(t => t.stop())).catch(() => {});
+
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
+
+    if (audioOutputs.length === 0) {
+      audioOutputSelect.innerHTML = '<option value="">Default Only</option>';
+      audioOutputSelect.disabled = true;
+      return;
+    }
+
+    audioOutputSelect.innerHTML = '<option value="default">Default Output</option>';
+    audioOutputs.forEach(device => {
+      if (device.deviceId !== 'default') {
+        const option = document.createElement('option');
+        option.value = device.deviceId;
+        option.textContent = device.label || `Speaker ${audioOutputs.indexOf(device) + 1}`;
+        audioOutputSelect.appendChild(option);
+      }
+    });
+  } catch (err) {
+    console.warn("Could not enumerate audio devices:", err);
+  }
+}
+
+async function handleAudioChange() {
+  const deviceId = audioOutputSelect.value;
+  if ('setSinkId' in previewVideoPlayer) {
+    try {
+      await previewVideoPlayer.setSinkId(deviceId);
+      showNotification("Audio output changed");
+    } catch (error) {
+      console.error('Error setting audio output:', error);
+      showNotification("Failed to change audio output");
+    }
+  } else {
+    showNotification("Audio output switching not supported in this browser");
   }
 }
 
@@ -170,7 +319,7 @@ function drawClips(duration) {
     clipEl.appendChild(label);
 
     clipEl.addEventListener("mousedown", (e) => {
-      e.stopPropagation(); 
+      e.stopPropagation();
       previewVideoPlayer.currentTime = startSeconds;
       showNotification(`Jumped to clip: ${clip.name}`);
     });
@@ -238,7 +387,7 @@ function handleScrubStart(e) {
   if (isNaN(duration) || duration === 0) return;
 
   isScrubbing = true;
-  handleScrubMove(e); 
+  handleScrubMove(e);
 }
 
 function handleScrubMove(e) {

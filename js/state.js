@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.4";
+export const APP_VERSION = "1.6";
 
 export let transcriptions = [];
 export let clips = [];

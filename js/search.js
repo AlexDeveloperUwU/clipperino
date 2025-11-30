@@ -1,5 +1,6 @@
 import { transcriptions, selectedTranscriptions } from "./state.js";
 import { debounce, showNotification } from "./ui.js";
+import { navigateToLine } from "./editorTab.js";
 
 let searchResults = [];
 let currentSearchTerm = "";
@@ -92,7 +93,6 @@ function addSearchNavButtons() {
 
   searchInput.style.paddingRight = "110px";
 
-  // Init icons for buttons
   if (window.lucide) window.lucide.createIcons();
 }
 
@@ -130,39 +130,13 @@ function navigateToPrevResult() {
 }
 
 function focusOnResult(index) {
-  const activeResults = document.querySelectorAll(".current-search-result");
-  activeResults.forEach((el) => {
-    el.classList.remove("current-search-result");
-    el.classList.remove("animate-pulse");
-  });
-
   if (searchResults.length === 0) return;
 
   const result = searchResults[index];
-  const resultRow = findRowByIndex(result);
+  const globalIndex = transcriptions.indexOf(result);
 
-  if (resultRow) {
-    const tableContainer = document.querySelector(".overflow-y-auto");
-    if (tableContainer) {
-      resultRow.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-
-    resultRow.classList.add("current-search-result");
-
-    const highlights = resultRow.querySelectorAll(".bg-yellow-500\\/30");
-    highlights.forEach((highlight) => {
-      highlight.classList.add("animate-pulse");
-    });
-
-    updateResultCounter();
-  }
-}
-
-function findRowByIndex(item) {
-  const index = transcriptions.indexOf(item);
-  if (index === -1) return null;
-
-  return document.querySelector(`tr[data-index="${index}"]`);
+  navigateToLine(globalIndex);
+  updateResultCounter();
 }
 
 function updateResultCounter() {
@@ -189,11 +163,9 @@ function updateSearchResults(searchTerm) {
     if (transcriptionCell) {
       transcriptionCell.innerHTML = transcriptionCell.textContent;
 
-      // Reset content logic, check if selected
       const index = parseInt(row.dataset.index);
       const isSelected = selectedTranscriptions.some((t) => t.index === index);
 
-      // Re-apply correct button state
       const selectBtn = row.querySelector(".select-btn");
       if (selectBtn) {
         if (isSelected) {
@@ -263,7 +235,7 @@ function escapeRegExp(string) {
 
 export function updateSearchAfterRowsLoaded() {
   if (currentSearchTerm.length >= 2) {
-    performSearch(currentSearchTerm);
+    updateSearchResults(currentSearchTerm);
   }
 }
 
