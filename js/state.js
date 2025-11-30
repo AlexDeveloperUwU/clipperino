@@ -1,3 +1,5 @@
+export const APP_VERSION = "1.4";
+
 export let transcriptions = [];
 export let clips = [];
 export let selectedTranscriptions = [];
@@ -6,6 +8,10 @@ export let isPlaying = false;
 export let currentEditingClipIndex = -1;
 export let lastSelectedIndex = -1;
 export let lastViewedLineIndex = -1;
+export let videoMetadata = {
+  name: null,
+  duration: 0
+};
 
 export function setTranscriptions(newTranscriptions) {
   transcriptions = newTranscriptions;
@@ -43,4 +49,8 @@ export function setLastViewedLineIndex(index) {
 export function clearLastViewedLine() {
   lastViewedLineIndex = -1;
   localStorage.removeItem("clipperino_last_viewed_line");
+}
+
+export function setVideoMetadata(metadata) {
+  videoMetadata = metadata;
 }

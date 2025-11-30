@@ -1,13 +1,18 @@
 import {
   editorTabBtn,
   viewerTabBtn,
+  previewTabBtn,
   editorTab,
   viewerTab,
+  previewTab,
   editorTabActions,
   viewerTabActions,
+  previewTabActions,
   currentYear,
+  appVersionDisplay
 } from "./elements.js";
-import { isPlaying, setIsPlaying } from "./state.js";
+import { renderTimeline } from "./previewTab.js";
+import { APP_VERSION } from "./state.js";
 
 export function initUI() {
   editorTabBtn.addEventListener("click", () => {
@@ -18,11 +23,23 @@ export function initUI() {
     switchTab("viewer");
   });
 
+  previewTabBtn.addEventListener("click", () => {
+    switchTab("preview");
+    renderTimeline();
+  });
+
   setupMultiSelectHelp();
   updateYear();
+  updateVersionDisplay();
 
   if (window.lucide) {
     window.lucide.createIcons();
+  }
+}
+
+function updateVersionDisplay() {
+  if (appVersionDisplay) {
+    appVersionDisplay.textContent = `Clipperino v${APP_VERSION}`;
   }
 }
 
@@ -65,30 +82,33 @@ function setupMultiSelectHelp() {
 }
 
 export function switchTab(tabName) {
+  [editorTab, viewerTab, previewTab].forEach(tab => tab.classList.add("hidden"));
+  [editorTabActions, viewerTabActions, previewTabActions].forEach(action => action.classList.add("hidden"));
+
+  const btns = [editorTabBtn, viewerTabBtn, previewTabBtn];
+  btns.forEach(btn => {
+    btn.classList.remove("bg-dark-100", "text-white");
+    btn.classList.add("text-gray-400", "hover:text-white", "hover:bg-dark-50");
+  });
+
   if (tabName === "editor") {
     editorTab.classList.remove("hidden");
-    viewerTab.classList.add("hidden");
+    editorTabActions.classList.remove("hidden");
 
     editorTabBtn.classList.add("bg-dark-100", "text-white");
     editorTabBtn.classList.remove("text-gray-400", "hover:text-white", "hover:bg-dark-50");
-
-    viewerTabBtn.classList.add("text-gray-400", "hover:text-white", "hover:bg-dark-50");
-    viewerTabBtn.classList.remove("bg-dark-100", "text-white");
-
-    editorTabActions.classList.remove("hidden");
-    viewerTabActions.classList.add("hidden");
-  } else {
-    editorTab.classList.add("hidden");
+  } else if (tabName === "viewer") {
     viewerTab.classList.remove("hidden");
+    viewerTabActions.classList.remove("hidden");
 
     viewerTabBtn.classList.add("bg-dark-100", "text-white");
     viewerTabBtn.classList.remove("text-gray-400", "hover:text-white", "hover:bg-dark-50");
+  } else if (tabName === "preview") {
+    previewTab.classList.remove("hidden");
+    previewTabActions.classList.remove("hidden");
 
-    editorTabBtn.classList.add("text-gray-400", "hover:text-white", "hover:bg-dark-50");
-    editorTabBtn.classList.remove("bg-dark-100", "text-white");
-
-    viewerTabActions.classList.remove("hidden");
-    editorTabActions.classList.add("hidden");
+    previewTabBtn.classList.add("bg-dark-100", "text-white");
+    previewTabBtn.classList.remove("text-gray-400", "hover:text-white", "hover:bg-dark-50");
   }
 
   if (window.lucide) window.lucide.createIcons();

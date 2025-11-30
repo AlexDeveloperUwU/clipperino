@@ -1,7 +1,10 @@
 export const editorTabBtn = document.getElementById("editorTabBtn");
 export const viewerTabBtn = document.getElementById("viewerTabBtn");
+export const previewTabBtn = document.getElementById("previewTabBtn");
+
 export const editorTab = document.getElementById("editorTab");
 export const viewerTab = document.getElementById("viewerTab");
+export const previewTab = document.getElementById("previewTab");
 
 export const csvFileInput = document.getElementById("csvFileInput");
 export const transcriptionsTable = document.getElementById("transcriptionsTable");
@@ -40,10 +43,30 @@ export const viewerHeaderIcon = document.getElementById("viewerHeaderIcon");
 
 export const editorTabActions = document.getElementById("editorTabActions");
 export const viewerTabActions = document.getElementById("viewerTabActions");
+export const previewTabActions = document.getElementById("previewTabActions");
 
 export const exportEDLBtn = document.getElementById("exportEDLBtn");
 
 export const currentYear = document.getElementById("currentYear");
+export const appVersionDisplay = document.getElementById("appVersionDisplay");
 
 export const editorDragOverlay = document.getElementById("editorDragOverlay");
 export const viewerDragOverlay = document.getElementById("viewerDragOverlay");
+
+export const videoFileInput = document.getElementById("videoFileInput");
+export const previewVideoPlayer = document.getElementById("previewVideoPlayer");
+export const videoPlaceholder = document.getElementById("videoPlaceholder");
+export const placeholderTitle = document.getElementById("placeholderTitle");
+export const placeholderText = document.getElementById("placeholderText");
+export const timelineScrollContainer = document.getElementById("timelineScrollContainer");
+export const timelineContentWrapper = document.getElementById("timelineContentWrapper");
+export const timelineTrack = document.getElementById("timelineTrack");
+export const timelineRuler = document.getElementById("timelineRuler");
+export const playhead = document.getElementById("playhead");
+export const snapLine = document.getElementById("snapLine");
+export const snapIndicator = document.getElementById("snapIndicator");
+export const timelineDuration = document.getElementById("timelineDuration");
+export const videoNameDisplay = document.getElementById("videoNameDisplay");
+export const zoomInBtn = document.getElementById("zoomInBtn");
+export const zoomOutBtn = document.getElementById("zoomOutBtn");
+export const zoomInput = document.getElementById("zoomInput");
