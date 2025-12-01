@@ -5,8 +5,9 @@ export let clips = [];
 export let selectedTranscriptions = [];
 export let jsonClips = [];
 export let isPlaying = false;
-export let currentEditingClipIndex = -1; 
-export let clipBeingEditedIndex = -1; // New: Tracks clip index for content editing
+export let showSubtitles = false;
+export let currentEditingClipIndex = -1;
+export let clipBeingEditedIndex = -1;
 export let lastSelectedIndex = -1;
 export let lastViewedLineIndex = -1;
 export let videoMetadata = {
@@ -32,6 +33,10 @@ export function setJsonClips(newJsonClips) {
 
 export function setIsPlaying(newIsPlaying) {
   isPlaying = newIsPlaying;
+}
+
+export function setShowSubtitles(show) {
+  showSubtitles = show;
 }
 
 export function setCurrentEditingClipIndex(newIndex) {

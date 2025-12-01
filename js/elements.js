@@ -77,6 +77,9 @@ export const playPauseBtn = document.getElementById("playPauseBtn");
 export const prevClipBtn = document.getElementById("prevClipBtn");
 export const nextClipBtn = document.getElementById("nextClipBtn");
 export const audioOutputSelect = document.getElementById("audioOutputSelect");
+export const toggleSubtitlesBtn = document.getElementById("toggleSubtitlesBtn");
+export const subtitleOverlay = document.getElementById("subtitleOverlay");
+export const subtitleText = document.getElementById("subtitleText");
 
 export const btnScrollTop = document.getElementById("btnScrollTop");
 export const btnScrollBottom = document.getElementById("btnScrollBottom");

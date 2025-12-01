@@ -21,9 +21,12 @@ import {
   playPauseBtn,
   prevClipBtn,
   nextClipBtn,
-  audioOutputSelect
+  audioOutputSelect,
+  toggleSubtitlesBtn,
+  subtitleOverlay,
+  subtitleText
 } from "./elements.js";
-import { clips, videoMetadata, setVideoMetadata } from "./state.js";
+import { clips, videoMetadata, setVideoMetadata, showSubtitles, setShowSubtitles, transcriptions } from "./state.js";
 import { showNotification } from "./ui.js";
 import { saveToLocalStorage } from "./storage.js";
 
@@ -57,6 +60,7 @@ export function initPreviewTab() {
   prevClipBtn.addEventListener("click", skipToPrevClip);
   nextClipBtn.addEventListener("click", skipToNextClip);
   audioOutputSelect.addEventListener("change", handleAudioChange);
+  toggleSubtitlesBtn.addEventListener("click", toggleSubtitles);
 
   timelineContentWrapper.addEventListener("mousedown", handleScrubStart);
   window.addEventListener("mousemove", handleScrubMove);
@@ -73,9 +77,9 @@ export function checkVideoMetadata() {
   if (videoMetadata && videoMetadata.name) {
     placeholderTitle.textContent = "Video Reload Required";
     placeholderText.innerHTML = `Please re-load <strong class="text-white">${videoMetadata.name}</strong> to continue previewing.`;
-    
+
     videoFileLabel.classList.remove("hidden");
-    videoFileLabelText.textContent = "Re-Import Video";
+    videoFileLabelText.textContent = "Re-import Video";
     clearVideoBtn.classList.remove("hidden");
   } else {
     toggleVideoControls(false);
@@ -136,6 +140,40 @@ function togglePlay() {
   }
 }
 
+function toggleSubtitles() {
+  setShowSubtitles(!showSubtitles);
+
+  if (showSubtitles) {
+    toggleSubtitlesBtn.classList.remove("text-gray-400");
+    toggleSubtitlesBtn.classList.add("text-accent-100", "bg-accent-100/10");
+    subtitleOverlay.classList.remove("hidden");
+    updateSubtitles();
+  } else {
+    toggleSubtitlesBtn.classList.add("text-gray-400");
+    toggleSubtitlesBtn.classList.remove("text-accent-100", "bg-accent-100/10");
+    subtitleOverlay.classList.add("hidden");
+  }
+}
+
+function updateSubtitles() {
+  if (!showSubtitles || transcriptions.length === 0) return;
+
+  const currentTime = previewVideoPlayer.currentTime;
+
+  const currentLine = transcriptions.find(t => {
+    const start = timeStringToSeconds(t.inicio);
+    const end = timeStringToSeconds(t.fin);
+    return currentTime >= start && currentTime <= end;
+  });
+
+  if (currentLine) {
+    subtitleText.textContent = currentLine.transcripcion;
+    subtitleOverlay.classList.remove("opacity-0");
+  } else {
+    subtitleOverlay.classList.add("opacity-0");
+  }
+}
+
 function updatePlayPauseIcon(isPlaying) {
   if (window.lucide) {
     playPauseBtn.innerHTML = isPlaying
@@ -188,7 +226,7 @@ async function initAudioDevices() {
   }
 
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => stream.getTracks().forEach(t => t.stop())).catch(() => {});
+    await navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => stream.getTracks().forEach(t => t.stop())).catch(() => { });
 
     const devices = await navigator.mediaDevices.enumerateDevices();
     const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
@@ -371,6 +409,9 @@ function formatTimeShort(totalSeconds) {
 }
 
 function updatePlayhead() {
+  // Update subtitles on every time update
+  updateSubtitles();
+
   if (isScrubbing) return;
 
   const duration = previewVideoPlayer.duration;
