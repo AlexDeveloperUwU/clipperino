@@ -35,6 +35,8 @@ import {
   setClips,
   currentEditingClipIndex,
   setCurrentEditingClipIndex,
+  clipBeingEditedIndex,
+  setClipBeingEditedIndex,
   lastSelectedIndex,
   setLastSelectedIndex,
   setTranscriptions,
@@ -327,7 +329,14 @@ function handleTableClick(e) {
 }
 
 function isTranscriptionInClip(index) {
-  return clips.some((clip) => clip.transcriptions.some((t) => t.index === index));
+  // If we are editing a clip, don't mark its own lines as "Used" so they appear selected instead
+  if (clipBeingEditedIndex !== -1) {
+    const editingClip = clips[clipBeingEditedIndex];
+    if (editingClip && editingClip.transcriptions.some(t => t.index === index)) {
+      return false;
+    }
+  }
+  return clips.some((clip, i) => i !== clipBeingEditedIndex && clip.transcriptions.some((t) => t.index === index));
 }
 
 function selectTranscriptionRange(startIdx, endIdx) {
@@ -423,7 +432,15 @@ function clearSelectedTranscriptions() {
   setSelectedTranscriptions([]);
   setLastSelectedIndex(-1);
 
-  renderTable();
+  if (clipBeingEditedIndex !== -1) {
+    setClipBeingEditedIndex(-1);
+    updateAddButtonState();
+    // Re-render table to restore "Used" status for the cancelled clip
+    renderTable();
+  } else {
+    renderTable();
+  }
+
   updateSelectedTable();
   saveToLocalStorage();
 }
@@ -453,7 +470,14 @@ function openNameClipModal() {
   nameClipModal.querySelector('div').classList.remove("scale-95");
   nameClipModal.querySelector('div').classList.add("scale-100");
 
-  clipNameInput.value = "";
+  if (clipBeingEditedIndex !== -1) {
+    clipNameInput.value = clips[clipBeingEditedIndex].name;
+    saveClipBtn.textContent = "Update Clip";
+  } else {
+    clipNameInput.value = "";
+    saveClipBtn.textContent = "Save Clip";
+  }
+
   selectedLinesInfo.textContent = `You selected ${selectedTranscriptions.length} lines for this clip.`;
 
   setTimeout(() => clipNameInput.focus(), 100);
@@ -480,7 +504,7 @@ function saveClip() {
     sortedTranscriptions[sortedTranscriptions.length - 1].fin
   );
 
-  const newClip = {
+  const clipData = {
     name: clipName,
     inicio: sortedTranscriptions[0].inicio,
     fin: sortedTranscriptions[sortedTranscriptions.length - 1].fin,
@@ -491,16 +515,67 @@ function saveClip() {
     timestamp: new Date().toISOString(),
   };
 
-  const newClips = [...clips, newClip];
+  const newClips = [...clips];
+
+  if (clipBeingEditedIndex !== -1) {
+    newClips[clipBeingEditedIndex] = clipData;
+    showNotification("Clip updated successfully");
+    setClipBeingEditedIndex(-1);
+  } else {
+    newClips.push(clipData);
+    showNotification("Clip saved successfully");
+  }
+
   setClips(newClips);
 
   renderClips();
   closeNameClipModal();
   updateClipCount();
-  clearSelectedTranscriptions();
-  saveToLocalStorage();
 
-  showNotification("Clip saved successfully");
+  // Clear selection logic without calling clearSelectedTranscriptions (which resets edit mode improperly here)
+  setSelectedTranscriptions([]);
+  setLastSelectedIndex(-1);
+  updateAddButtonState();
+  renderTable(); // Refresh table to show "Used" correctly
+  updateSelectedTable();
+  saveToLocalStorage();
+}
+
+function updateAddButtonState() {
+  if (clipBeingEditedIndex !== -1) {
+    addClipBtn.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3"></i> Update Clip';
+    addClipBtn.classList.remove('bg-secondary-100', 'hover:bg-secondary-200');
+    addClipBtn.classList.add('bg-accent-100', 'hover:bg-accent-200');
+  } else {
+    addClipBtn.innerHTML = '<i data-lucide="plus" class="w-3 h-3"></i> Add Clip';
+    addClipBtn.classList.remove('bg-accent-100', 'hover:bg-accent-200');
+    addClipBtn.classList.add('bg-secondary-100', 'hover:bg-secondary-200');
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function loadClipForEditing(index) {
+  const clip = clips[index];
+  if (!clip) return;
+
+  setClipBeingEditedIndex(index);
+
+  // Copy clip transcriptions to current selection
+  setSelectedTranscriptions([...clip.transcriptions]);
+
+  updateAddButtonState();
+  updateSelectedTable();
+
+  // Re-render table. Important: isTranscriptionInClip will now return false for this clip's lines,
+  // allowing them to show as "Selected" instead of "Used"
+  renderTable();
+
+  // Navigate to first line of clip
+  if (clip.transcriptions.length > 0) {
+    navigateToLine(clip.transcriptions[0].index);
+  }
+
+  showNotification(`Editing clip: ${clip.name}`);
 }
 
 export function renderClips() {
@@ -513,20 +588,27 @@ export function renderClips() {
   }
 
   clips.forEach((clip, index) => {
+    const isBeingEdited = index === clipBeingEditedIndex;
     const clipDiv = document.createElement("div");
-    clipDiv.className = "clip-item bg-dark-200 border border-dark-50 rounded p-3 relative hover:border-dark-50/80 transition-all";
+    clipDiv.className = `clip-item bg-dark-200 border ${isBeingEdited ? 'border-accent-100 shadow-[0_0_10px_rgba(59,130,246,0.15)]' : 'border-dark-50'} rounded p-3 relative hover:border-dark-50/80 transition-all`;
 
     clipDiv.innerHTML = `
       <div class="flex justify-between items-start mb-2">
-        <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-6">
+        <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-16">
           <span class="truncate">${clip.name}</span>
-          <button class="edit-clip-name-btn text-gray-500 hover:text-accent-100 transition-colors" data-index="${index}">
-            <i data-lucide="pencil" class="w-3 h-3"></i>
-          </button>
+          ${isBeingEdited ? '<span class="text-[10px] bg-accent-100 px-1 rounded text-white font-normal">Editing</span>' : ''}
         </h3>
-        <button class="remove-clip-btn text-gray-500 hover:text-red-400 transition-colors absolute top-3 right-3">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+        <div class="absolute top-3 right-3 flex items-center gap-1">
+           <button class="edit-clip-content-btn text-gray-500 hover:text-accent-100 transition-colors p-1" title="Edit Content" data-index="${index}">
+            <i data-lucide="file-edit" class="w-3.5 h-3.5"></i>
+          </button>
+          <button class="edit-clip-name-btn text-gray-500 hover:text-white transition-colors p-1" title="Rename" data-index="${index}">
+            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+          </button>
+          <button class="remove-clip-btn text-gray-500 hover:text-red-400 transition-colors p-1" title="Delete" data-index="${index}">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
       </div>
       <div class="flex flex-wrap gap-1.5 mb-2">
         <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
@@ -552,6 +634,9 @@ export function renderClips() {
     const editNameBtn = clipDiv.querySelector(".edit-clip-name-btn");
     editNameBtn.addEventListener("click", () => openEditClipNameModal(index));
 
+    const editContentBtn = clipDiv.querySelector(".edit-clip-content-btn");
+    editContentBtn.addEventListener("click", () => loadClipForEditing(index));
+
     clipList.appendChild(clipDiv);
   });
 
@@ -561,12 +646,25 @@ export function renderClips() {
 }
 
 function removeClip(index) {
+  if (index === clipBeingEditedIndex) {
+    setClipBeingEditedIndex(-1);
+    updateAddButtonState();
+    clearSelectedTranscriptions();
+  }
+
   const newClips = [...clips];
   newClips.splice(index, 1);
   setClips(newClips);
 
+  // If we deleted a clip before the one being edited, adjust index
+  if (clipBeingEditedIndex > index) {
+    setClipBeingEditedIndex(clipBeingEditedIndex - 1);
+  }
+
   renderClips();
   updateClipCount();
+  // Refresh table to update "Used" markers
+  renderTable();
   saveToLocalStorage();
 }
 
@@ -781,6 +879,8 @@ function clearTranscriptions() {
   setSelectedTranscriptions([]);
   setClips([]);
   setLastSelectedIndex(-1);
+  setClipBeingEditedIndex(-1);
+  updateAddButtonState();
   renderTable();
   updateSelectedTable();
   renderClips();

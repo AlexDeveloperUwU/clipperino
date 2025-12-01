@@ -1,11 +1,12 @@
-export const APP_VERSION = "1.6";
+export const APP_VERSION = "1.7";
 
 export let transcriptions = [];
 export let clips = [];
 export let selectedTranscriptions = [];
 export let jsonClips = [];
 export let isPlaying = false;
-export let currentEditingClipIndex = -1;
+export let currentEditingClipIndex = -1; 
+export let clipBeingEditedIndex = -1; // New: Tracks clip index for content editing
 export let lastSelectedIndex = -1;
 export let lastViewedLineIndex = -1;
 export let videoMetadata = {
@@ -35,6 +36,10 @@ export function setIsPlaying(newIsPlaying) {
 
 export function setCurrentEditingClipIndex(newIndex) {
   currentEditingClipIndex = newIndex;
+}
+
+export function setClipBeingEditedIndex(newIndex) {
+  clipBeingEditedIndex = newIndex;
 }
 
 export function setLastSelectedIndex(newIndex) {
