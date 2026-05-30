@@ -7,32 +7,61 @@ import {
   setSelectedTranscriptions,
   setJsonClips,
   setVideoMetadata,
-  videoMetadata
+  videoMetadata,
 } from "./state.js";
 import { renderTable, updateStatus, navigateToLine } from "./editorTab.js";
 import { renderViewer } from "./viewerTab.js";
 import { checkVideoMetadata } from "./previewTab.js";
 
-export function initStorage() {
-  loadFromLocalStorage();
+const STORAGE_KEYS = [
+  "clipperino_transcriptions",
+  "clipperino_clips",
+  "clipperino_selected",
+  "clipperino_json_clips",
+  "clipperino_video_meta",
+  "clipperino_last_viewed_line",
+];
+
+export function hasSavedData() {
+  return !!(
+    localStorage.getItem("clipperino_transcriptions") ||
+    localStorage.getItem("clipperino_clips") ||
+    localStorage.getItem("clipperino_json_clips") ||
+    localStorage.getItem("clipperino_video_meta")
+  );
+}
+
+export function clearSavedData() {
+  STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
 }
 
 export function saveToLocalStorage() {
   try {
-    localStorage.setItem("clipperino_transcriptions", JSON.stringify(transcriptions));
+    localStorage.setItem(
+      "clipperino_transcriptions",
+      JSON.stringify(transcriptions),
+    );
     localStorage.setItem("clipperino_clips", JSON.stringify(clips));
-    localStorage.setItem("clipperino_selected", JSON.stringify(selectedTranscriptions));
+    localStorage.setItem(
+      "clipperino_selected",
+      JSON.stringify(selectedTranscriptions),
+    );
     if (videoMetadata.name) {
-      localStorage.setItem("clipperino_video_meta", JSON.stringify(videoMetadata));
+      localStorage.setItem(
+        "clipperino_video_meta",
+        JSON.stringify(videoMetadata),
+      );
     }
   } catch (e) {
     console.error("Error saving to localStorage:", e);
   }
 }
 
-function loadFromLocalStorage() {
+export function loadFromLocalStorage() {
   try {
-    const savedTranscriptions = localStorage.getItem("clipperino_transcriptions");
+    const savedTranscriptions = localStorage.getItem(
+      "clipperino_transcriptions",
+    );
     const savedClips = localStorage.getItem("clipperino_clips");
     const savedSelected = localStorage.getItem("clipperino_selected");
     const savedJsonClips = localStorage.getItem("clipperino_json_clips");
@@ -42,7 +71,9 @@ function loadFromLocalStorage() {
       setTranscriptions(JSON.parse(savedTranscriptions));
       updateStatus();
 
-      const lastViewedLine = parseInt(localStorage.getItem("clipperino_last_viewed_line"));
+      const lastViewedLine = parseInt(
+        localStorage.getItem("clipperino_last_viewed_line"),
+      );
 
       if (!isNaN(lastViewedLine) && lastViewedLine >= 0) {
         setTimeout(() => {

@@ -25,9 +25,17 @@ import {
   audioOutputSelect,
   toggleSubtitlesBtn,
   subtitleOverlay,
-  subtitleText
+  subtitleText,
 } from "./elements.js";
-import { clips, videoMetadata, setVideoMetadata, showSubtitles, setShowSubtitles, transcriptions } from "./state.js";
+import {
+  clips,
+  jsonClips,
+  videoMetadata,
+  setVideoMetadata,
+  showSubtitles,
+  setShowSubtitles,
+  transcriptions,
+} from "./state.js";
 import { showNotification } from "./ui.js";
 import { saveToLocalStorage } from "./storage.js";
 
@@ -47,15 +55,19 @@ export function initPreviewTab() {
 
     setVideoMetadata({
       name: videoMetadata.name || "Unknown Video",
-      duration: previewVideoPlayer.duration
+      duration: previewVideoPlayer.duration,
     });
     saveToLocalStorage();
     toggleVideoControls(true);
   });
 
   previewVideoPlayer.addEventListener("play", () => updatePlayPauseIcon(true));
-  previewVideoPlayer.addEventListener("pause", () => updatePlayPauseIcon(false));
-  previewVideoPlayer.addEventListener("ended", () => updatePlayPauseIcon(false));
+  previewVideoPlayer.addEventListener("pause", () =>
+    updatePlayPauseIcon(false),
+  );
+  previewVideoPlayer.addEventListener("ended", () =>
+    updatePlayPauseIcon(false),
+  );
 
   playPauseBtn.addEventListener("click", togglePlay);
   prevClipBtn.addEventListener("click", skipToPrevClip);
@@ -116,7 +128,7 @@ function handleVideoUpload(event) {
 
     setVideoMetadata({
       name: file.name,
-      duration: 0
+      duration: 0,
     });
     saveToLocalStorage();
 
@@ -166,11 +178,15 @@ function toggleSubtitles() {
 }
 
 function updateSubtitles() {
-  if (!showSubtitles || transcriptions.length === 0) return;
+  const activeTranscriptions =
+    transcriptions.length > 0
+      ? transcriptions
+      : jsonClips.flatMap((c) => c.transcriptions);
+  if (!showSubtitles || activeTranscriptions.length === 0) return;
 
   const currentTime = previewVideoPlayer.currentTime;
 
-  const currentLine = transcriptions.find(t => {
+  const currentLine = activeTranscriptions.find((t) => {
     const start = timeStringToSeconds(t.inicio);
     const end = timeStringToSeconds(t.fin);
     return currentTime >= start && currentTime <= end;
@@ -195,9 +211,14 @@ function updatePlayPauseIcon(isPlaying) {
 
 function skipToNextClip() {
   const currentTime = previewVideoPlayer.currentTime;
-  const sortedClips = [...clips].sort((a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio));
+  const activeClips = clips.length > 0 ? clips : jsonClips;
+  const sortedClips = [...activeClips].sort(
+    (a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio),
+  );
 
-  const nextClip = sortedClips.find(clip => timeStringToSeconds(clip.inicio) > currentTime + 0.5);
+  const nextClip = sortedClips.find(
+    (clip) => timeStringToSeconds(clip.inicio) > currentTime + 0.5,
+  );
 
   if (nextClip) {
     previewVideoPlayer.currentTime = timeStringToSeconds(nextClip.inicio);
@@ -209,7 +230,10 @@ function skipToNextClip() {
 
 function skipToPrevClip() {
   const currentTime = previewVideoPlayer.currentTime;
-  const sortedClips = [...clips].sort((a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio));
+  const activeClips = clips.length > 0 ? clips : jsonClips;
+  const sortedClips = [...activeClips].sort(
+    (a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio),
+  );
 
   let prevClip = null;
   for (let i = sortedClips.length - 1; i >= 0; i--) {
@@ -236,10 +260,15 @@ async function initAudioDevices() {
   }
 
   try {
-    await navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => stream.getTracks().forEach(t => t.stop())).catch(() => { });
+    await navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => stream.getTracks().forEach((t) => t.stop()))
+      .catch(() => {});
 
     const devices = await navigator.mediaDevices.enumerateDevices();
-    const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
+    const audioOutputs = devices.filter(
+      (device) => device.kind === "audiooutput",
+    );
 
     if (audioOutputs.length === 0) {
       audioOutputSelect.innerHTML = '<option value="">Default Only</option>';
@@ -247,12 +276,14 @@ async function initAudioDevices() {
       return;
     }
 
-    audioOutputSelect.innerHTML = '<option value="default">Default Output</option>';
-    audioOutputs.forEach(device => {
-      if (device.deviceId !== 'default') {
-        const option = document.createElement('option');
+    audioOutputSelect.innerHTML =
+      '<option value="default">Default Output</option>';
+    audioOutputs.forEach((device) => {
+      if (device.deviceId !== "default") {
+        const option = document.createElement("option");
         option.value = device.deviceId;
-        option.textContent = device.label || `Speaker ${audioOutputs.indexOf(device) + 1}`;
+        option.textContent =
+          device.label || `Speaker ${audioOutputs.indexOf(device) + 1}`;
         audioOutputSelect.appendChild(option);
       }
     });
@@ -263,12 +294,12 @@ async function initAudioDevices() {
 
 async function handleAudioChange() {
   const deviceId = audioOutputSelect.value;
-  if ('setSinkId' in previewVideoPlayer) {
+  if ("setSinkId" in previewVideoPlayer) {
     try {
       await previewVideoPlayer.setSinkId(deviceId);
       showNotification("Audio output changed");
     } catch (error) {
-      console.error('Error setting audio output:', error);
+      console.error("Error setting audio output:", error);
       showNotification("Failed to change audio output");
     }
   } else {
@@ -342,7 +373,8 @@ export function renderTimeline() {
 }
 
 function drawClips(duration) {
-  clips.forEach((clip) => {
+  const activeClips = clips.length > 0 ? clips : jsonClips;
+  activeClips.forEach((clip) => {
     const startSeconds = timeStringToSeconds(clip.inicio);
     const endSeconds = timeStringToSeconds(clip.fin);
 
@@ -350,7 +382,8 @@ function drawClips(duration) {
     const durationPercent = ((endSeconds - startSeconds) / duration) * 100;
 
     const clipEl = document.createElement("div");
-    clipEl.className = "absolute top-2 bottom-2 bg-accent-100/20 border border-accent-100/50 hover:bg-accent-100/40 hover:border-accent-100 cursor-pointer transition-colors rounded-sm group overflow-hidden shadow-sm";
+    clipEl.className =
+      "absolute top-2 bottom-2 bg-accent-100/20 border border-accent-100/50 hover:bg-accent-100/40 hover:border-accent-100 cursor-pointer transition-colors rounded-sm group overflow-hidden shadow-sm";
     clipEl.style.left = `${startPercent}%`;
     clipEl.style.width = `${durationPercent}%`;
 
@@ -358,11 +391,13 @@ function drawClips(duration) {
     clipEl.dataset.end = endSeconds;
 
     const stripe = document.createElement("div");
-    stripe.className = "absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_5px,#000_5px,#000_10px)] pointer-events-none";
+    stripe.className =
+      "absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,transparent,transparent_5px,#000_5px,#000_10px)] pointer-events-none";
     clipEl.appendChild(stripe);
 
     const label = document.createElement("div");
-    label.className = "absolute top-1 left-1 text-[10px] text-gray-200 font-bold truncate max-w-full px-1 drop-shadow-md pointer-events-none select-none";
+    label.className =
+      "absolute top-1 left-1 text-[10px] text-gray-200 font-bold truncate max-w-full px-1 drop-shadow-md pointer-events-none select-none";
     label.textContent = clip.name;
     clipEl.appendChild(label);
 
@@ -401,7 +436,8 @@ function drawRuler(duration) {
     const percent = (seconds / duration) * 100;
 
     const mark = document.createElement("div");
-    mark.className = "absolute top-0 bottom-0 border-l border-gray-600/50 pl-1 pt-1";
+    mark.className =
+      "absolute top-0 bottom-0 border-l border-gray-600/50 pl-1 pt-1";
     mark.style.left = `${percent}%`;
 
     const label = document.createElement("span");
@@ -413,8 +449,12 @@ function drawRuler(duration) {
 }
 
 function formatTimeShort(totalSeconds) {
-  const m = Math.floor(totalSeconds / 60);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
   const s = Math.floor(totalSeconds % 60);
+  if (h > 0) {
+    return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  }
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 

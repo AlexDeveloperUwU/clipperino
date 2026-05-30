@@ -2,12 +2,18 @@ export const editorTabBtn = document.getElementById("editorTabBtn");
 export const viewerTabBtn = document.getElementById("viewerTabBtn");
 export const previewTabBtn = document.getElementById("previewTabBtn");
 
+export const editorTabGroup = document.getElementById("editorTabGroup");
+export const viewerTabGroup = document.getElementById("viewerTabGroup");
+export const previewTabGroup = document.getElementById("previewTabGroup");
+
 export const editorTab = document.getElementById("editorTab");
 export const viewerTab = document.getElementById("viewerTab");
 export const previewTab = document.getElementById("previewTab");
 
 export const csvFileInput = document.getElementById("csvFileInput");
-export const transcriptionsTable = document.getElementById("transcriptionsTable");
+export const transcriptionsTable = document.getElementById(
+  "transcriptionsTable",
+);
 export const clipList = document.getElementById("clipList");
 export const exportJsonBtn = document.getElementById("exportJsonBtn");
 export const exportMarkdownBtn = document.getElementById("exportMarkdownBtn");
@@ -24,7 +30,9 @@ export const saveClipBtn = document.getElementById("saveClipBtn");
 
 export const csvFileLabel = document.getElementById("csvFileLabel");
 export const clearCsvBtn = document.getElementById("clearCsvBtn");
-export const selectedTranscriptionsTable = document.getElementById("selectedTranscriptionsTable");
+export const selectedTranscriptionsTable = document.getElementById(
+  "selectedTranscriptionsTable",
+);
 export const selectedCount = document.getElementById("selectedCount");
 
 export const editClipNameModal = document.getElementById("editClipNameModal");
@@ -45,6 +53,26 @@ export const editorTabActions = document.getElementById("editorTabActions");
 export const viewerTabActions = document.getElementById("viewerTabActions");
 export const previewTabActions = document.getElementById("previewTabActions");
 
+export const editorHelpBtn = document.getElementById("editorHelpBtn");
+export const previewHelpBtn = document.getElementById("previewHelpBtn");
+export const viewerHelpBtn = document.getElementById("viewerHelpBtn");
+export const editorHelpModal = document.getElementById("editorHelpModal");
+export const previewHelpModal = document.getElementById("previewHelpModal");
+export const viewerHelpModal = document.getElementById("viewerHelpModal");
+export const editorHelpCloseBtn = document.getElementById("editorHelpCloseBtn");
+export const previewHelpCloseBtn = document.getElementById(
+  "previewHelpCloseBtn",
+);
+export const viewerHelpCloseBtn = document.getElementById("viewerHelpCloseBtn");
+
+export const changelogModal = document.getElementById("changelogModal");
+export const changelogCloseBtn = document.getElementById("changelogCloseBtn");
+export const changelogContent = document.getElementById("changelogContent");
+
+export const startupModal = document.getElementById("startupModal");
+export const startupLoadBtn = document.getElementById("startupLoadBtn");
+export const startupFreshBtn = document.getElementById("startupFreshBtn");
+
 export const exportEDLBtn = document.getElementById("exportEDLBtn");
 
 export const currentYear = document.getElementById("currentYear");
@@ -61,8 +89,12 @@ export const previewVideoPlayer = document.getElementById("previewVideoPlayer");
 export const videoPlaceholder = document.getElementById("videoPlaceholder");
 export const placeholderTitle = document.getElementById("placeholderTitle");
 export const placeholderText = document.getElementById("placeholderText");
-export const timelineScrollContainer = document.getElementById("timelineScrollContainer");
-export const timelineContentWrapper = document.getElementById("timelineContentWrapper");
+export const timelineScrollContainer = document.getElementById(
+  "timelineScrollContainer",
+);
+export const timelineContentWrapper = document.getElementById(
+  "timelineContentWrapper",
+);
 export const timelineTrack = document.getElementById("timelineTrack");
 export const timelineRuler = document.getElementById("timelineRuler");
 export const playhead = document.getElementById("playhead");

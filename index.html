@@ -1,430 +1,1099 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clipperino</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            dark: {
-              50: '#2d2d2d',
-              100: '#1e1e1e',
-              200: '#171717',
-              300: '#121212',
-              400: '#0a0a0a'
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clipperino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              dark: {
+                50: "#2d2d2d",
+                100: "#1e1e1e",
+                200: "#171717",
+                300: "#121212",
+                400: "#0a0a0a",
+              },
+              accent: {
+                100: "#3b82f6",
+                200: "#2563eb",
+              },
+              secondary: {
+                100: "#10b981",
+                200: "#059669",
+              },
             },
-            accent: {
-              100: '#3b82f6',
-              200: '#2563eb'
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
             },
-            secondary: {
-              100: '#10b981',
-              200: '#059669'
-            }
           },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="stylesheet" href="styles.css">
-</head>
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-<body class="bg-dark-300 text-gray-100 h-screen font-sans flex flex-col overflow-hidden">
-
-  <header class="flex-none px-4 py-3 bg-dark-400 border-b border-dark-50 flex items-center justify-between z-10">
-    <div class="flex items-center gap-4">
-      <h1 class="text-xl font-bold text-white flex items-center gap-2">
-        <i data-lucide="scissors" class="text-accent-100 w-6 h-6"></i> Clipperino
-      </h1>
-      <div class="h-6 w-px bg-dark-50 mx-2"></div>
-      <div class="flex">
-        <button id="editorTabBtn" class="px-3 py-1.5 text-sm font-medium rounded-md bg-dark-100 text-white mr-2 transition-colors">
-          Editor
-        </button>
-        <button id="previewTabBtn" class="px-3 py-1.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-dark-50 mr-2 transition-colors">
-          Preview
-        </button>
-        <button id="viewerTabBtn" class="px-3 py-1.5 text-sm font-medium rounded-md text-gray-400 hover:text-white hover:bg-dark-50 transition-colors">
-          Viewer
-        </button>
+  <body
+    class="bg-dark-300 text-gray-100 h-screen font-sans flex flex-col overflow-hidden"
+  >
+    <header
+      class="flex-none px-4 py-3 bg-dark-400 border-b border-dark-50 flex items-center justify-between z-10"
+    >
+      <div class="flex items-center gap-4">
+        <h1 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="scissors" class="text-accent-100 w-6 h-6"></i>
+          Clipperino
+        </h1>
+        <div class="h-6 w-px bg-dark-50 mx-2"></div>
+        <div class="flex items-center gap-1">
+          <div
+            id="editorTabGroup"
+            class="group flex items-center rounded-md bg-dark-100 transition-colors"
+          >
+            <button
+              id="editorTabBtn"
+              class="pl-3 pr-1.5 py-1.5 text-sm font-medium text-white transition-colors"
+            >
+              Editor
+            </button>
+            <button
+              id="editorHelpBtn"
+              title="How to use the Editor"
+              class="pl-0.5 pr-2.5 py-1.5 text-gray-400 hover:text-accent-100 transition-colors"
+            >
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <div
+            id="previewTabGroup"
+            class="group flex items-center rounded-md hover:bg-dark-50 transition-colors"
+          >
+            <button
+              id="previewTabBtn"
+              class="pl-3 pr-1.5 py-1.5 text-sm font-medium text-gray-400 group-hover:text-white transition-colors"
+            >
+              Preview
+            </button>
+            <button
+              id="previewHelpBtn"
+              title="How to use the Preview"
+              class="pl-0.5 pr-2.5 py-1.5 text-gray-500 hover:text-accent-100 transition-colors"
+            >
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+          <div
+            id="viewerTabGroup"
+            class="group flex items-center rounded-md hover:bg-dark-50 transition-colors"
+          >
+            <button
+              id="viewerTabBtn"
+              class="pl-3 pr-1.5 py-1.5 text-sm font-medium text-gray-400 group-hover:text-white transition-colors"
+            >
+              Viewer
+            </button>
+            <button
+              id="viewerHelpBtn"
+              title="How to use the Viewer"
+              class="pl-0.5 pr-2.5 py-1.5 text-gray-500 hover:text-accent-100 transition-colors"
+            >
+              <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div id="tabActions" class="flex items-center gap-3">
-      <div id="editorTabActions" class="flex items-center gap-2">
-        <label id="csvFileLabel" for="csvFileInput" class="px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-accent-100/20">
-          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-          <span>Import CSV</span>
-        </label>
-        <button id="clearCsvBtn" class="px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 hidden text-red-400 hover:text-red-300">
-          <i data-lucide="trash-2" class="w-4 h-4"></i>
-          <span>Clear Data</span>
-        </button>
-        <input type="file" id="csvFileInput" class="hidden" accept=".csv">
+      <div id="tabActions" class="flex items-center gap-3">
+        <div id="editorTabActions" class="flex items-center gap-2">
+          <label
+            id="csvFileLabel"
+            for="csvFileInput"
+            class="px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-accent-100/20"
+          >
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            <span>Import CSV</span>
+          </label>
+          <button
+            id="clearCsvBtn"
+            class="px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 hidden text-red-400 hover:text-red-300"
+          >
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Clear Data</span>
+          </button>
+          <input type="file" id="csvFileInput" class="hidden" accept=".csv" />
+        </div>
+
+        <div id="previewTabActions" class="hidden flex items-center gap-2">
+          <label
+            id="videoFileLabel"
+            for="videoFileInput"
+            class="px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-accent-100/20"
+          >
+            <i data-lucide="film" class="w-4 h-4"></i>
+            <span id="videoFileLabelText">Load Video</span>
+          </label>
+          <button
+            id="clearVideoBtn"
+            class="px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 hidden text-red-400 hover:text-red-300"
+          >
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Clear Video</span>
+          </button>
+          <input
+            type="file"
+            id="videoFileInput"
+            class="hidden"
+            accept="video/*"
+          />
+        </div>
+
+        <div id="viewerTabActions" class="hidden flex items-center gap-2">
+          <label
+            id="jsonFileLabel"
+            for="jsonFileInput"
+            class="px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-accent-100/20"
+          >
+            <i data-lucide="file-json" class="w-4 h-4"></i>
+            <span>Import JSON</span>
+          </label>
+          <button
+            id="clearJsonBtn"
+            class="px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 hidden text-red-400 hover:text-red-300"
+          >
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Clear Data</span>
+          </button>
+          <input type="file" id="jsonFileInput" class="hidden" accept=".json" />
+        </div>
       </div>
+    </header>
 
-      <div id="previewTabActions" class="hidden flex items-center gap-2">
-        <label id="videoFileLabel" for="videoFileInput" class="px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-accent-100/20">
-          <i data-lucide="film" class="w-4 h-4"></i>
-          <span id="videoFileLabelText">Load Video</span>
-        </label>
-        <button id="clearVideoBtn" class="px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 hidden text-red-400 hover:text-red-300">
-          <i data-lucide="trash-2" class="w-4 h-4"></i>
-          <span>Clear Video</span>
-        </button>
-        <input type="file" id="videoFileInput" class="hidden" accept="video/*">
-      </div>
+    <main class="flex-1 flex flex-col min-h-0 overflow-hidden relative w-full">
+      <div
+        id="editorTab"
+        class="relative tab-content h-full flex flex-col p-4 transition-all duration-200"
+      >
+        <div
+          class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full min-h-0 pointer-events-none"
+        >
+          <div
+            class="lg:col-span-2 flex flex-col gap-4 h-full min-h-0 pointer-events-auto"
+          >
+            <div
+              class="bg-dark-200 rounded-lg shadow-lg flex flex-col flex-1 min-h-0 border border-dark-50"
+            >
+              <div
+                class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14"
+              >
+                <h2
+                  class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2"
+                >
+                  <i data-lucide="list" class="text-gray-500 w-4 h-4"></i>
+                  Transcripts
+                </h2>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex items-center gap-1 border-r border-dark-50 pr-3 mr-1"
+                  >
+                    <button
+                      id="btnScrollTop"
+                      class="p-1.5 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors"
+                      title="Scroll to Top"
+                    >
+                      <i data-lucide="arrow-up-to-line" class="w-4 h-4"></i>
+                    </button>
+                    <button
+                      id="btnScrollBottom"
+                      class="p-1.5 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors"
+                      title="Scroll to Bottom"
+                    >
+                      <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
+                    </button>
+                  </div>
+                  <div class="relative">
+                    <input
+                      id="searchInput"
+                      type="text"
+                      placeholder="Search..."
+                      class="py-1 px-3 pr-28 bg-dark-50 border border-dark-50 rounded focus:outline-none focus:ring-1 focus:ring-accent-100 text-white text-xs w-64"
+                    />
+                  </div>
+                  <span id="status" class="text-xs text-gray-500 font-mono"
+                    >0 lines</span
+                  >
+                </div>
+              </div>
 
-      <div id="viewerTabActions" class="hidden flex items-center gap-2">
-        <label id="jsonFileLabel" for="jsonFileInput" class="px-3 py-1.5 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 shadow-lg shadow-accent-100/20">
-          <i data-lucide="file-json" class="w-4 h-4"></i>
-          <span>Import JSON</span>
-        </label>
-        <button id="clearJsonBtn" class="px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 hidden text-red-400 hover:text-red-300">
-          <i data-lucide="trash-2" class="w-4 h-4"></i>
-          <span>Clear Data</span>
-        </button>
-        <input type="file" id="jsonFileInput" class="hidden" accept=".json">
-      </div>
-    </div>
-  </header>
+              <div
+                id="transcriptionsContainer"
+                class="overflow-y-auto flex-1 bg-dark-300 scrollbar-thin"
+              >
+                <table class="w-full border-collapse">
+                  <thead class="sticky top-0 z-10 bg-dark-100 shadow-sm">
+                    <tr class="text-left">
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24"
+                      >
+                        Start
+                      </th>
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24"
+                      >
+                        End
+                      </th>
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      >
+                        Transcript
+                      </th>
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-28"
+                      >
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="transcriptionsTable"
+                    class="divide-y divide-dark-50"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
 
-  <main class="flex-1 flex flex-col min-h-0 overflow-hidden relative w-full">
+            <div
+              class="bg-dark-200 rounded-lg shadow-lg flex flex-col h-[35%] min-h-[200px] border border-dark-50"
+            >
+              <div
+                class="px-4 py-2 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-12"
+              >
+                <div class="flex items-center gap-2">
+                  <i
+                    data-lucide="check-circle-2"
+                    class="text-secondary-100 w-4 h-4"
+                  ></i>
+                  <h2
+                    class="text-sm font-bold text-white uppercase tracking-wider"
+                  >
+                    Current Selection
+                  </h2>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span
+                    id="selectedCount"
+                    class="text-xs text-secondary-100 font-mono bg-secondary-100/10 px-2 py-0.5 rounded"
+                    >0 lines</span
+                  >
+                  <div class="h-4 w-px bg-dark-50"></div>
+                  <button
+                    id="clearAllBtn"
+                    class="text-xs text-gray-400 hover:text-white transition-colors"
+                  >
+                    Clear All
+                  </button>
+                  <button
+                    id="addClipBtn"
+                    class="px-3 py-1 bg-secondary-100 hover:bg-secondary-200 text-white text-xs font-bold uppercase rounded transition-colors flex items-center gap-2 shadow-sm"
+                  >
+                    <i data-lucide="plus" class="w-3 h-3"></i> Add Clip
+                  </button>
+                </div>
+              </div>
 
-    <div id="editorTab" class="relative tab-content h-full flex flex-col p-4 transition-all duration-200">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full min-h-0 pointer-events-none">
+              <div class="overflow-y-auto flex-1 bg-dark-300 scrollbar-thin">
+                <table class="w-full border-collapse">
+                  <thead class="sticky top-0 z-10 bg-dark-200 shadow-sm">
+                    <tr class="text-left">
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24"
+                      >
+                        Start
+                      </th>
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24"
+                      >
+                        End
+                      </th>
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+                      >
+                        Transcript
+                      </th>
+                      <th
+                        class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-24"
+                      >
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="selectedTranscriptionsTable"
+                    class="divide-y divide-dark-50"
+                  ></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
 
-        <div class="lg:col-span-2 flex flex-col gap-4 h-full min-h-0 pointer-events-auto">
-
-          <div class="bg-dark-200 rounded-lg shadow-lg flex flex-col flex-1 min-h-0 border border-dark-50">
-            <div class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14">
-              <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <i data-lucide="list" class="text-gray-500 w-4 h-4"></i> Transcripts
+          <div
+            class="lg:col-span-1 flex flex-col h-full min-h-0 bg-dark-200 rounded-lg shadow-lg border border-dark-50 pointer-events-auto"
+          >
+            <div
+              class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14"
+            >
+              <h2
+                class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2"
+              >
+                <i data-lucide="clapperboard" class="text-gray-500 w-4 h-4"></i>
+                Created Clips
               </h2>
-              <div class="flex items-center gap-3">
-                <div class="flex items-center gap-1 border-r border-dark-50 pr-3 mr-1">
-                  <button id="btnScrollTop" class="p-1.5 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors" title="Scroll to Top">
-                    <i data-lucide="arrow-up-to-line" class="w-4 h-4"></i>
-                  </button>
-                  <button id="btnScrollBottom" class="p-1.5 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors" title="Scroll to Bottom">
-                    <i data-lucide="arrow-down-to-line" class="w-4 h-4"></i>
-                  </button>
-                </div>
-                <div class="relative">
-                  <input id="searchInput" type="text" placeholder="Search..." class="py-1 px-3 pr-28 bg-dark-50 border border-dark-50 rounded focus:outline-none focus:ring-1 focus:ring-accent-100 text-white text-xs w-64">
-                </div>
-                <span id="status" class="text-xs text-gray-500 font-mono">0 lines</span>
-              </div>
+              <span
+                class="px-2 py-0.5 bg-dark-50 text-xs font-mono rounded text-gray-300"
+                id="clipCount"
+                >0</span
+              >
             </div>
 
-            <div id="transcriptionsContainer" class="overflow-y-auto flex-1 bg-dark-300 scrollbar-thin">
-              <table class="w-full border-collapse">
-                <thead class="sticky top-0 z-10 bg-dark-100 shadow-sm">
-                  <tr class="text-left">
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">Start</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">End</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Transcript</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-28">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="transcriptionsTable" class="divide-y divide-dark-50"></tbody>
-              </table>
+            <div
+              id="clipListContainer"
+              class="flex-1 overflow-y-auto p-3 bg-dark-300 scrollbar-thin"
+            >
+              <div id="clipList" class="space-y-3"></div>
             </div>
-          </div>
 
-          <div class="bg-dark-200 rounded-lg shadow-lg flex flex-col h-[35%] min-h-[200px] border border-dark-50">
-            <div class="px-4 py-2 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-12">
-              <div class="flex items-center gap-2">
-                <i data-lucide="check-circle-2" class="text-secondary-100 w-4 h-4"></i>
-                <h2 class="text-sm font-bold text-white uppercase tracking-wider">Current Selection</h2>
-              </div>
-              <div class="flex items-center gap-3">
-                <span id="selectedCount" class="text-xs text-secondary-100 font-mono bg-secondary-100/10 px-2 py-0.5 rounded">0 lines</span>
-                <div class="h-4 w-px bg-dark-50"></div>
-                <button id="clearAllBtn" class="text-xs text-gray-400 hover:text-white transition-colors">
-                  Clear All
+            <div class="p-3 border-t border-dark-50 bg-dark-100 flex-none">
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  id="exportJsonBtn"
+                  class="px-3 py-2 bg-dark-50 hover:bg-dark-50/80 text-gray-200 border border-dark-50 text-xs font-medium rounded transition-colors flex items-center justify-center gap-2"
+                >
+                  <i
+                    data-lucide="file-json"
+                    class="text-accent-100 w-3 h-3"
+                  ></i>
+                  JSON
                 </button>
-                <button id="addClipBtn" class="px-3 py-1 bg-secondary-100 hover:bg-secondary-200 text-white text-xs font-bold uppercase rounded transition-colors flex items-center gap-2 shadow-sm">
-                  <i data-lucide="plus" class="w-3 h-3"></i> Add Clip
+                <button
+                  id="exportMarkdownBtn"
+                  class="px-3 py-2 bg-dark-50 hover:bg-dark-50/80 text-gray-200 border border-dark-50 text-xs font-medium rounded transition-colors flex items-center justify-center gap-2"
+                >
+                  <i
+                    data-lucide="file-text"
+                    class="text-accent-100 w-3 h-3"
+                  ></i>
+                  MD
+                </button>
+                <button
+                  id="exportEDLBtn"
+                  class="col-span-2 px-3 py-2 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase rounded transition-colors flex items-center justify-center gap-2 shadow-lg shadow-accent-100/10"
+                >
+                  <i data-lucide="film" class="w-4 h-4"></i> Export EDL
+                  (Resolve/Premiere)
                 </button>
               </div>
             </div>
-
-            <div class="overflow-y-auto flex-1 bg-dark-300 scrollbar-thin">
-              <table class="w-full border-collapse">
-                <thead class="sticky top-0 z-10 bg-dark-200 shadow-sm">
-                  <tr class="text-left">
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">Start</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">End</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Transcript</th>
-                    <th class="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-24">Action</th>
-                  </tr>
-                </thead>
-                <tbody id="selectedTranscriptionsTable" class="divide-y divide-dark-50"></tbody>
-              </table>
-            </div>
           </div>
         </div>
 
-        <div class="lg:col-span-1 flex flex-col h-full min-h-0 bg-dark-200 rounded-lg shadow-lg border border-dark-50 pointer-events-auto">
-          <div class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="clapperboard" class="text-gray-500 w-4 h-4"></i> Created Clips
-            </h2>
-            <span class="px-2 py-0.5 bg-dark-50 text-xs font-mono rounded text-gray-300" id="clipCount">0</span>
-          </div>
-
-          <div id="clipListContainer" class="flex-1 overflow-y-auto p-3 bg-dark-300 scrollbar-thin">
-            <div id="clipList" class="space-y-3"></div>
-          </div>
-
-          <div class="p-3 border-t border-dark-50 bg-dark-100 flex-none">
-            <div class="grid grid-cols-2 gap-2">
-              <button id="exportJsonBtn" class="px-3 py-2 bg-dark-50 hover:bg-dark-50/80 text-gray-200 border border-dark-50 text-xs font-medium rounded transition-colors flex items-center justify-center gap-2">
-                <i data-lucide="file-json" class="text-accent-100 w-3 h-3"></i> JSON
-              </button>
-              <button id="exportMarkdownBtn" class="px-3 py-2 bg-dark-50 hover:bg-dark-50/80 text-gray-200 border border-dark-50 text-xs font-medium rounded transition-colors flex items-center justify-center gap-2">
-                <i data-lucide="file-text" class="text-accent-100 w-3 h-3"></i> MD
-              </button>
-              <button id="exportEDLBtn" class="col-span-2 px-3 py-2 bg-accent-100 hover:bg-accent-200 text-white text-xs font-bold uppercase rounded transition-colors flex items-center justify-center gap-2 shadow-lg shadow-accent-100/10">
-                <i data-lucide="film" class="w-4 h-4"></i> Export EDL (Resolve/Premiere)
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="editorDragOverlay" class="absolute inset-0 z-50 bg-dark-400/90 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-200 opacity-0 pointer-events-none scale-95 rounded-lg border-2 border-transparent">
-        <div class="p-16 w-full max-w-lg mx-4 rounded-2xl border-2 border-dashed border-accent-100 bg-accent-100/10 flex flex-col items-center gap-6 shadow-2xl shadow-accent-100/20 transform transition-transform">
-          <i data-lucide="file-spreadsheet" class="w-20 h-20 text-accent-100 animate-bounce"></i>
-          <div class="text-center">
-            <h3 class="text-3xl font-bold text-white mb-3">Drop CSV File Here</h3>
-            <p class="text-gray-300 text-lg">Import transcriptions to start editing</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="previewTab" class="relative tab-content hidden h-full flex-col p-4 transition-all duration-200">
-      <div class="flex flex-col h-full bg-dark-200 rounded-lg shadow-lg border border-dark-50 overflow-hidden">
-
-        <div class="flex-1 relative bg-dark-400 flex items-center justify-center group overflow-hidden">
-          <video id="previewVideoPlayer" class="w-full h-full object-contain focus:outline-none"></video>
-
-          <div id="videoPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 gap-6 pointer-events-none bg-dark-300">
-            <div class="relative">
-              <div class="absolute -inset-4 bg-accent-100/10 rounded-full blur-xl animate-pulse"></div>
-              <div class="bg-dark-100 p-8 rounded-2xl border border-dark-50 shadow-2xl relative z-10">
-                <i data-lucide="film" class="w-16 h-16 text-gray-600"></i>
-              </div>
-            </div>
+        <div
+          id="editorDragOverlay"
+          class="absolute inset-0 z-50 bg-dark-400/90 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-200 opacity-0 pointer-events-none scale-95 rounded-lg border-2 border-transparent"
+        >
+          <div
+            class="p-16 w-full max-w-lg mx-4 rounded-2xl border-2 border-dashed border-accent-100 bg-accent-100/10 flex flex-col items-center gap-6 shadow-2xl shadow-accent-100/20 transform transition-transform"
+          >
+            <i
+              data-lucide="file-spreadsheet"
+              class="w-20 h-20 text-accent-100 animate-bounce"
+            ></i>
             <div class="text-center">
-              <h3 id="placeholderTitle" class="text-lg font-bold text-gray-300 mb-1">No Video Loaded</h3>
-              <p id="placeholderText" class="text-sm text-gray-500">Import a video file to preview your clips</p>
-            </div>
-          </div>
-
-          <div id="subtitleOverlay" class="absolute bottom-4 left-0 right-0 text-center px-8 pointer-events-none hidden z-30 transition-opacity duration-200">
-            <span id="subtitleText" class="subtitle-text bg-black/70 text-white px-4 py-2 rounded-lg text-lg backdrop-blur-sm shadow-lg"></span>
-          </div>
-        </div>
-
-        <div class="h-12 bg-dark-200 border-t border-dark-50 flex items-center justify-between px-4 z-20 shrink-0">
-          <div class="flex items-center gap-2">
-            <button id="prevClipBtn" class="p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white transition-colors" title="Previous Clip">
-              <i data-lucide="skip-back" class="w-4 h-4"></i>
-            </button>
-            <button id="playPauseBtn" class="p-2 bg-accent-100 hover:bg-accent-200 text-white rounded-full transition-colors shadow-lg shadow-accent-100/20" title="Play/Pause">
-              <i data-lucide="play" class="w-4 h-4 fill-current"></i>
-            </button>
-            <button id="nextClipBtn" class="p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white transition-colors" title="Next Clip">
-              <i data-lucide="skip-forward" class="w-4 h-4"></i>
-            </button>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <button id="toggleSubtitlesBtn" class="p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white transition-colors flex items-center gap-2" title="Toggle Subtitles">
-              <i data-lucide="message-square" class="w-4 h-4"></i>
-              <span class="text-xs font-medium">CC</span>
-            </button>
-            <div class="h-4 w-px bg-dark-50"></div>
-            <div class="relative group">
-              <i data-lucide="speaker" class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-              <select id="audioOutputSelect" class="bg-dark-100 border border-dark-50 text-gray-300 text-xs rounded py-1.5 pl-9 pr-8 focus:outline-none focus:border-accent-100 appearance-none cursor-pointer hover:bg-dark-50 transition-colors max-w-[200px] truncate">
-                <option value="default">Default Output</option>
-              </select>
-              <i data-lucide="chevron-down" class="w-3 h-3 text-gray-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="h-64 bg-dark-100 border-t border-dark-50 flex flex-col relative select-none">
-          <div class="px-4 py-2 flex justify-between items-center border-b border-dark-50/50 bg-dark-200 flex-none z-10">
-            <div class="flex items-center gap-4">
-              <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                <i data-lucide="activity" class="w-3 h-3"></i> Timeline
+              <h3 class="text-3xl font-bold text-white mb-3">
+                Drop CSV File Here
               </h3>
-              <div class="h-3 w-px bg-dark-50"></div>
-              <div class="flex items-center gap-2">
-                <button id="zoomOutBtn" class="p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors" title="Zoom Out">
-                  <i data-lucide="minus" class="w-3 h-3"></i>
-                </button>
+              <p class="text-gray-300 text-lg">
+                Import transcriptions to start editing
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                <div class="relative group flex items-center">
-                  <input type="number" id="zoomInput" value="100" min="10" max="5000" class="no-spinner bg-dark-50 border border-dark-50 text-white text-xs font-mono rounded w-14 text-center py-0.5 focus:outline-none focus:border-accent-100 appearance-none">
-                  <span class="absolute right-3 text-xs text-gray-500 pointer-events-none">%</span>
+      <div
+        id="previewTab"
+        class="relative tab-content hidden h-full flex-col p-4 transition-all duration-200"
+      >
+        <div
+          class="flex flex-col h-full bg-dark-200 rounded-lg shadow-lg border border-dark-50 overflow-hidden"
+        >
+          <div
+            class="flex-1 relative bg-dark-400 flex items-center justify-center group overflow-hidden"
+          >
+            <video
+              id="previewVideoPlayer"
+              class="w-full h-full object-contain focus:outline-none"
+            ></video>
+
+            <div
+              id="videoPlaceholder"
+              class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 gap-6 pointer-events-none bg-dark-300"
+            >
+              <div class="relative">
+                <div
+                  class="absolute -inset-4 bg-accent-100/10 rounded-full blur-xl animate-pulse"
+                ></div>
+                <div
+                  class="bg-dark-100 p-8 rounded-2xl border border-dark-50 shadow-2xl relative z-10"
+                >
+                  <i data-lucide="film" class="w-16 h-16 text-gray-600"></i>
                 </div>
-
-                <button id="zoomInBtn" class="p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors" title="Zoom In">
-                  <i data-lucide="plus" class="w-3 h-3"></i>
-                </button>
               </div>
-              <span id="snapIndicator" class="text-[10px] text-yellow-500 font-bold uppercase tracking-wider opacity-0 transition-opacity">
-                <i data-lucide="magnet" class="w-3 h-3 inline-block mr-1"></i>Snapped
-              </span>
-            </div>
-            <span id="timelineDuration" class="text-xs font-mono text-gray-500">00:00:00</span>
-          </div>
-
-          <div class="flex-1 overflow-x-auto scrollbar-thin bg-dark-300/80 relative" id="timelineScrollContainer">
-            <div id="timelineContentWrapper" class="h-full relative min-w-full transition-[width] duration-200 ease-out">
-
-              <div id="timelineRuler" class="h-6 w-full border-b border-dark-50/30 bg-dark-200/50 relative text-[10px] text-gray-500 font-mono select-none pointer-events-none"></div>
-
-              <div id="timelineTrack" class="absolute top-6 bottom-0 left-0 right-0">
+              <div class="text-center">
+                <h3
+                  id="placeholderTitle"
+                  class="text-lg font-bold text-gray-300 mb-1"
+                >
+                  No Video Loaded
+                </h3>
+                <p id="placeholderText" class="text-sm text-gray-500">
+                  Import a video file to preview your clips
+                </p>
               </div>
+            </div>
 
-              <div id="snapLine" class="absolute top-0 bottom-0 w-px bg-yellow-400 z-30 pointer-events-none transform -translate-x-1/2 h-full shadow-[0_0_10px_rgba(250,204,21,0.5)] hidden"></div>
+            <div
+              id="subtitleOverlay"
+              class="absolute bottom-4 left-0 right-0 text-center px-8 pointer-events-none hidden z-30 transition-opacity duration-200"
+            >
+              <span
+                id="subtitleText"
+                class="subtitle-text bg-black/70 text-white px-4 py-2 rounded-lg text-lg backdrop-blur-sm shadow-lg"
+              ></span>
+            </div>
+          </div>
 
-              <div id="playhead" class="absolute top-0 bottom-0 z-40 transform -translate-x-1/2 h-full group cursor-col-resize w-4 flex flex-col items-center">
-                <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-red-500 drop-shadow-md"></div>
-                <div class="w-px bg-red-500 h-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+          <div
+            class="h-12 bg-dark-200 border-t border-dark-50 flex items-center justify-between px-4 z-20 shrink-0"
+          >
+            <div class="flex items-center gap-2">
+              <button
+                id="prevClipBtn"
+                class="p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white transition-colors"
+                title="Previous Clip"
+              >
+                <i data-lucide="skip-back" class="w-4 h-4"></i>
+              </button>
+              <button
+                id="playPauseBtn"
+                class="p-2 bg-accent-100 hover:bg-accent-200 text-white rounded-full transition-colors shadow-lg shadow-accent-100/20"
+                title="Play/Pause"
+              >
+                <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+              </button>
+              <button
+                id="nextClipBtn"
+                class="p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white transition-colors"
+                title="Next Clip"
+              >
+                <i data-lucide="skip-forward" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button
+                id="toggleSubtitlesBtn"
+                class="p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+                title="Toggle Subtitles"
+              >
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                <span class="text-xs font-medium">CC</span>
+              </button>
+              <div class="h-4 w-px bg-dark-50"></div>
+              <div class="relative group">
+                <i
+                  data-lucide="speaker"
+                  class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                ></i>
+                <select
+                  id="audioOutputSelect"
+                  class="bg-dark-100 border border-dark-50 text-gray-300 text-xs rounded py-1.5 pl-9 pr-8 focus:outline-none focus:border-accent-100 appearance-none cursor-pointer hover:bg-dark-50 transition-colors max-w-[200px] truncate"
+                >
+                  <option value="default">Default Output</option>
+                </select>
+                <i
+                  data-lucide="chevron-down"
+                  class="w-3 h-3 text-gray-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"
+                ></i>
               </div>
+            </div>
+          </div>
 
+          <div
+            class="h-64 bg-dark-100 border-t border-dark-50 flex flex-col relative select-none"
+          >
+            <div
+              class="px-4 py-2 flex justify-between items-center border-b border-dark-50/50 bg-dark-200 flex-none z-10"
+            >
+              <div class="flex items-center gap-4">
+                <h3
+                  class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2"
+                >
+                  <i data-lucide="activity" class="w-3 h-3"></i> Timeline
+                </h3>
+                <div class="h-3 w-px bg-dark-50"></div>
+                <div class="flex items-center gap-2">
+                  <button
+                    id="zoomOutBtn"
+                    class="p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors"
+                    title="Zoom Out"
+                  >
+                    <i data-lucide="minus" class="w-3 h-3"></i>
+                  </button>
+
+                  <div class="relative group flex items-center">
+                    <input
+                      type="number"
+                      id="zoomInput"
+                      value="100"
+                      min="10"
+                      max="5000"
+                      class="no-spinner bg-dark-50 border border-dark-50 text-white text-xs font-mono rounded w-14 text-center py-0.5 focus:outline-none focus:border-accent-100 appearance-none"
+                    />
+                    <span
+                      class="absolute right-3 text-xs text-gray-500 pointer-events-none"
+                      >%</span
+                    >
+                  </div>
+
+                  <button
+                    id="zoomInBtn"
+                    class="p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white transition-colors"
+                    title="Zoom In"
+                  >
+                    <i data-lucide="plus" class="w-3 h-3"></i>
+                  </button>
+                </div>
+                <span
+                  id="snapIndicator"
+                  class="text-[10px] text-yellow-500 font-bold uppercase tracking-wider opacity-0 transition-opacity"
+                >
+                  <i data-lucide="magnet" class="w-3 h-3 inline-block mr-1"></i
+                  >Snapped
+                </span>
+              </div>
+              <span
+                id="timelineDuration"
+                class="text-xs font-mono text-gray-500"
+                >00:00:00</span
+              >
+            </div>
+
+            <div
+              class="flex-1 overflow-x-auto scrollbar-thin bg-dark-300/80 relative"
+              id="timelineScrollContainer"
+            >
+              <div
+                id="timelineContentWrapper"
+                class="h-full relative min-w-full transition-[width] duration-200 ease-out"
+              >
+                <div
+                  id="timelineRuler"
+                  class="h-6 w-full border-b border-dark-50/30 bg-dark-200/50 relative text-[10px] text-gray-500 font-mono select-none pointer-events-none"
+                ></div>
+
+                <div
+                  id="timelineTrack"
+                  class="absolute top-6 bottom-0 left-0 right-0"
+                ></div>
+
+                <div
+                  id="snapLine"
+                  class="absolute top-0 bottom-0 w-px bg-yellow-400 z-30 pointer-events-none transform -translate-x-1/2 h-full shadow-[0_0_10px_rgba(250,204,21,0.5)] hidden"
+                ></div>
+
+                <div
+                  id="playhead"
+                  class="absolute top-0 bottom-0 z-40 transform -translate-x-1/2 h-full group cursor-col-resize w-4 flex flex-col items-center"
+                >
+                  <div
+                    class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-red-500 drop-shadow-md"
+                  ></div>
+                  <div
+                    class="w-px bg-red-500 h-full shadow-[0_0_8px_rgba(239,68,68,0.6)]"
+                  ></div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div id="viewerTab" class="relative tab-content hidden h-full flex-col p-4 transition-all duration-200">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full min-h-0 pointer-events-none">
-
-        <div class="lg:col-span-2 flex flex-col h-full min-h-0 bg-dark-200 rounded-lg shadow-lg border border-dark-50 pointer-events-auto">
-          <div class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14">
-            <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <i data-lucide="info" class="text-gray-500 w-4 h-4"></i> Clip Details
-            </h2>
-            <span id="clipDetailStatus" class="text-xs text-gray-400 font-mono">--</span>
+      <div
+        id="viewerTab"
+        class="relative tab-content hidden h-full flex-col p-4 transition-all duration-200"
+      >
+        <div
+          class="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full min-h-0 pointer-events-none"
+        >
+          <div
+            class="lg:col-span-2 flex flex-col h-full min-h-0 bg-dark-200 rounded-lg shadow-lg border border-dark-50 pointer-events-auto"
+          >
+            <div
+              class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14"
+            >
+              <h2
+                class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2"
+              >
+                <i data-lucide="info" class="text-gray-500 w-4 h-4"></i> Clip
+                Details
+              </h2>
+              <span
+                id="clipDetailStatus"
+                class="text-xs text-gray-400 font-mono"
+                >--</span
+              >
+            </div>
+            <div
+              id="jsonInfoPanel"
+              class="flex-1 overflow-y-auto bg-dark-300 scrollbar-thin flex flex-col"
+            >
+              <div
+                class="flex flex-col items-center justify-center h-full text-gray-500"
+              >
+                <p class="text-sm">Select a clip to view details</p>
+              </div>
+            </div>
           </div>
-          <div id="jsonInfoPanel" class="flex-1 overflow-y-auto bg-dark-300 scrollbar-thin flex flex-col">
-            <div class="flex flex-col items-center justify-center h-full text-gray-500">
-              <p class="text-sm">Select a clip to view details</p>
+
+          <div
+            class="lg:col-span-1 flex flex-col h-full min-h-0 bg-dark-200 rounded-lg shadow-lg border border-dark-50 pointer-events-auto"
+          >
+            <div
+              class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14"
+            >
+              <h2
+                id="viewerClipsHeader"
+                class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2"
+              >
+                <i
+                  id="viewerHeaderIcon"
+                  data-lucide="download"
+                  class="text-gray-500 w-4 h-4"
+                ></i>
+                Imported Clips
+              </h2>
+              <span id="jsonStatus" class="text-xs text-gray-400"
+                >0 loaded</span
+              >
+            </div>
+            <div
+              id="jsonClipsList"
+              class="flex-1 overflow-y-auto p-3 bg-dark-300 scrollbar-thin space-y-3"
+            >
+              <div
+                class="flex flex-col items-center justify-center h-full text-gray-500 gap-2"
+              >
+                <i data-lucide="upload-cloud" class="w-8 h-8 opacity-50"></i>
+                <p class="text-sm">Import a JSON file to begin</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="lg:col-span-1 flex flex-col h-full min-h-0 bg-dark-200 rounded-lg shadow-lg border border-dark-50 pointer-events-auto">
-          <div class="px-4 py-3 border-b border-dark-50 flex justify-between items-center bg-dark-100/50 flex-none h-14">
-            <h2 id="viewerClipsHeader" class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <i id="viewerHeaderIcon" data-lucide="download" class="text-gray-500 w-4 h-4"></i> Imported Clips
-            </h2>
-            <span id="jsonStatus" class="text-xs text-gray-400">0 loaded</span>
-          </div>
-          <div id="jsonClipsList" class="flex-1 overflow-y-auto p-3 bg-dark-300 scrollbar-thin space-y-3">
-            <div class="flex flex-col items-center justify-center h-full text-gray-500 gap-2">
-              <i data-lucide="upload-cloud" class="w-8 h-8 opacity-50"></i>
-              <p class="text-sm">Import a JSON file to begin</p>
+        <div
+          id="viewerDragOverlay"
+          class="absolute inset-0 z-50 bg-dark-400/90 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-200 opacity-0 pointer-events-none scale-95 rounded-lg border-2 border-transparent"
+        >
+          <div
+            class="p-16 w-full max-w-lg mx-4 rounded-2xl border-2 border-dashed border-accent-100 bg-accent-100/10 flex flex-col items-center gap-6 shadow-2xl shadow-accent-100/20 transform transition-transform"
+          >
+            <i
+              data-lucide="file-json"
+              class="w-20 h-20 text-accent-100 animate-bounce"
+            ></i>
+            <div class="text-center">
+              <h3 class="text-3xl font-bold text-white mb-3">
+                Drop JSON File Here
+              </h3>
+              <p class="text-gray-300 text-lg">
+                Import previously exported clips
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </main>
 
-      <div id="viewerDragOverlay" class="absolute inset-0 z-50 bg-dark-400/90 backdrop-blur-sm flex flex-col items-center justify-center transition-all duration-200 opacity-0 pointer-events-none scale-95 rounded-lg border-2 border-transparent">
-        <div class="p-16 w-full max-w-lg mx-4 rounded-2xl border-2 border-dashed border-accent-100 bg-accent-100/10 flex flex-col items-center gap-6 shadow-2xl shadow-accent-100/20 transform transition-transform">
-          <i data-lucide="file-json" class="w-20 h-20 text-accent-100 animate-bounce"></i>
-          <div class="text-center">
-            <h3 class="text-3xl font-bold text-white mb-3">Drop JSON File Here</h3>
-            <p class="text-gray-300 text-lg">Import previously exported clips</p>
-          </div>
+    <footer
+      class="flex-none bg-dark-400 border-t border-dark-50 py-2 px-4 text-xs text-gray-500"
+    >
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="flex-1 text-left">
+          &copy; <span id="currentYear"></span> AlexDeveloperUwU
+        </div>
+
+        <div class="flex-1 text-center flex justify-center items-center gap-2">
+          <i data-lucide="scissors" class="w-3 h-3 text-accent-100"></i>
+          <span
+            id="appVersionDisplay"
+            class="font-semibold text-gray-300 cursor-pointer hover:text-white transition-colors"
+            title="View changelog"
+            >Clipperino v1.7</span
+          >
+        </div>
+
+        <div class="flex-1 text-right">
+          <a
+            href="https://www.gnu.org/licenses/agpl-3.0.html"
+            class="hover:text-accent-100 transition-colors inline-flex items-center gap-1"
+          >
+            <i data-lucide="scale" class="w-3 h-3"></i> AGPL v3
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="multi-select-help" id="multiSelectHelp">
+      <i data-lucide="keyboard" class="text-accent-100 w-4 h-4"></i>
+      <span
+        >Hold
+        <kbd
+          class="font-mono bg-dark-100 border border-gray-600 rounded px-1 text-white"
+          >Shift</kbd
+        >
+        for multi-select</span
+      >
+    </div>
+
+    <div
+      id="nameClipModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+          <i data-lucide="tag" class="text-secondary-100 w-5 h-5"></i> Name Clip
+        </h2>
+        <div class="mb-4">
+          <label
+            for="clipName"
+            class="block text-xs font-bold uppercase text-gray-400 mb-2"
+            >Clip Name</label
+          >
+          <input
+            type="text"
+            id="clipName"
+            placeholder="Ex: Epic Intro"
+            class="w-full p-3 bg-dark-300 border border-dark-50 rounded text-white focus:outline-none focus:ring-2 focus:ring-secondary-100 focus:border-transparent"
+          />
+        </div>
+        <p
+          id="selectedLinesInfo"
+          class="text-xs text-gray-400 mb-6 bg-dark-300 p-2 rounded border border-dark-50"
+        >
+          0 lines selected.
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            id="cancelClipBtn"
+            class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            id="saveClipBtn"
+            class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-white text-sm font-bold shadow-lg shadow-secondary-100/20 rounded transition-colors"
+          >
+            Save Clip
+          </button>
         </div>
       </div>
     </div>
-  </main>
 
-  <footer class="flex-none bg-dark-400 border-t border-dark-50 py-2 px-4 text-xs text-gray-500">
-    <div class="container mx-auto flex justify-between items-center">
-      <div class="flex-1 text-left">
-        &copy; <span id="currentYear"></span> AlexDeveloperUwU
-      </div>
-
-      <div class="flex-1 text-center flex justify-center items-center gap-2">
-        <i data-lucide="scissors" class="w-3 h-3 text-accent-100"></i>
-        <span id="appVersionDisplay" class="font-semibold text-gray-300">Clipperino v1.7</span>
-      </div>
-
-      <div class="flex-1 text-right">
-        <a href="https://www.gnu.org/licenses/agpl-3.0.html" class="hover:text-accent-100 transition-colors inline-flex items-center gap-1">
-          <i data-lucide="scale" class="w-3 h-3"></i> AGPL v3
-        </a>
-      </div>
-    </div>
-  </footer>
-
-  <div class="multi-select-help" id="multiSelectHelp">
-    <i data-lucide="keyboard" class="text-accent-100 w-4 h-4"></i>
-    <span>Hold <kbd class="font-mono bg-dark-100 border border-gray-600 rounded px-1 text-white">Shift</kbd> for multi-select</span>
-  </div>
-
-  <div id="nameClipModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200">
-    <div class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200">
-      <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
-        <i data-lucide="tag" class="text-secondary-100 w-5 h-5"></i> Name Clip
-      </h2>
-      <div class="mb-4">
-        <label for="clipName" class="block text-xs font-bold uppercase text-gray-400 mb-2">Clip Name</label>
-        <input type="text" id="clipName" placeholder="Ex: Epic Intro" class="w-full p-3 bg-dark-300 border border-dark-50 rounded text-white focus:outline-none focus:ring-2 focus:ring-secondary-100 focus:border-transparent">
-      </div>
-      <p id="selectedLinesInfo" class="text-xs text-gray-400 mb-6 bg-dark-300 p-2 rounded border border-dark-50">0 lines selected.</p>
-      <div class="flex justify-end gap-3">
-        <button id="cancelClipBtn" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded transition-colors">Cancel</button>
-        <button id="saveClipBtn" class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-white text-sm font-bold shadow-lg shadow-secondary-100/20 rounded transition-colors">Save Clip</button>
+    <div
+      id="editClipNameModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-4 text-white">Edit Name</h2>
+        <div class="mb-4">
+          <input
+            type="text"
+            id="editClipName"
+            class="w-full p-3 bg-dark-300 border border-dark-50 rounded text-white focus:outline-none focus:ring-2 focus:ring-accent-100"
+          />
+        </div>
+        <div class="flex justify-end gap-3">
+          <button
+            id="cancelEditBtn"
+            class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            id="saveEditBtn"
+            class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors"
+          >
+            Update
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div id="editClipNameModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200">
-    <div class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200">
-      <h2 class="text-lg font-bold mb-4 text-white">Edit Name</h2>
-      <div class="mb-4">
-        <input type="text" id="editClipName" class="w-full p-3 bg-dark-300 border border-dark-50 rounded text-white focus:outline-none focus:ring-2 focus:ring-accent-100">
-      </div>
-      <div class="flex justify-end gap-3">
-        <button id="cancelEditBtn" class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded transition-colors">Cancel</button>
-        <button id="saveEditBtn" class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors">Update</button>
+    <div
+      id="editorHelpModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+          <i data-lucide="file-spreadsheet" class="text-accent-100 w-5 h-5"></i>
+          Editor — How it works
+        </h2>
+        <ol class="space-y-3 text-sm text-gray-300 mb-6">
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >1</span
+            ><span
+              ><span class="text-white font-medium">Import CSV</span> — load a
+              transcript file using the button on the top right.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >2</span
+            ><span
+              ><span class="text-white font-medium">Select lines</span> — click
+              a line, or hold
+              <kbd
+                class="font-mono bg-dark-100 border border-gray-600 rounded px-1 text-white"
+                >Shift</kbd
+              >
+              to select several at once.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >3</span
+            ><span
+              ><span class="text-white font-medium">Create a clip</span> — name
+              your selection and save it. Saved clips appear in the side
+              panel.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >4</span
+            ><span
+              ><span class="text-white font-medium">Export</span> — download
+              your clips as JSON, Markdown or EDL, or use
+              <span class="text-red-400">Clear Data</span> to start over.</span
+            >
+          </li>
+        </ol>
+        <div class="flex justify-end">
+          <button
+            id="editorHelpCloseBtn"
+            class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors"
+          >
+            Got it
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <script type="module" src="js/main.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('SW registered:', reg.scope))
-          .catch(err => console.error('Error SW:', err));
-      });
-    }
-  </script>
-</body>
+    <div
+      id="previewHelpModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+          <i data-lucide="film" class="text-accent-100 w-5 h-5"></i> Preview —
+          How it works
+        </h2>
+        <ol class="space-y-3 text-sm text-gray-300 mb-6">
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >1</span
+            ><span
+              ><span class="text-white font-medium">Load Video</span> — pick the
+              video that matches your transcript.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >2</span
+            ><span
+              ><span class="text-white font-medium">Scrub the timeline</span> —
+              drag the playhead, or use the zoom controls to look closer.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >3</span
+            ><span
+              ><span class="text-white font-medium">Jump to a clip</span> —
+              click any clip block on the timeline to jump straight to it.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >4</span
+            ><span
+              ><span class="text-white font-medium">Subtitles</span> — they
+              follow playback automatically and can be toggled on or off.</span
+            >
+          </li>
+        </ol>
+        <div class="flex justify-end">
+          <button
+            id="previewHelpCloseBtn"
+            class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
 
+    <div
+      id="viewerHelpModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+          <i data-lucide="file-json" class="text-accent-100 w-5 h-5"></i> Viewer
+          — How it works
+        </h2>
+        <ol class="space-y-3 text-sm text-gray-300 mb-6">
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >1</span
+            ><span
+              ><span class="text-white font-medium">Import JSON</span> — load a
+              previously exported clips file to review it.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >2</span
+            ><span
+              ><span class="text-white font-medium">Browse clips</span> — each
+              clip shows its name, timing and transcript lines.</span
+            >
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex-none w-5 h-5 rounded-full bg-accent-100/20 text-accent-100 text-xs font-bold flex items-center justify-center"
+              >3</span
+            ><span
+              ><span class="text-white font-medium">Reset</span> — use
+              <span class="text-red-400">Clear Data</span> to remove the loaded
+              clips.</span
+            >
+          </li>
+        </ol>
+        <div class="flex justify-end">
+          <button
+            id="viewerHelpCloseBtn"
+            class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors"
+          >
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="changelogModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i data-lucide="scroll-text" class="text-accent-100 w-5 h-5"></i>
+            Changelog
+          </h2>
+          <button
+            id="changelogCloseBtn"
+            class="text-gray-400 hover:text-white transition-colors"
+          >
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+        <div
+          id="changelogContent"
+          class="changelog-content flex-1 overflow-y-auto scrollbar-thin text-sm text-gray-300"
+        ></div>
+      </div>
+    </div>
+
+    <div
+      id="startupModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-2 text-white flex items-center gap-2">
+          <i data-lucide="history" class="text-secondary-100 w-5 h-5"></i>
+          Welcome back
+        </h2>
+        <p class="text-sm text-gray-400 mb-6">
+          We found a saved session from your last visit. Would you like to pick
+          up where you left off, or start fresh?
+        </p>
+        <div class="flex justify-end gap-3">
+          <button
+            id="startupFreshBtn"
+            class="px-4 py-2 bg-dark-100 hover:bg-red-900/30 text-gray-300 hover:text-red-300 text-sm font-medium rounded transition-colors"
+          >
+            Start fresh
+          </button>
+          <button
+            id="startupLoadBtn"
+            class="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-white text-sm font-bold shadow-lg shadow-secondary-100/20 rounded transition-colors"
+          >
+            Load previous session
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("sw.js")
+            .then((reg) => console.log("SW registered:", reg.scope))
+            .catch((err) => console.error("Error SW:", err));
+        });
+      }
+    </script>
+  </body>
 </html>

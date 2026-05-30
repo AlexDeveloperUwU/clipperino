@@ -25,7 +25,7 @@ import {
   editorTab,
   editorDragOverlay,
   btnScrollTop,
-  btnScrollBottom
+  btnScrollBottom,
 } from "./elements.js";
 import {
   transcriptions,
@@ -70,8 +70,12 @@ function initEventListeners() {
   cancelEditBtn.addEventListener("click", closeEditClipNameModal);
   saveEditBtn.addEventListener("click", saveEditedClipName);
 
-  if (btnScrollTop) btnScrollTop.addEventListener("click", () => navigateToLine(0));
-  if (btnScrollBottom) btnScrollBottom.addEventListener("click", () => navigateToLine(transcriptions.length - 1));
+  if (btnScrollTop)
+    btnScrollTop.addEventListener("click", () => navigateToLine(0));
+  if (btnScrollBottom)
+    btnScrollBottom.addEventListener("click", () =>
+      navigateToLine(transcriptions.length - 1),
+    );
 
   clipNameInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -93,7 +97,7 @@ function initDragAndDrop() {
 
   let dragCounter = 0;
 
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     editorTab.addEventListener(eventName, preventDefaults, false);
   });
 
@@ -102,20 +106,28 @@ function initDragAndDrop() {
     e.stopPropagation();
   }
 
-  editorTab.addEventListener('dragenter', (e) => {
-    dragCounter++;
-    showDragOverlay();
-  }, false);
+  editorTab.addEventListener(
+    "dragenter",
+    (e) => {
+      dragCounter++;
+      showDragOverlay();
+    },
+    false,
+  );
 
-  editorTab.addEventListener('dragleave', (e) => {
-    dragCounter--;
-    if (dragCounter <= 0) {
-      dragCounter = 0;
-      hideDragOverlay();
-    }
-  }, false);
+  editorTab.addEventListener(
+    "dragleave",
+    (e) => {
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        hideDragOverlay();
+      }
+    },
+    false,
+  );
 
-  editorTab.addEventListener('drop', handleDrop, false);
+  editorTab.addEventListener("drop", handleDrop, false);
 
   function handleDrop(e) {
     dragCounter = 0;
@@ -126,7 +138,7 @@ function initDragAndDrop() {
 
     if (files.length > 0) {
       const file = files[0];
-      if (file.name.toLowerCase().endsWith('.csv')) {
+      if (file.name.toLowerCase().endsWith(".csv")) {
         const reader = new FileReader();
         reader.onload = (e) => {
           const text = e.target.result;
@@ -172,7 +184,7 @@ export function navigateToLine(lineIndex) {
   const targetRow = document.querySelector(`tr[data-index="${lineIndex}"]`);
 
   if (targetRow) {
-    targetRow.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    targetRow.scrollIntoView({ block: "center", behavior: "smooth" });
     highlightRow(targetRow);
     return;
   }
@@ -182,7 +194,7 @@ export function navigateToLine(lineIndex) {
   renderedStart = Math.max(0, lineIndex - 50);
   renderedEnd = Math.min(transcriptions.length, lineIndex + 50);
 
-  renderBatch(renderedStart, renderedEnd, 'append');
+  renderBatch(renderedStart, renderedEnd, "append");
   updateSearchAfterRowsLoaded();
 
   if (window.lucide) window.lucide.createIcons();
@@ -190,7 +202,7 @@ export function navigateToLine(lineIndex) {
   setTimeout(() => {
     const row = document.querySelector(`tr[data-index="${lineIndex}"]`);
     if (row) {
-      row.scrollIntoView({ block: 'center', behavior: 'auto' });
+      row.scrollIntoView({ block: "center", behavior: "auto" });
       highlightRow(row);
     }
   }, 50);
@@ -211,7 +223,7 @@ export function renderTable(scrollToIndex = -1) {
   renderedStart = 0;
   renderedEnd = Math.min(transcriptions.length, BATCH_SIZE * 2);
 
-  renderBatch(renderedStart, renderedEnd, 'append');
+  renderBatch(renderedStart, renderedEnd, "append");
 
   if (window.lucide) window.lucide.createIcons();
 
@@ -234,8 +246,11 @@ function setupScrollHandler() {
 
     if (scrollTop + clientHeight > scrollHeight - 300) {
       if (renderedEnd < transcriptions.length) {
-        const nextEnd = Math.min(transcriptions.length, renderedEnd + BATCH_SIZE);
-        renderBatch(renderedEnd, nextEnd, 'append');
+        const nextEnd = Math.min(
+          transcriptions.length,
+          renderedEnd + BATCH_SIZE,
+        );
+        renderBatch(renderedEnd, nextEnd, "append");
         renderedEnd = nextEnd;
         updateSearchAfterRowsLoaded();
         if (window.lucide) window.lucide.createIcons();
@@ -247,11 +262,12 @@ function setupScrollHandler() {
         const prevStart = Math.max(0, renderedStart - BATCH_SIZE);
         const oldScrollHeight = tableContainer.scrollHeight;
 
-        renderBatch(prevStart, renderedStart, 'prepend');
+        renderBatch(prevStart, renderedStart, "prepend");
         renderedStart = prevStart;
 
         const newScrollHeight = tableContainer.scrollHeight;
-        tableContainer.scrollTop = scrollTop + (newScrollHeight - oldScrollHeight);
+        tableContainer.scrollTop =
+          scrollTop + (newScrollHeight - oldScrollHeight);
 
         updateSearchAfterRowsLoaded();
         if (window.lucide) window.lucide.createIcons();
@@ -268,7 +284,8 @@ function renderBatch(startIndex, endIndex, direction) {
   for (let i = startIndex; i < endIndex; i++) {
     const item = transcriptions[i];
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
+    row.className =
+      "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
     row.dataset.index = i;
 
     const isSelected = selectedTranscriptions.some((t) => t.index === i);
@@ -286,20 +303,24 @@ function renderBatch(startIndex, endIndex, direction) {
       <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
       <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
       <td class="px-4 py-2 text-sm text-right">
-        ${isInClip
-        ? '<span class="inline-block px-2 py-1 text-xs font-medium text-gray-500 border border-transparent">Used</span>'
-        : `<button class="select-btn px-2 py-1 ${isSelected ? "bg-accent-100 text-white" : "bg-dark-100 text-gray-300 hover:bg-dark-50"
-        } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? 'border-dark-50' : ''}">
+        ${
+          isInClip
+            ? '<span class="inline-block px-2 py-1 text-xs font-medium text-gray-500 border border-transparent">Used</span>'
+            : `<button class="select-btn px-2 py-1 ${
+                isSelected
+                  ? "bg-accent-100 text-white"
+                  : "bg-dark-100 text-gray-300 hover:bg-dark-50"
+              } rounded text-xs font-medium transition-colors border border-transparent ${!isSelected ? "border-dark-50" : ""}">
             ${isSelected ? "Selected" : "Select"}
           </button>`
-      }
+        }
       </td>
     `;
 
     fragment.appendChild(row);
   }
 
-  if (direction === 'append') {
+  if (direction === "append") {
     transcriptionsTable.appendChild(fragment);
   } else {
     transcriptionsTable.insertBefore(fragment, transcriptionsTable.firstChild);
@@ -317,7 +338,12 @@ function handleTableClick(e) {
     const row = selectBtn.closest("tr");
     const index = parseInt(row.dataset.index);
 
-    if (e.shiftKey && lastSelectedIndex !== null && lastSelectedIndex !== undefined && lastSelectedIndex !== -1) {
+    if (
+      e.shiftKey &&
+      lastSelectedIndex !== null &&
+      lastSelectedIndex !== undefined &&
+      lastSelectedIndex !== -1
+    ) {
       const startIdx = Math.min(lastSelectedIndex, index);
       const endIdx = Math.max(lastSelectedIndex, index);
       selectTranscriptionRange(startIdx, endIdx);
@@ -332,11 +358,18 @@ function isTranscriptionInClip(index) {
   // If we are editing a clip, don't mark its own lines as "Used" so they appear selected instead
   if (clipBeingEditedIndex !== -1) {
     const editingClip = clips[clipBeingEditedIndex];
-    if (editingClip && editingClip.transcriptions.some(t => t.index === index)) {
+    if (
+      editingClip &&
+      editingClip.transcriptions.some((t) => t.index === index)
+    ) {
       return false;
     }
   }
-  return clips.some((clip, i) => i !== clipBeingEditedIndex && clip.transcriptions.some((t) => t.index === index));
+  return clips.some(
+    (clip, i) =>
+      i !== clipBeingEditedIndex &&
+      clip.transcriptions.some((t) => t.index === index),
+  );
 }
 
 function selectTranscriptionRange(startIdx, endIdx) {
@@ -385,12 +418,22 @@ function updateSingleRow(index) {
   const selectBtn = row.querySelector(".select-btn");
   if (selectBtn) {
     if (isSelected) {
-      selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50", "text-gray-300", "border-dark-50");
+      selectBtn.classList.remove(
+        "bg-dark-100",
+        "hover:bg-dark-50",
+        "text-gray-300",
+        "border-dark-50",
+      );
       selectBtn.classList.add("bg-accent-100", "text-white");
       selectBtn.textContent = "Selected";
     } else {
       selectBtn.classList.remove("bg-accent-100", "text-white");
-      selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50", "text-gray-300", "border-dark-50");
+      selectBtn.classList.add(
+        "bg-dark-100",
+        "hover:bg-dark-50",
+        "text-gray-300",
+        "border-dark-50",
+      );
       selectBtn.textContent = "Select";
     }
   }
@@ -406,7 +449,9 @@ function selectTranscription(index) {
   if (index < 0 || index >= transcriptions.length) return;
 
   const transcription = transcriptions[index];
-  const existingIndex = selectedTranscriptions.findIndex((t) => t.index === index);
+  const existingIndex = selectedTranscriptions.findIndex(
+    (t) => t.index === index,
+  );
   const newSelected = [...selectedTranscriptions];
 
   if (existingIndex !== -1) {
@@ -467,8 +512,8 @@ function openNameClipModal() {
   }
 
   nameClipModal.classList.add("opacity-100", "pointer-events-auto");
-  nameClipModal.querySelector('div').classList.remove("scale-95");
-  nameClipModal.querySelector('div').classList.add("scale-100");
+  nameClipModal.querySelector("div").classList.remove("scale-95");
+  nameClipModal.querySelector("div").classList.add("scale-100");
 
   if (clipBeingEditedIndex !== -1) {
     clipNameInput.value = clips[clipBeingEditedIndex].name;
@@ -485,8 +530,8 @@ function openNameClipModal() {
 
 function closeNameClipModal() {
   nameClipModal.classList.remove("opacity-100", "pointer-events-auto");
-  nameClipModal.querySelector('div').classList.add("scale-95");
-  nameClipModal.querySelector('div').classList.remove("scale-100");
+  nameClipModal.querySelector("div").classList.add("scale-95");
+  nameClipModal.querySelector("div").classList.remove("scale-100");
 }
 
 function saveClip() {
@@ -497,11 +542,13 @@ function saveClip() {
     return;
   }
 
-  const sortedTranscriptions = [...selectedTranscriptions].sort((a, b) => a.index - b.index);
+  const sortedTranscriptions = [...selectedTranscriptions].sort(
+    (a, b) => a.index - b.index,
+  );
 
   const duration = calculateDuration(
     sortedTranscriptions[0].inicio,
-    sortedTranscriptions[sortedTranscriptions.length - 1].fin
+    sortedTranscriptions[sortedTranscriptions.length - 1].fin,
   );
 
   const clipData = {
@@ -543,13 +590,15 @@ function saveClip() {
 
 function updateAddButtonState() {
   if (clipBeingEditedIndex !== -1) {
-    addClipBtn.innerHTML = '<i data-lucide="refresh-cw" class="w-3 h-3"></i> Update Clip';
-    addClipBtn.classList.remove('bg-secondary-100', 'hover:bg-secondary-200');
-    addClipBtn.classList.add('bg-accent-100', 'hover:bg-accent-200');
+    addClipBtn.innerHTML =
+      '<i data-lucide="refresh-cw" class="w-3 h-3"></i> Update Clip';
+    addClipBtn.classList.remove("bg-secondary-100", "hover:bg-secondary-200");
+    addClipBtn.classList.add("bg-accent-100", "hover:bg-accent-200");
   } else {
-    addClipBtn.innerHTML = '<i data-lucide="plus" class="w-3 h-3"></i> Add Clip';
-    addClipBtn.classList.remove('bg-accent-100', 'hover:bg-accent-200');
-    addClipBtn.classList.add('bg-secondary-100', 'hover:bg-secondary-200');
+    addClipBtn.innerHTML =
+      '<i data-lucide="plus" class="w-3 h-3"></i> Add Clip';
+    addClipBtn.classList.remove("bg-accent-100", "hover:bg-accent-200");
+    addClipBtn.classList.add("bg-secondary-100", "hover:bg-secondary-200");
   }
   if (window.lucide) window.lucide.createIcons();
 }
@@ -582,7 +631,8 @@ export function renderClips() {
   clipList.innerHTML = "";
 
   if (clips.length === 0) {
-    clipList.innerHTML = '<p class="text-xs text-gray-500 text-center py-10 flex flex-col gap-2 items-center"><i data-lucide="film" class="w-8 h-8 opacity-20"></i><span>No clips created</span></p>';
+    clipList.innerHTML =
+      '<p class="text-xs text-gray-500 text-center py-10 flex flex-col gap-2 items-center"><i data-lucide="film" class="w-8 h-8 opacity-20"></i><span>No clips created</span></p>';
     if (window.lucide) window.lucide.createIcons();
     return;
   }
@@ -590,13 +640,13 @@ export function renderClips() {
   clips.forEach((clip, index) => {
     const isBeingEdited = index === clipBeingEditedIndex;
     const clipDiv = document.createElement("div");
-    clipDiv.className = `clip-item bg-dark-200 border ${isBeingEdited ? 'border-accent-100 shadow-[0_0_10px_rgba(59,130,246,0.15)]' : 'border-dark-50'} rounded p-3 relative hover:border-dark-50/80 transition-all`;
+    clipDiv.className = `clip-item bg-dark-200 border ${isBeingEdited ? "border-accent-100 shadow-[0_0_10px_rgba(59,130,246,0.15)]" : "border-dark-50"} rounded p-3 relative hover:border-dark-50/80 transition-all`;
 
     clipDiv.innerHTML = `
       <div class="flex justify-between items-start mb-2">
         <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-16">
           <span class="truncate">${clip.name}</span>
-          ${isBeingEdited ? '<span class="text-[10px] bg-accent-100 px-1 rounded text-white font-normal">Editing</span>' : ''}
+          ${isBeingEdited ? '<span class="text-[10px] bg-accent-100 px-1 rounded text-white font-normal">Editing</span>' : ""}
         </h3>
         <div class="absolute top-3 right-3 flex items-center gap-1">
            <button class="edit-clip-content-btn text-gray-500 hover:text-accent-100 transition-colors p-1" title="Edit Content" data-index="${index}">
@@ -674,16 +724,16 @@ function openEditClipNameModal(index) {
 
   editClipNameInput.value = clip.name;
   editClipNameModal.classList.add("opacity-100", "pointer-events-auto");
-  editClipNameModal.querySelector('div').classList.remove("scale-95");
-  editClipNameModal.querySelector('div').classList.add("scale-100");
+  editClipNameModal.querySelector("div").classList.remove("scale-95");
+  editClipNameModal.querySelector("div").classList.add("scale-100");
 
   setTimeout(() => editClipNameInput.focus(), 100);
 }
 
 function closeEditClipNameModal() {
   editClipNameModal.classList.remove("opacity-100", "pointer-events-auto");
-  editClipNameModal.querySelector('div').classList.add("scale-95");
-  editClipNameModal.querySelector('div').classList.remove("scale-100");
+  editClipNameModal.querySelector("div").classList.add("scale-95");
+  editClipNameModal.querySelector("div").classList.remove("scale-100");
   setCurrentEditingClipIndex(-1);
 }
 
@@ -759,7 +809,9 @@ function exportMarkdown() {
 
     mdContent += `## Lines\n`;
 
-    const sortedTranscriptions = [...clip.transcriptions].sort((a, b) => a.index - b.index);
+    const sortedTranscriptions = [...clip.transcriptions].sort(
+      (a, b) => a.index - b.index,
+    );
 
     sortedTranscriptions.forEach((t) => {
       mdContent += `${t.inicio} ${t.fin} ${t.transcripcion}\n`;
@@ -821,13 +873,16 @@ function updateSelectedTable() {
     return;
   }
 
-  const sortedTranscriptions = [...selectedTranscriptions].sort((a, b) => a.index - b.index);
+  const sortedTranscriptions = [...selectedTranscriptions].sort(
+    (a, b) => a.index - b.index,
+  );
 
   const fragment = document.createDocumentFragment();
 
   sortedTranscriptions.forEach((item, i) => {
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-50 transition-colors border-b border-dark-50/30";
+    row.className =
+      "hover:bg-dark-50 transition-colors border-b border-dark-50/30";
 
     row.innerHTML = `
       <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>

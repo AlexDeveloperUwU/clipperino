@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.7";
+export const APP_VERSION = "1.9";
 
 export let transcriptions = [];
 export let clips = [];
@@ -12,7 +12,7 @@ export let lastSelectedIndex = -1;
 export let lastViewedLineIndex = -1;
 export let videoMetadata = {
   name: null,
-  duration: 0
+  duration: 0,
 };
 
 export function setTranscriptions(newTranscriptions) {

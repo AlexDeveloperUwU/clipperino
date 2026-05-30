@@ -29,7 +29,7 @@ export function initSearch() {
       }
 
       performSearch(searchTerm);
-    }, 300)
+    }, 300),
   );
 
   searchInput.addEventListener("keydown", function (e) {
@@ -53,24 +53,28 @@ function addSearchNavButtons() {
   if (!searchContainer) return;
 
   const buttonsContainer = document.createElement("div");
-  buttonsContainer.className = "absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1";
+  buttonsContainer.className =
+    "absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1";
 
   const prevButton = document.createElement("button");
-  prevButton.className = "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
+  prevButton.className =
+    "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
   prevButton.innerHTML = '<i data-lucide="chevron-up" class="w-4 h-4"></i>';
   prevButton.title = "Previous Result";
   prevButton.id = "prevSearchResult";
   prevButton.addEventListener("click", navigateToPrevResult);
 
   const nextButton = document.createElement("button");
-  nextButton.className = "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
+  nextButton.className =
+    "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
   nextButton.innerHTML = '<i data-lucide="chevron-down" class="w-4 h-4"></i>';
   nextButton.title = "Next Result";
   nextButton.id = "nextSearchResult";
   nextButton.addEventListener("click", navigateToNextResult);
 
   const clearButton = document.createElement("button");
-  clearButton.className = "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
+  clearButton.className =
+    "text-gray-400 hover:text-white flex items-center justify-center w-6 h-6";
   clearButton.innerHTML = '<i data-lucide="x" class="w-4 h-4"></i>';
   clearButton.title = "Clear Search";
   clearButton.id = "clearSearch";
@@ -80,7 +84,8 @@ function addSearchNavButtons() {
   });
 
   const resultCounter = document.createElement("span");
-  resultCounter.className = "text-xs text-gray-400 inline-flex items-center mr-1";
+  resultCounter.className =
+    "text-xs text-gray-400 inline-flex items-center mr-1";
   resultCounter.id = "searchResultCounter";
   resultCounter.textContent = "0/0";
 
@@ -101,7 +106,9 @@ function performSearch(searchTerm) {
     return;
   }
 
-  searchResults = transcriptions.filter((item) => item.transcripcion.toLowerCase().includes(searchTerm));
+  searchResults = transcriptions.filter((item) =>
+    item.transcripcion.toLowerCase().includes(searchTerm),
+  );
 
   updateSearchResults(searchTerm);
   updateResultCounter();
@@ -196,7 +203,7 @@ function updateSearchResults(searchTerm) {
         const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, "gi");
         transcriptionCell.innerHTML = text.replace(
           regex,
-          '<span class="bg-yellow-500/30 text-white px-1 rounded">$1</span>'
+          '<span class="bg-yellow-500/30 text-white px-1 rounded">$1</span>',
         );
       }
     }

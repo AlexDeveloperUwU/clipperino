@@ -1,5 +1,9 @@
 import { showNotification } from "./ui.js";
-import { setTranscriptions, transcriptions, clearLastViewedLine } from "./state.js";
+import {
+  setTranscriptions,
+  transcriptions,
+  clearLastViewedLine,
+} from "./state.js";
 import { renderTable, updateStatus } from "./editorTab.js";
 import { saveToLocalStorage } from "./storage.js";
 
@@ -26,7 +30,12 @@ export function parseCSV(data, showLoadNotification = true) {
   }, 10);
 }
 
-function processCSVBatches(lines, currentIndex, results, showLoadNotification = true) {
+function processCSVBatches(
+  lines,
+  currentIndex,
+  results,
+  showLoadNotification = true,
+) {
   const batchSize = 500;
   const endIndex = Math.min(currentIndex + batchSize, lines.length);
 
@@ -61,7 +70,11 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
 
     const inicio = columns[0].replace(/"/g, "").trim();
     const fin = columns[1].replace(/"/g, "").trim();
-    const transcripcion = columns.slice(2).join(",").replace(/^"|"$/g, "").trim();
+    const transcripcion = columns
+      .slice(2)
+      .join(",")
+      .replace(/^"|"$/g, "")
+      .trim();
 
     results.push({
       inicio,
@@ -86,7 +99,9 @@ function processCSVBatches(lines, currentIndex, results, showLoadNotification = 
     saveToLocalStorage();
 
     if (showLoadNotification && lines.length > 500) {
-      showNotification(`${transcriptions.length} transcripts loaded successfully`);
+      showNotification(
+        `${transcriptions.length} transcripts loaded successfully`,
+      );
     }
   }
 }
@@ -127,7 +142,7 @@ export function calculateDuration(start, end) {
 
     return {
       formatted: `${String(durationHour).padStart(2, "0")}:${String(durationMin).padStart(2, "0")}:${String(
-        remainingSec
+        remainingSec,
       ).padStart(2, "0")}`,
       totalSeconds: durationSec,
     };

@@ -9,7 +9,7 @@ import {
   viewerDragOverlay,
   viewerTabBtn,
   viewerClipsHeader,
-  viewerHeaderIcon
+  viewerHeaderIcon,
 } from "./elements.js";
 import { jsonClips, setJsonClips, clips } from "./state.js";
 import { showNotification } from "./ui.js";
@@ -26,7 +26,7 @@ function initDragAndDrop() {
 
   let dragCounter = 0;
 
-  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     viewerTab.addEventListener(eventName, preventDefaults, false);
   });
 
@@ -35,20 +35,28 @@ function initDragAndDrop() {
     e.stopPropagation();
   }
 
-  viewerTab.addEventListener('dragenter', (e) => {
-    dragCounter++;
-    showDragOverlay();
-  }, false);
+  viewerTab.addEventListener(
+    "dragenter",
+    (e) => {
+      dragCounter++;
+      showDragOverlay();
+    },
+    false,
+  );
 
-  viewerTab.addEventListener('dragleave', (e) => {
-    dragCounter--;
-    if (dragCounter <= 0) {
-      dragCounter = 0;
-      hideDragOverlay();
-    }
-  }, false);
+  viewerTab.addEventListener(
+    "dragleave",
+    (e) => {
+      dragCounter--;
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        hideDragOverlay();
+      }
+    },
+    false,
+  );
 
-  viewerTab.addEventListener('drop', handleDrop, false);
+  viewerTab.addEventListener("drop", handleDrop, false);
 
   function handleDrop(e) {
     dragCounter = 0;
@@ -59,7 +67,7 @@ function initDragAndDrop() {
 
     if (files.length > 0) {
       const file = files[0];
-      if (file.name.toLowerCase().endsWith('.json')) {
+      if (file.name.toLowerCase().endsWith(".json")) {
         const reader = new FileReader();
         reader.onload = (e) => {
           try {
@@ -230,7 +238,8 @@ function showClipDetails(clip) {
   jsonInfoPanel.innerHTML = "";
 
   const tableContainer = document.createElement("div");
-  tableContainer.className = "flex-1 overflow-y-auto bg-dark-300 scrollbar-thin";
+  tableContainer.className =
+    "flex-1 overflow-y-auto bg-dark-300 scrollbar-thin";
 
   const table = document.createElement("table");
   table.className = "w-full border-collapse";
@@ -255,7 +264,8 @@ function showClipDetails(clip) {
 
   sortedTranscriptions.forEach((t) => {
     const row = document.createElement("tr");
-    row.className = "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
+    row.className =
+      "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
     row.innerHTML = `
       <td class="px-4 py-2 text-xs font-mono text-gray-400">${t.inicio}</td>
       <td class="px-4 py-2 text-xs font-mono text-gray-400">${t.fin}</td>
@@ -288,7 +298,7 @@ function updateJsonInfo(currentClips) {
         try {
           const [min, sec] = clip.duration.split(":").map(Number);
           totalDuration += min * 60 + sec;
-        } catch (e) { }
+        } catch (e) {}
       }
     });
 
