@@ -14,6 +14,7 @@ import {
   snapLine,
   snapIndicator,
   timelineDuration,
+  previewTab,
   previewTabBtn,
   zoomInBtn,
   zoomOutBtn,
@@ -69,6 +70,15 @@ export function initPreviewTab() {
   zoomInBtn.addEventListener("click", handleZoomIn);
   zoomOutBtn.addEventListener("click", handleZoomOut);
   zoomInput.addEventListener("change", handleZoomInput);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.code !== "Space") return;
+    if (previewTab.classList.contains("hidden")) return;
+    const tag = document.activeElement.tagName.toLowerCase();
+    if (["input", "select", "textarea", "button"].includes(tag)) return;
+    e.preventDefault();
+    togglePlay();
+  });
 
   initAudioDevices();
 }

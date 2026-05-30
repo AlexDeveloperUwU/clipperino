@@ -52,7 +52,7 @@ function setupMultiSelectHelp() {
   let shiftPressed = false;
 
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Shift" && !shiftPressed) {
+    if (e.key === "Shift" && !shiftPressed && !editorTab.classList.contains("hidden")) {
       shiftPressed = true;
       multiSelectHelp.classList.add("visible");
     }
