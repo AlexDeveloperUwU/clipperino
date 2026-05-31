@@ -110,7 +110,9 @@ function setupChangelogModal() {
   if (!changelogModal) return;
 
   if (changelogCloseBtn) {
-    changelogCloseBtn.addEventListener("click", () => closeModal(changelogModal));
+    changelogCloseBtn.addEventListener("click", () =>
+      closeModal(changelogModal),
+    );
   }
   changelogModal.addEventListener("click", (e) => {
     if (e.target === changelogModal) closeModal(changelogModal);
@@ -128,12 +130,15 @@ function setupChangelogModal() {
         const res = await fetch("./CHANGELOG.md");
         if (!res.ok) throw new Error("Not found");
         const md = await res.text();
-        cachedChangelog = window.marked ? window.marked.parse(md) : `<pre class="whitespace-pre-wrap">${md}</pre>`;
+        cachedChangelog = window.marked
+          ? window.marked.parse(md)
+          : `<pre class="whitespace-pre-wrap">${md}</pre>`;
         changelogContent.innerHTML = cachedChangelog;
         openModal(changelogModal);
         if (window.lucide) window.lucide.createIcons();
       } catch {
-        changelogContent.innerHTML = "<p class='text-gray-400'>Could not load changelog.</p>";
+        changelogContent.innerHTML =
+          "<p class='text-gray-400'>Could not load changelog.</p>";
         openModal(changelogModal);
       }
     });

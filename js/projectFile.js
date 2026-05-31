@@ -22,11 +22,7 @@ import {
 } from "./state.js";
 import { showNotification, switchTab } from "./ui.js";
 import { saveToLocalStorage } from "./storage.js";
-import {
-  renderTable,
-  updateStatus,
-  toggleImportButton,
-} from "./editorTab.js";
+import { renderTable, updateStatus, toggleImportButton } from "./editorTab.js";
 import { renderViewer } from "./viewerTab.js";
 import { checkVideoMetadata, renderTimeline } from "./previewTab.js";
 
@@ -166,7 +162,7 @@ async function confirmSaveProject() {
 function buildSuggestedName(savedAt) {
   const base = (videoMetadata && videoMetadata.name) || "project";
   const safeBase = base
-    .replace(/\.[^/.]+$/, "") 
+    .replace(/\.[^/.]+$/, "")
     .replace(/[^a-zA-Z0-9-_]+/g, "_")
     .slice(0, 60)
     .replace(/^_+|_+$/g, "");
@@ -227,10 +223,14 @@ export async function openProjectFromFile(file) {
 }
 
 function restoreProject(data) {
-  setTranscriptions(Array.isArray(data.transcriptions) ? data.transcriptions : []);
+  setTranscriptions(
+    Array.isArray(data.transcriptions) ? data.transcriptions : [],
+  );
   setClips(Array.isArray(data.clips) ? data.clips : []);
   setSelectedTranscriptions(
-    Array.isArray(data.selectedTranscriptions) ? data.selectedTranscriptions : [],
+    Array.isArray(data.selectedTranscriptions)
+      ? data.selectedTranscriptions
+      : [],
   );
   setVideoMetadata(
     data.videoMetadata && typeof data.videoMetadata === "object"
@@ -238,7 +238,10 @@ function restoreProject(data) {
       : { name: null, duration: 0 },
   );
 
-  if (typeof data.lastViewedLineIndex === "number" && data.lastViewedLineIndex >= 0) {
+  if (
+    typeof data.lastViewedLineIndex === "number" &&
+    data.lastViewedLineIndex >= 0
+  ) {
     setLastViewedLineIndex(data.lastViewedLineIndex);
   }
 

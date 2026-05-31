@@ -35,6 +35,7 @@ Clipperino is a powerful web-based tool designed to help you manage, select, and
 The CSV file must contain at least three columns (order doesn't matter as long as headers are present): `start`, `end`, and `transcript`.
 
 Example:
+
 ```csv
 Start,End,Transcript
 00:00:00,00:00:05,Welcome to the video!
