@@ -109,6 +109,34 @@
       </div>
 
       <div id="tabActions" class="flex items-center gap-3">
+        <div
+          id="projectActions"
+          class="flex items-center gap-2 border-r border-dark-50 pr-3 mr-1"
+        >
+          <button
+            id="saveProjectBtn"
+            title="Save the current session as a .clpproj file"
+            class="px-3 py-1.5 bg-dark-100 hover:bg-dark-50 text-gray-300 hover:text-white text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2"
+          >
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Save Project</span>
+          </button>
+          <label
+            id="openProjectLabel"
+            for="projectFileInput"
+            title="Open a saved .clpproj project file"
+            class="px-3 py-1.5 bg-dark-100 hover:bg-dark-50 text-gray-300 hover:text-white text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2"
+          >
+            <i data-lucide="folder-open" class="w-4 h-4"></i>
+            <span>Open Project</span>
+          </label>
+          <input
+            type="file"
+            id="projectFileInput"
+            class="hidden"
+            accept=".clpproj"
+          />
+        </div>
         <div id="editorTabActions" class="flex items-center gap-2">
           <label
             id="csvFileLabel"
@@ -153,6 +181,14 @@
         </div>
 
         <div id="viewerTabActions" class="hidden flex items-center gap-2">
+          <span
+            id="viewerLockBadge"
+            title="The Viewer mirrors your project clips while a project is open"
+            class="hidden px-3 py-1.5 bg-dark-100 text-xs font-medium rounded items-center gap-2 text-gray-400 border border-dark-50"
+          >
+            <i data-lucide="lock" class="w-4 h-4 text-accent-100"></i>
+            <span>Synced with project</span>
+          </span>
           <label
             id="jsonFileLabel"
             for="jsonFileInput"
@@ -842,6 +878,46 @@
             class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors"
           >
             Update
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="saveProjectModal"
+      class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none transition-all duration-200"
+    >
+      <div
+        class="bg-dark-200 rounded-lg p-6 w-full max-w-md shadow-2xl border border-dark-50 transform scale-95 transition-transform duration-200"
+      >
+        <h2 class="text-lg font-bold mb-4 text-white flex items-center gap-2">
+          <i data-lucide="save" class="text-accent-100 w-5 h-5"></i> Save Project
+        </h2>
+        <div class="mb-4">
+          <label for="saveProjectName" class="block text-xs text-gray-400 mb-1"
+            >File name</label
+          >
+          <div class="flex items-center gap-2">
+            <input
+              type="text"
+              id="saveProjectName"
+              class="w-full p-3 bg-dark-300 border border-dark-50 rounded text-white focus:outline-none focus:ring-2 focus:ring-accent-100"
+            />
+            <span class="text-sm text-gray-500 font-mono">.clpproj</span>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button
+            id="cancelSaveProjectBtn"
+            class="px-4 py-2 bg-dark-100 hover:bg-dark-50 text-gray-300 text-sm font-medium rounded transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            id="confirmSaveProjectBtn"
+            class="px-4 py-2 bg-accent-100 hover:bg-accent-200 text-white text-sm font-bold rounded transition-colors"
+          >
+            Save
           </button>
         </div>
       </div>

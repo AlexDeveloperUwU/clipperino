@@ -2,6 +2,16 @@
 
 All notable changes to Clipperino are documented here.
 
+## [1.10] - 2026-05-31
+
+### Added
+
+- Project files — save the whole working session (transcript, clips, in-progress selection, video name/duration) to a compressed `.clpproj` file and re-open it later to pick up where you left off, even if local storage is lost. Video files are not bundled (re-load on open). Use the **Save Project** / **Open Project** buttons in the header.
+
+### Changed
+
+- The Viewer now mirrors your project's clips live while a project is open, staying in sync with the Editor and Preview tabs. Its standalone JSON import is locked (shown by a "Synced with project" badge) until the project is cleared; with no project open, the Viewer still works as a standalone JSON inspector.
+
 ## [1.9] - 2026-05-31
 
 ### Added

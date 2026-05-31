@@ -1,4 +1,4 @@
-export const APP_VERSION = "1.9";
+export const APP_VERSION = "1.11";
 
 export let transcriptions = [];
 export let clips = [];
@@ -63,4 +63,8 @@ export function clearLastViewedLine() {
 
 export function setVideoMetadata(metadata) {
   videoMetadata = metadata;
+}
+
+export function isProjectActive() {
+  return transcriptions.length > 0 || clips.length > 0;
 }

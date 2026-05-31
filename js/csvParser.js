@@ -2,10 +2,13 @@ import { showNotification } from "./ui.js";
 import {
   setTranscriptions,
   transcriptions,
+  jsonClips,
   clearLastViewedLine,
 } from "./state.js";
 import { renderTable, updateStatus } from "./editorTab.js";
 import { saveToLocalStorage } from "./storage.js";
+import { refreshViewer } from "./viewerTab.js";
+import { renderTimeline } from "./previewTab.js";
 
 export function parseCSV(data, showLoadNotification = true) {
   const lines = data.split("\n");
@@ -97,6 +100,14 @@ function processCSVBatches(
     renderTable();
     updateStatus();
     saveToLocalStorage();
+
+    if (jsonClips.length > 0) {
+      showNotification(
+        "Project started — Viewer now mirrors your project clips",
+      );
+    }
+    refreshViewer();
+    renderTimeline();
 
     if (showLoadNotification && lines.length > 500) {
       showNotification(

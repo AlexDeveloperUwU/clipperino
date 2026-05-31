@@ -46,6 +46,13 @@ import { parseCSV, calculateDuration } from "./csvParser.js";
 import { saveToLocalStorage } from "./storage.js";
 import { exportEDL } from "./edlExporter.js";
 import { updateSearchAfterRowsLoaded } from "./search.js";
+import { refreshViewer } from "./viewerTab.js";
+import { renderTimeline } from "./previewTab.js";
+
+function syncClipConsumers() {
+  refreshViewer();
+  renderTimeline();
+}
 
 let renderedStart = 0;
 let renderedEnd = 0;
@@ -586,6 +593,7 @@ function saveClip() {
   renderTable(); // Refresh table to show "Used" correctly
   updateSelectedTable();
   saveToLocalStorage();
+  syncClipConsumers();
 }
 
 function updateAddButtonState() {
@@ -716,6 +724,7 @@ function removeClip(index) {
   // Refresh table to update "Used" markers
   renderTable();
   saveToLocalStorage();
+  syncClipConsumers();
 }
 
 function openEditClipNameModal(index) {
@@ -753,6 +762,7 @@ function saveEditedClipName() {
   renderClips();
   closeEditClipNameModal();
   saveToLocalStorage();
+  syncClipConsumers();
 
   showNotification("Clip name updated");
 }
@@ -943,5 +953,6 @@ function clearTranscriptions() {
   updateStatus();
   saveToLocalStorage();
   toggleImportButton();
+  syncClipConsumers();
   showNotification("All data cleared successfully");
 }

@@ -10,9 +10,32 @@ import {
   viewerTabBtn,
   viewerClipsHeader,
   viewerHeaderIcon,
+  viewerLockBadge,
 } from "./elements.js";
-import { jsonClips, setJsonClips, clips } from "./state.js";
+import { jsonClips, setJsonClips, clips, isProjectActive } from "./state.js";
 import { showNotification } from "./ui.js";
+
+export function refreshViewer() {
+  renderViewer();
+}
+
+function setViewerLock(active) {
+  if (viewerLockBadge) {
+    viewerLockBadge.classList.toggle("hidden", !active);
+    viewerLockBadge.classList.toggle("flex", active);
+  }
+
+  if (active) {
+    jsonFileLabel.classList.add("hidden");
+    clearJsonBtn.classList.add("hidden");
+  } else if (jsonClips.length > 0) {
+    jsonFileLabel.classList.add("hidden");
+    clearJsonBtn.classList.remove("hidden");
+  } else {
+    jsonFileLabel.classList.remove("hidden");
+    clearJsonBtn.classList.add("hidden");
+  }
+}
 
 export function initViewerTab() {
   jsonFileInput.addEventListener("change", handleJsonFileUpload);
@@ -62,6 +85,11 @@ function initDragAndDrop() {
     dragCounter = 0;
     hideDragOverlay();
 
+    if (isProjectActive()) {
+      showNotification("Viewer is locked while a project is open");
+      return;
+    }
+
     const dt = e.dataTransfer;
     const files = dt.files;
 
@@ -103,6 +131,12 @@ function initDragAndDrop() {
 }
 
 function handleJsonFileUpload(event) {
+  if (isProjectActive()) {
+    showNotification("Viewer is locked while a project is open");
+    event.target.value = "";
+    return;
+  }
+
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
@@ -122,10 +156,15 @@ function handleJsonFileUpload(event) {
 }
 
 export function renderViewer(data = null, showLoadNotification = false) {
+  const projectActive = isProjectActive();
+
   let clipsToRender = [];
   let source = "";
 
-  if (data) {
+  if (projectActive) {
+    clipsToRender = clips;
+    source = "project";
+  } else if (data) {
     clipsToRender = data;
     source = "json";
   } else if (jsonClips.length > 0) {
@@ -136,19 +175,17 @@ export function renderViewer(data = null, showLoadNotification = false) {
     source = "editor";
   }
 
+  setViewerLock(projectActive);
+
   if (viewerClipsHeader && viewerHeaderIcon) {
-    if (source === "json") {
+    if (projectActive) {
+      viewerClipsHeader.innerHTML = `<i data-lucide="clapperboard" class="text-gray-500 w-4 h-4"></i> Project Clips`;
+    } else if (source === "json") {
       viewerClipsHeader.innerHTML = `<i data-lucide="download" class="text-gray-500 w-4 h-4"></i> Imported Clips`;
-      jsonFileLabel.classList.add("hidden");
-      clearJsonBtn.classList.remove("hidden");
     } else if (source === "editor") {
       viewerClipsHeader.innerHTML = `<i data-lucide="clapperboard" class="text-gray-500 w-4 h-4"></i> Created Clips`;
-      jsonFileLabel.classList.remove("hidden");
-      clearJsonBtn.classList.add("hidden");
     } else {
       viewerClipsHeader.innerHTML = `<i data-lucide="download" class="text-gray-500 w-4 h-4"></i> Clips`;
-      jsonFileLabel.classList.remove("hidden");
-      clearJsonBtn.classList.add("hidden");
     }
   }
 

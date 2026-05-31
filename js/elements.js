@@ -49,6 +49,19 @@ export const clearJsonBtn = document.getElementById("clearJsonBtn");
 export const viewerClipsHeader = document.getElementById("viewerClipsHeader");
 export const viewerHeaderIcon = document.getElementById("viewerHeaderIcon");
 
+export const saveProjectBtn = document.getElementById("saveProjectBtn");
+export const openProjectLabel = document.getElementById("openProjectLabel");
+export const projectFileInput = document.getElementById("projectFileInput");
+export const viewerLockBadge = document.getElementById("viewerLockBadge");
+export const saveProjectModal = document.getElementById("saveProjectModal");
+export const saveProjectNameInput = document.getElementById("saveProjectName");
+export const cancelSaveProjectBtn = document.getElementById(
+  "cancelSaveProjectBtn",
+);
+export const confirmSaveProjectBtn = document.getElementById(
+  "confirmSaveProjectBtn",
+);
+
 export const editorTabActions = document.getElementById("editorTabActions");
 export const viewerTabActions = document.getElementById("viewerTabActions");
 export const previewTabActions = document.getElementById("previewTabActions");
