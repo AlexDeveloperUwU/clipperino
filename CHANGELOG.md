@@ -2,6 +2,28 @@
 
 All notable changes to Clipperino are documented here.
 
+## [1.11] - 2026-09-01
+
+### Security
+
+- Escaped all transcript text, clip names and notification messages before rendering (imported CSV/JSON content can no longer inject HTML or script)
+- Added a Content-Security-Policy meta tag as defense-in-depth
+
+### Fixed
+
+- CSV parser now fully complies with RFC 4180: quoted fields containing commas, line breaks and escaped `""` quotes parse correctly (multi-line transcripts were silently corrupted before)
+- A corrupted localStorage key no longer prevents the rest of the session from being restored
+- Reaching the storage quota now shows a visible warning instead of failing silently
+- The timeline no longer draws clips against a fake 10-second fallback duration when no video is loaded (shows a hint instead)
+- Timeline snapping and previous/next clip navigation now consider both project clips and imported JSON clips
+
+### Changed
+
+- Saves are debounced and flushed on page hide — selecting a line no longer re-serializes the whole transcript on every click
+- Subtitle lookup precomputes timecodes instead of parsing strings on every playback tick
+- Timeline scrubbing seeks at most once per animation frame
+- Play/pause icon toggles without a full-document icon rescan
+
 ## [1.10] - 2026-05-31
 
 ### Added

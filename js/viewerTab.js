@@ -14,6 +14,7 @@ import {
 } from "./elements.js";
 import { jsonClips, setJsonClips, clips, isProjectActive } from "./state.js";
 import { showNotification } from "./ui.js";
+import { escapeHtml } from "./utils.js";
 
 export function refreshViewer() {
   renderViewer();
@@ -212,19 +213,19 @@ export function renderViewer(data = null, showLoadNotification = false) {
     clipDiv.innerHTML = `
       <div class="flex justify-between items-start mb-2">
         <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-2">
-          <span class="truncate">${clip.name}</span>
+          <span class="truncate">${escapeHtml(clip.name)}</span>
         </h3>
       </div>
       <div class="flex flex-wrap gap-1.5 mb-2">
         <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
-          ${clip.inicio}
+          ${escapeHtml(clip.inicio)}
         </span>
         <span class="text-gray-600 text-[10px] self-center">to</span>
         <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
-          ${clip.fin}
+          ${escapeHtml(clip.fin)}
         </span>
         <span class="bg-accent-100/10 text-accent-100 text-[10px] px-1.5 py-0.5 rounded font-mono ml-auto">
-          ${clip.duration}
+          ${escapeHtml(clip.duration)}
         </span>
       </div>
       <div class="text-[10px] text-gray-500 flex justify-between items-center mt-1 pt-1 border-t border-dark-50/50">
@@ -304,9 +305,9 @@ function showClipDetails(clip) {
     row.className =
       "hover:bg-dark-100 transition-colors border-b border-dark-50/30";
     row.innerHTML = `
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${t.inicio}</td>
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${t.fin}</td>
-      <td class="px-4 py-2 text-sm leading-relaxed">${t.transcripcion}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${escapeHtml(t.inicio)}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${escapeHtml(t.fin)}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${escapeHtml(t.transcripcion)}</td>
     `;
     tbody.appendChild(row);
   });

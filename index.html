@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Tailwind Play CDN generates runtime styles, so style-src must stay
+         unsafe-inline until the CSS is precompiled. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net; font-src 'self' https://cdn.tailwindcss.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    />
     <title>Clipperino</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -528,7 +534,8 @@
                 class="p-2 bg-accent-100 hover:bg-accent-200 text-white rounded-full transition-colors shadow-lg shadow-accent-100/20"
                 title="Play/Pause"
               >
-                <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                <i data-lucide="play" class="w-4 h-4 fill-current play-icon"></i>
+                <i data-lucide="pause" class="w-4 h-4 fill-current pause-icon hidden"></i>
               </button>
               <button
                 id="nextClipBtn"

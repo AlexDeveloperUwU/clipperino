@@ -98,7 +98,12 @@ export function initPreviewTab() {
 export function checkVideoMetadata() {
   if (videoMetadata && videoMetadata.name) {
     placeholderTitle.textContent = "Video Reload Required";
-    placeholderText.innerHTML = `Please re-load <strong class="text-white">${videoMetadata.name}</strong> to continue previewing.`;
+    placeholderText.textContent = "";
+    const intro = document.createTextNode("Please re-load ");
+    const strong = document.createElement("strong");
+    strong.className = "text-white";
+    strong.textContent = videoMetadata.name;
+    placeholderText.append(intro, strong, document.createTextNode(" to continue previewing."));
 
     videoFileLabel.classList.remove("hidden");
     videoFileLabelText.textContent = "Re-import Video";
@@ -177,23 +182,45 @@ function toggleSubtitles() {
   }
 }
 
-function updateSubtitles() {
-  const activeTranscriptions =
+// Parsed subtitle timeline. Parsing time strings on every timeupdate was the
+// hot path, so entries are computed once per transcript/clips change (detected
+// by array identity) and kept sorted for playback lookup.
+let subtitleCache = { source: null, entries: [] };
+
+function getSubtitleEntries() {
+  const source =
     transcriptions.length > 0
       ? transcriptions
       : jsonClips.flatMap((c) => c.transcriptions);
-  if (!showSubtitles || activeTranscriptions.length === 0) return;
+  if (subtitleCache.source !== source) {
+    subtitleCache = {
+      source,
+      entries: source
+        .map((t) => ({
+          start: timeStringToSeconds(t.inicio),
+          end: timeStringToSeconds(t.fin),
+          text: t.transcripcion,
+        }))
+        .sort((a, b) => a.start - b.start),
+    };
+  }
+  return subtitleCache.entries;
+}
+
+function updateSubtitles() {
+  if (!showSubtitles) return;
+
+  const entries = getSubtitleEntries();
+  if (entries.length === 0) return;
 
   const currentTime = previewVideoPlayer.currentTime;
 
-  const currentLine = activeTranscriptions.find((t) => {
-    const start = timeStringToSeconds(t.inicio);
-    const end = timeStringToSeconds(t.fin);
-    return currentTime >= start && currentTime <= end;
-  });
+  const currentEntry = entries.find(
+    (entry) => currentTime >= entry.start && currentTime <= entry.end,
+  );
 
-  if (currentLine) {
-    subtitleText.textContent = currentLine.transcripcion;
+  if (currentEntry) {
+    subtitleText.textContent = currentEntry.text;
     subtitleOverlay.classList.remove("opacity-0");
   } else {
     subtitleOverlay.classList.add("opacity-0");
@@ -201,17 +228,19 @@ function updateSubtitles() {
 }
 
 function updatePlayPauseIcon(isPlaying) {
-  if (window.lucide) {
-    playPauseBtn.innerHTML = isPlaying
-      ? `<i data-lucide="pause" class="w-4 h-4 fill-current"></i>`
-      : `<i data-lucide="play" class="w-4 h-4 fill-current"></i>`;
-    window.lucide.createIcons();
-  }
+  // Both icons are pre-rendered and toggled by class; re-running
+  // lucide.createIcons() here rescanned the entire document on every
+  // play/pause event.
+  const playIcon = playPauseBtn.querySelector(".play-icon");
+  const pauseIcon = playPauseBtn.querySelector(".pause-icon");
+  if (!playIcon || !pauseIcon) return;
+  playIcon.classList.toggle("hidden", isPlaying);
+  pauseIcon.classList.toggle("hidden", !isPlaying);
 }
 
 function skipToNextClip() {
   const currentTime = previewVideoPlayer.currentTime;
-  const activeClips = clips.length > 0 ? clips : jsonClips;
+  const activeClips = [...clips, ...jsonClips];
   const sortedClips = [...activeClips].sort(
     (a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio),
   );
@@ -230,7 +259,7 @@ function skipToNextClip() {
 
 function skipToPrevClip() {
   const currentTime = previewVideoPlayer.currentTime;
-  const activeClips = clips.length > 0 ? clips : jsonClips;
+  const activeClips = [...clips, ...jsonClips];
   const sortedClips = [...activeClips].sort(
     (a, b) => timeStringToSeconds(a.inicio) - timeStringToSeconds(b.inicio),
   );
@@ -363,7 +392,27 @@ export function renderTimeline() {
   timelineTrack.innerHTML = "";
   timelineRuler.innerHTML = "";
 
-  const duration = previewVideoPlayer.duration || videoMetadata.duration || 10;
+  const videoDuration = previewVideoPlayer.duration;
+  const duration =
+    !isNaN(videoDuration) && videoDuration > 0
+      ? videoDuration
+      : videoMetadata.duration > 0
+        ? videoMetadata.duration
+        : 0;
+
+  if (duration <= 0) {
+    // Without a real duration, clip percentages would be computed against an
+    // arbitrary fallback (previously 10s) and land in the wrong place.
+    timelineContentWrapper.style.width = "100%";
+    timelineDuration.textContent = "00:00:00";
+    const hint = document.createElement("p");
+    hint.className =
+      "absolute inset-0 flex items-center justify-center text-xs text-gray-500 select-none";
+    hint.textContent = "Load a video to place clips on the timeline";
+    timelineTrack.appendChild(hint);
+    return;
+  }
+
   timelineContentWrapper.style.width = `${zoomLevel * 100}%`;
 
   drawRuler(duration);
@@ -498,7 +547,9 @@ function handleScrubMove(e) {
   const snapThresholdPx = 15;
   const snapThresholdTime = (snapThresholdPx / width) * duration;
 
-  for (const clip of clips) {
+  // Snap against all known clip boundaries, not just project clips
+  const snapClips = [...clips, ...jsonClips];
+  for (const clip of snapClips) {
     const start = timeStringToSeconds(clip.inicio);
     const end = timeStringToSeconds(clip.fin);
 
@@ -529,8 +580,22 @@ function handleScrubMove(e) {
   const finalPercent = (targetTime / duration) * 100;
   playhead.style.left = `${finalPercent}%`;
 
-  previewVideoPlayer.currentTime = targetTime;
+  // Seeking every mousemove storms the decoder on long videos; apply at most
+  // one seek per animation frame (latest wins).
+  pendingSeekTime = targetTime;
+  if (pendingSeekHandle === null) {
+    pendingSeekHandle = requestAnimationFrame(() => {
+      pendingSeekHandle = null;
+      if (pendingSeekTime !== null) {
+        previewVideoPlayer.currentTime = pendingSeekTime;
+        pendingSeekTime = null;
+      }
+    });
+  }
 }
+
+let pendingSeekTime = null;
+let pendingSeekHandle = null;
 
 function handleScrubEnd(e) {
   if (isScrubbing) {

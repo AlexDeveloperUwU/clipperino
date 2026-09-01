@@ -12,6 +12,7 @@ import {
 import { renderTable, updateStatus, navigateToLine } from "./editorTab.js";
 import { renderViewer } from "./viewerTab.js";
 import { checkVideoMetadata } from "./previewTab.js";
+import { showNotification } from "./ui.js";
 
 const STORAGE_KEYS = [
   "clipperino_transcriptions",
@@ -35,7 +36,22 @@ export function clearSavedData() {
   STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
 }
 
+// Selecting a single line triggers a save; serialising the whole transcript
+// per click is wasteful for large CSVs, so saves are coalesced and flushed
+// before the page goes away.
+const SAVE_DEBOUNCE_MS = 300;
+let saveTimeout = null;
+
 export function saveToLocalStorage() {
+  if (saveTimeout !== null) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(flushSaveToLocalStorage, SAVE_DEBOUNCE_MS);
+}
+
+export function flushSaveToLocalStorage() {
+  if (saveTimeout !== null) {
+    clearTimeout(saveTimeout);
+    saveTimeout = null;
+  }
   try {
     localStorage.setItem(
       "clipperino_transcriptions",
@@ -53,21 +69,34 @@ export function saveToLocalStorage() {
       );
     }
   } catch (e) {
+    if (e && e.name === "QuotaExceededError") {
+      showNotification(
+        "Storage limit reached — recent changes are not being saved. Export your clips or remove data.",
+      );
+    }
     console.error("Error saving to localStorage:", e);
   }
 }
 
-export function loadFromLocalStorage() {
-  try {
-    const savedTranscriptions = localStorage.getItem(
-      "clipperino_transcriptions",
-    );
-    const savedClips = localStorage.getItem("clipperino_clips");
-    const savedSelected = localStorage.getItem("clipperino_selected");
-    const savedJsonClips = localStorage.getItem("clipperino_json_clips");
-    const savedVideoMeta = localStorage.getItem("clipperino_video_meta");
+window.addEventListener("beforeunload", flushSaveToLocalStorage);
+window.addEventListener("pagehide", flushSaveToLocalStorage);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") flushSaveToLocalStorage();
+});
 
-    if (savedTranscriptions) {
+export function loadFromLocalStorage() {
+  // Each key is parsed independently so one corrupted key doesn't prevent
+  // the rest of the session from being restored.
+  const savedTranscriptions = localStorage.getItem(
+    "clipperino_transcriptions",
+  );
+  const savedClips = localStorage.getItem("clipperino_clips");
+  const savedSelected = localStorage.getItem("clipperino_selected");
+  const savedJsonClips = localStorage.getItem("clipperino_json_clips");
+  const savedVideoMeta = localStorage.getItem("clipperino_video_meta");
+
+  if (savedTranscriptions) {
+    try {
       setTranscriptions(JSON.parse(savedTranscriptions));
       updateStatus();
 
@@ -87,41 +116,55 @@ export function loadFromLocalStorage() {
       } else {
         renderTable();
       }
+    } catch (e) {
+      console.error("Error restoring transcriptions:", e);
     }
+  }
 
-    if (savedClips) {
+  if (savedClips) {
+    try {
       setClips(JSON.parse(savedClips));
       if (window.renderClips) {
         window.renderClips();
       }
+    } catch (e) {
+      console.error("Error restoring clips:", e);
     }
+  }
 
-    if (savedSelected) {
+  if (savedSelected) {
+    try {
       setSelectedTranscriptions(JSON.parse(savedSelected));
+    } catch (e) {
+      console.error("Error restoring selection:", e);
     }
+  }
 
-    if (savedVideoMeta) {
+  if (savedVideoMeta) {
+    try {
       setVideoMetadata(JSON.parse(savedVideoMeta));
       checkVideoMetadata();
+    } catch (e) {
+      console.error("Error restoring video metadata:", e);
     }
+  }
 
-    if (transcriptions.length > 0) {
-      setTimeout(() => {
-        renderTable();
-      }, 0);
-    }
+  if (transcriptions.length > 0) {
+    setTimeout(() => {
+      renderTable();
+    }, 0);
+  }
 
-    if (savedJsonClips) {
+  if (savedJsonClips) {
+    try {
       const parsedJsonClips = JSON.parse(savedJsonClips);
       setJsonClips(parsedJsonClips);
       renderViewer(parsedJsonClips, false);
-    } else {
+    } catch (e) {
+      console.error("Error restoring JSON clips:", e);
       setTimeout(() => renderViewer(), 0);
     }
-  } catch (e) {
-    console.error("Error loading from localStorage:", e);
-    if (transcriptions.length > 0) {
-      renderTable();
-    }
+  } else {
+    setTimeout(() => renderViewer(), 0);
   }
 }

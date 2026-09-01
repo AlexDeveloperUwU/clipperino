@@ -48,6 +48,7 @@ import { exportEDL } from "./edlExporter.js";
 import { updateSearchAfterRowsLoaded } from "./search.js";
 import { refreshViewer } from "./viewerTab.js";
 import { renderTimeline } from "./previewTab.js";
+import { escapeHtml } from "./utils.js";
 
 function syncClipConsumers() {
   refreshViewer();
@@ -306,9 +307,9 @@ function renderBatch(startIndex, endIndex, direction) {
     }
 
     row.innerHTML = `
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
-      <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${escapeHtml(item.inicio)}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${escapeHtml(item.fin)}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${escapeHtml(item.transcripcion)}</td>
       <td class="px-4 py-2 text-sm text-right">
         ${
           isInClip
@@ -362,21 +363,43 @@ function handleTableClick(e) {
 }
 
 function isTranscriptionInClip(index) {
+  const indicesInClips = getClipIndexSet();
   // If we are editing a clip, don't mark its own lines as "Used" so they appear selected instead
   if (clipBeingEditedIndex !== -1) {
-    const editingClip = clips[clipBeingEditedIndex];
-    if (
-      editingClip &&
-      editingClip.transcriptions.some((t) => t.index === index)
-    ) {
-      return false;
-    }
+    if (getEditingClipIndexSet().has(index)) return false;
   }
-  return clips.some(
-    (clip, i) =>
-      i !== clipBeingEditedIndex &&
-      clip.transcriptions.some((t) => t.index === index),
-  );
+  return indicesInClips.has(index);
+}
+
+// Cached lookup: rebuilding this Set is O(total clip lines) and turns the
+// per-row "Used" check from O(clips × lines) into O(1). Invalidated whenever
+// the clips array or the edited clip changes.
+let clipIndexCache = { clipsRef: null, editedIndex: null, set: new Set(), editingSet: new Set() };
+
+function getClipIndexSet() {
+  if (
+    clipIndexCache.clipsRef !== clips ||
+    clipIndexCache.editedIndex !== clipBeingEditedIndex
+  ) {
+    const set = new Set();
+    const editingSet = new Set();
+    clips.forEach((clip, i) => {
+      const target = i === clipBeingEditedIndex ? editingSet : set;
+      clip.transcriptions.forEach((t) => target.add(t.index));
+    });
+    clipIndexCache = {
+      clipsRef: clips,
+      editedIndex: clipBeingEditedIndex,
+      set,
+      editingSet,
+    };
+  }
+  return clipIndexCache.set;
+}
+
+function getEditingClipIndexSet() {
+  getClipIndexSet();
+  return clipIndexCache.editingSet;
 }
 
 function selectTranscriptionRange(startIdx, endIdx) {
@@ -653,7 +676,7 @@ export function renderClips() {
     clipDiv.innerHTML = `
       <div class="flex justify-between items-start mb-2">
         <h3 class="font-bold text-sm text-white flex items-center gap-2 truncate pr-16">
-          <span class="truncate">${clip.name}</span>
+          <span class="truncate">${escapeHtml(clip.name)}</span>
           ${isBeingEdited ? '<span class="text-[10px] bg-accent-100 px-1 rounded text-white font-normal">Editing</span>' : ""}
         </h3>
         <div class="absolute top-3 right-3 flex items-center gap-1">
@@ -670,14 +693,14 @@ export function renderClips() {
       </div>
       <div class="flex flex-wrap gap-1.5 mb-2">
         <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
-          ${clip.inicio}
+          ${escapeHtml(clip.inicio)}
         </span>
         <span class="text-gray-600 text-[10px] self-center">to</span>
         <span class="bg-dark-100 text-[10px] px-1.5 py-0.5 rounded text-gray-400 font-mono border border-dark-50">
-          ${clip.fin}
+          ${escapeHtml(clip.fin)}
         </span>
         <span class="bg-accent-100/10 text-accent-100 text-[10px] px-1.5 py-0.5 rounded font-mono ml-auto">
-          ${clip.duration}
+          ${escapeHtml(clip.duration)}
         </span>
       </div>
       <div class="text-[10px] text-gray-500 flex justify-between items-center mt-1 pt-1 border-t border-dark-50/50">
@@ -895,9 +918,9 @@ function updateSelectedTable() {
       "hover:bg-dark-50 transition-colors border-b border-dark-50/30";
 
     row.innerHTML = `
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.inicio}</td>
-      <td class="px-4 py-2 text-xs font-mono text-gray-400">${item.fin}</td>
-      <td class="px-4 py-2 text-sm leading-relaxed">${item.transcripcion}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${escapeHtml(item.inicio)}</td>
+      <td class="px-4 py-2 text-xs font-mono text-gray-400">${escapeHtml(item.fin)}</td>
+      <td class="px-4 py-2 text-sm leading-relaxed">${escapeHtml(item.transcripcion)}</td>
       <td class="px-4 py-2 text-sm text-right">
         <button class="remove-selected-btn px-2 py-1 bg-dark-100 hover:bg-dark-50 rounded text-xs font-medium transition-colors text-gray-400 hover:text-red-400 border border-dark-50" data-index="${i}">
           Remove

@@ -11,9 +11,10 @@ import { refreshViewer } from "./viewerTab.js";
 import { renderTimeline } from "./previewTab.js";
 
 export function parseCSV(data, showLoadNotification = true) {
-  const lines = data.split("\n");
+  const records = parseCSVRecords(data);
 
-  const headerLine = lines[0].toLowerCase();
+  const headerLine =
+    records.length > 0 ? records[0].join(",").toLowerCase() : "";
   const hasHeader =
     headerLine.includes("inicio") ||
     headerLine.includes("start") ||
@@ -23,77 +24,101 @@ export function parseCSV(data, showLoadNotification = true) {
     headerLine.includes("transcript") ||
     headerLine.includes("content");
 
-  if (showLoadNotification && lines.length > 500) {
-    showNotification(`Loading ${lines.length} lines, please wait...`);
+  if (showLoadNotification && records.length > 500) {
+    showNotification(`Loading ${records.length} lines, please wait...`);
   }
 
   setTimeout(() => {
     clearLastViewedLine();
-    processCSVBatches(lines, hasHeader ? 1 : 0, [], showLoadNotification);
+    processCSVBatches(records, hasHeader ? 1 : 0, [], showLoadNotification);
   }, 10);
 }
 
+// RFC 4180 scanner: quoted fields may contain commas, newlines and escaped
+// "" quotes. CRLF line endings are normalised and the trailing newline is
+// not treated as an extra empty record.
+function parseCSVRecords(data) {
+  const records = [];
+  let record = [];
+  let field = "";
+  let inQuotes = false;
+  let fieldWasQuoted = false;
+
+  const pushField = () => {
+    record.push(fieldWasQuoted ? field : field.trim());
+    field = "";
+    fieldWasQuoted = false;
+  };
+
+  const pushRecord = () => {
+    pushField();
+    if (record.length > 1 || record[0] !== "") {
+      records.push(record);
+    }
+    record = [];
+  };
+
+  for (let i = 0; i < data.length; i++) {
+    const char = data[i];
+
+    if (inQuotes) {
+      if (char === '"') {
+        if (data[i + 1] === '"') {
+          field += '"';
+          i++;
+        } else {
+          inQuotes = false;
+          fieldWasQuoted = true;
+        }
+      } else {
+        field += char;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      pushField();
+    } else if (char === "\n") {
+      if (field.endsWith("\r")) field = field.slice(0, -1);
+      pushRecord();
+    } else {
+      field += char;
+    }
+  }
+
+  if (field !== "" || record.length > 0) {
+    if (field.endsWith("\r")) field = field.slice(0, -1);
+    pushRecord();
+  }
+
+  return records;
+}
+
 function processCSVBatches(
-  lines,
+  records,
   currentIndex,
   results,
   showLoadNotification = true,
 ) {
   const batchSize = 500;
-  const endIndex = Math.min(currentIndex + batchSize, lines.length);
+  const endIndex = Math.min(currentIndex + batchSize, records.length);
 
   for (let i = currentIndex; i < endIndex; i++) {
-    const line = lines[i];
-    if (!line.trim()) continue;
-
-    let columns = [];
-    let inQuote = false;
-    let currentCol = "";
-
-    for (let j = 0; j < line.length; j++) {
-      const char = line[j];
-
-      if (char === '"' && (j === 0 || line[j - 1] !== "\\")) {
-        inQuote = !inQuote;
-      } else if (char === "," && !inQuote) {
-        columns.push(currentCol.trim());
-        currentCol = "";
-      } else {
-        currentCol += char;
-      }
-    }
-
-    columns.push(currentCol.trim());
-
-    if (columns.length < 3) {
-      columns = line.split(",");
-    }
-
+    const columns = records[i];
     if (columns.length < 3) continue;
 
-    const inicio = columns[0].replace(/"/g, "").trim();
-    const fin = columns[1].replace(/"/g, "").trim();
-    const transcripcion = columns
-      .slice(2)
-      .join(",")
-      .replace(/^"|"$/g, "")
-      .trim();
-
     results.push({
-      inicio,
-      fin,
-      transcripcion,
+      inicio: columns[0],
+      fin: columns[1],
+      transcripcion: columns.slice(2).join(",").trim(),
     });
   }
 
-  if (showLoadNotification && lines.length > 1000 && endIndex < lines.length) {
-    const progress = Math.round((endIndex / lines.length) * 100);
-    showNotification(`Processing: ${progress}% completed...`);
-  }
-
-  if (endIndex < lines.length) {
+  if (endIndex < records.length) {
     setTimeout(() => {
-      processCSVBatches(lines, endIndex, results, showLoadNotification);
+      processCSVBatches(records, endIndex, results, showLoadNotification);
     }, 0);
   } else {
     setTranscriptions(results);
@@ -109,7 +134,7 @@ function processCSVBatches(
     refreshViewer();
     renderTimeline();
 
-    if (showLoadNotification && lines.length > 500) {
+    if (showLoadNotification && records.length > 500) {
       showNotification(
         `${transcriptions.length} transcripts loaded successfully`,
       );

@@ -271,8 +271,9 @@ export function showNotification(message) {
     "fixed bottom-4 right-4 bg-dark-50 text-white px-4 py-3 rounded-lg shadow-lg z-50 fade-in flex items-center border border-dark-50";
   notification.innerHTML = `
     <i data-lucide="info" class="mr-2 text-accent-100 w-5 h-5"></i>
-    <span>${message}</span>
+    <span></span>
   `;
+  notification.querySelector("span").textContent = message;
 
   document.body.appendChild(notification);
 

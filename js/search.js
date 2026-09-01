@@ -1,6 +1,7 @@
 import { transcriptions, selectedTranscriptions } from "./state.js";
 import { debounce, showNotification } from "./ui.js";
 import { navigateToLine } from "./editorTab.js";
+import { escapeHtml } from "./utils.js";
 
 let searchResults = [];
 let currentSearchTerm = "";
@@ -168,22 +169,22 @@ function updateSearchResults(searchTerm) {
 
     const transcriptionCell = row.querySelector("td:nth-child(3)");
     if (transcriptionCell) {
-      transcriptionCell.innerHTML = transcriptionCell.textContent;
+      transcriptionCell.textContent = transcriptionCell.textContent;
+    }
 
-      const index = parseInt(row.dataset.index);
-      const isSelected = selectedTranscriptions.some((t) => t.index === index);
+    const index = parseInt(row.dataset.index);
+    const isSelected = selectedTranscriptions.some((t) => t.index === index);
 
-      const selectBtn = row.querySelector(".select-btn");
-      if (selectBtn) {
-        if (isSelected) {
-          selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50");
-          selectBtn.classList.add("bg-accent-100");
-          selectBtn.textContent = "Selected";
-        } else {
-          selectBtn.classList.remove("bg-accent-100");
-          selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50");
-          selectBtn.textContent = "Select";
-        }
+    const selectBtn = row.querySelector(".select-btn");
+    if (selectBtn) {
+      if (isSelected) {
+        selectBtn.classList.remove("bg-dark-100", "hover:bg-dark-50");
+        selectBtn.classList.add("bg-accent-100");
+        selectBtn.textContent = "Selected";
+      } else {
+        selectBtn.classList.remove("bg-accent-100");
+        selectBtn.classList.add("bg-dark-100", "hover:bg-dark-50");
+        selectBtn.textContent = "Select";
       }
     }
   });
@@ -199,9 +200,13 @@ function updateSearchResults(searchTerm) {
 
       const transcriptionCell = row.querySelector("td:nth-child(3)");
       if (transcriptionCell) {
+        // The cell text is raw transcript data — escape before wrapping matches
+        // in markup, and match against the escaped form so HTML-escaped
+        // characters (&amp;, &lt;, …) still highlight correctly.
+        const escapedTerm = escapeHtml(searchTerm);
         const text = transcriptionCell.textContent;
-        const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, "gi");
-        transcriptionCell.innerHTML = text.replace(
+        const regex = new RegExp(`(${escapeRegExp(escapedTerm)})`, "gi");
+        transcriptionCell.innerHTML = escapeHtml(text).replace(
           regex,
           '<span class="bg-yellow-500/30 text-white px-1 rounded">$1</span>',
         );
@@ -231,7 +236,7 @@ function clearSearch() {
 
     const transcriptionCell = row.querySelector("td:nth-child(3)");
     if (transcriptionCell) {
-      transcriptionCell.innerHTML = transcriptionCell.textContent;
+      transcriptionCell.textContent = transcriptionCell.textContent;
     }
   });
 }
