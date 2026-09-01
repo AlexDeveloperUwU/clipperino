@@ -374,7 +374,12 @@ function isTranscriptionInClip(index) {
 // Cached lookup: rebuilding this Set is O(total clip lines) and turns the
 // per-row "Used" check from O(clips × lines) into O(1). Invalidated whenever
 // the clips array or the edited clip changes.
-let clipIndexCache = { clipsRef: null, editedIndex: null, set: new Set(), editingSet: new Set() };
+let clipIndexCache = {
+  clipsRef: null,
+  editedIndex: null,
+  set: new Set(),
+  editingSet: new Set(),
+};
 
 function getClipIndexSet() {
   if (

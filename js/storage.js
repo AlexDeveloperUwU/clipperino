@@ -87,9 +87,7 @@ document.addEventListener("visibilitychange", () => {
 export function loadFromLocalStorage() {
   // Each key is parsed independently so one corrupted key doesn't prevent
   // the rest of the session from being restored.
-  const savedTranscriptions = localStorage.getItem(
-    "clipperino_transcriptions",
-  );
+  const savedTranscriptions = localStorage.getItem("clipperino_transcriptions");
   const savedClips = localStorage.getItem("clipperino_clips");
   const savedSelected = localStorage.getItem("clipperino_selected");
   const savedJsonClips = localStorage.getItem("clipperino_json_clips");

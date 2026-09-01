@@ -103,7 +103,11 @@ export function checkVideoMetadata() {
     const strong = document.createElement("strong");
     strong.className = "text-white";
     strong.textContent = videoMetadata.name;
-    placeholderText.append(intro, strong, document.createTextNode(" to continue previewing."));
+    placeholderText.append(
+      intro,
+      strong,
+      document.createTextNode(" to continue previewing."),
+    );
 
     videoFileLabel.classList.remove("hidden");
     videoFileLabelText.textContent = "Re-import Video";
