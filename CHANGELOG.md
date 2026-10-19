@@ -2,6 +2,12 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.0.3] - 2026-10-19
+
+### Changed
+
+- The transcript notebook now works from a generic `/content/clipperino` folder instead of a personal path
+
 ## [2.0.2] - 2026-10-19
 
 ### Changed
