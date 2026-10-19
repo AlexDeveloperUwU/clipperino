@@ -1,3 +1,5 @@
+<p align="center"><img src="public/brand/wordmark-light.svg" alt="Clipperino" height="64" /></p>
+
 # Clipperino
 
 Clipperino is a web-based tool to manage, select and export clips from video transcriptions. Import a CSV of timestamped text, select lines, group them into named clips, preview them against a local video file, and export JSON or an EDL (Edit Decision List) for DaVinci Resolve.

@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
-import { CircleHelp, FileSpreadsheet, Film, FolderOpen, Save, Scissors, Trash2 } from "@lucide/vue";
+import { CircleHelp, FileSpreadsheet, Film, FolderOpen, Save, Trash2 } from "@lucide/vue";
+import BrandMark from "./BrandMark.vue";
 import { useUiStore } from "../stores/ui.js";
 import { useProjectStore } from "../stores/project.js";
 import { useMediaStore } from "../stores/media.js";
@@ -50,7 +51,7 @@ function onSaveProject() {
   >
     <div class="flex items-center gap-4">
       <h1 class="flex items-center gap-2 text-xl font-bold text-white">
-        <Scissors class="h-6 w-6 text-accent-100" /> Clipperino
+        <BrandMark class="h-8 w-8" /> Clipperino
       </h1>
       <div class="mx-2 h-6 w-px bg-dark-50"></div>
       <div class="flex items-center gap-1">

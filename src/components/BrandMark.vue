@@ -1,0 +1,20 @@
+<template>
+  <svg viewBox="0 0 64 64" fill="none" aria-hidden="true">
+    <rect width="64" height="64" rx="14" fill="#0a0a0a" />
+    <g
+      transform="translate(17 8) scale(1.25)"
+      stroke="#3b82f6"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="6" cy="6" r="3" />
+      <path d="M8.12 8.12 12 12" />
+      <path d="M20 4 8.12 15.88" />
+      <circle cx="6" cy="18" r="3" />
+      <path d="M14.8 14.8 20 20" />
+    </g>
+    <rect x="10" y="46" width="44" height="7" rx="3.5" fill="#2563eb" fill-opacity=".35" />
+    <rect x="24" y="46" width="16" height="7" rx="3.5" fill="#10b981" />
+  </svg>
+</template>

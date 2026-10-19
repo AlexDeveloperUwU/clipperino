@@ -2,6 +2,17 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.1.0] - 2026-10-19
+
+### Added
+
+- New brand identity: scissors-on-timeline mark, mono mark, light and dark wordmarks, and a `BRAND.md` guide
+- Maskable PWA icon
+
+### Changed
+
+- Header, footer, favicon, PWA icon and README now use the new mark
+
 ## [2.0.3] - 2026-10-19
 
 ### Changed

@@ -42,7 +42,7 @@ export default defineConfig({
     buildOnlyCsp,
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg"],
+      includeAssets: ["icon.svg", "icon-maskable.svg"],
       manifest: {
         name: "Clipperino",
         short_name: "Clipperino",
@@ -57,6 +57,12 @@ export default defineConfig({
             sizes: "any",
             type: "image/svg+xml",
             purpose: "any",
+          },
+          {
+            src: "icon-maskable.svg",
+            sizes: "any",
+            type: "image/svg+xml",
+            purpose: "maskable",
           },
         ],
       },

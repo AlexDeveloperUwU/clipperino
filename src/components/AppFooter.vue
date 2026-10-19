@@ -1,5 +1,6 @@
 <script setup>
-import { Scale, Scissors } from "@lucide/vue";
+import { Scale } from "@lucide/vue";
+import BrandMark from "./BrandMark.vue";
 import { useUiStore } from "../stores/ui.js";
 
 const ui = useUiStore();
@@ -12,7 +13,7 @@ const version = __APP_VERSION__;
     <div class="flex items-center justify-between">
       <div class="flex-1 text-left">&copy; {{ year }} AlexDeveloperUwU</div>
       <div class="flex flex-1 items-center justify-center gap-2 text-center">
-        <Scissors class="h-3 w-3 text-accent-100" />
+        <BrandMark class="h-4 w-4" />
         <button
           class="font-semibold text-gray-300 transition-colors hover:text-white"
           title="View changelog"
