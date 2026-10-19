@@ -2,6 +2,13 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.0.2] - 2026-10-19
+
+### Changed
+
+- Rewrote the Colab transcript notebook: it normalizes the audio, removes Whisper's looping and "thanks for watching" artifacts, splits long segments into short rows, and retries long silent gaps
+- Documented the notebook in the README
+
 ## [2.0.1] - 2026-10-19
 
 ### Changed

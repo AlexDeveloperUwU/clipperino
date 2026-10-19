@@ -44,6 +44,10 @@ Start,End,Transcript
 00:00:05,00:00:10,Today we are going to learn about...
 ```
 
+### Generating a transcript from YouTube
+
+[`utils/Clipperino_Transcript.ipynb`](utils/Clipperino_Transcript.ipynb) is a Google Colab notebook that downloads a video's audio, transcribes it with Whisper large-v3 on a GPU runtime, and produces a `transcript.csv` ready to import. It normalizes the audio, filters hallucinated loops, splits long segments into short rows and retries long silent gaps. Open it in Colab, pick a T4 GPU runtime and follow the steps in its first cell.
+
 ## Development
 
 Vue 3 + Vite + Pinia + Tailwind CSS (JavaScript, no TypeScript).
@@ -79,6 +83,7 @@ src/
                 videoPicker + handleStore (remembers the video file, IndexedDB)
   composables/  reusable component logic: useRowWindow, useTimelineScrub, useFileDrop
   components/   editor/, preview/, modals/, plus header, footer and toasts
+utils/          Clipperino_Transcript.ipynb (Colab notebook that creates the CSV)
 ```
 
 Code conventions: English only, JSDoc on exported functions and store actions, no inline `//` comments or banner comments, store arrays are replaced rather than mutated.
