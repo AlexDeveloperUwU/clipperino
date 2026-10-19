@@ -11,8 +11,9 @@ export default {
           300: "#121212",
           400: "#0a0a0a",
         },
-        accent: { 100: "#3b82f6", 200: "#2563eb" },
-        secondary: { 100: "#10b981", 200: "#059669" },
+        accent: { 100: "#3b82f6", 200: "#2563eb", 300: "#1d4ed8" },
+        secondary: { 100: "#10b981", 200: "#047857", 300: "#065f46" },
+        gray: { 500: "#8b93a1", 600: "#6b7280" },
       },
       fontFamily: {
         sans: ["Inter Variable", "Inter", "system-ui", "sans-serif"],

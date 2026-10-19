@@ -24,12 +24,23 @@ function exportAs(kind) {
   ui.notify(`Clips exported as ${label}`);
 }
 
+/** Removes a clip after confirmation. */
+async function deleteClip(index) {
+  const accepted = await ui.confirm({
+    title: "Delete clip?",
+    message: `"${project.clips[index].name}" will be removed. Its lines become available again.`,
+    confirmLabel: "Delete",
+  });
+  if (accepted) project.removeClip(index);
+}
+
 const exportBtn =
   "px-3 py-2 bg-dark-50 hover:bg-dark-50/80 text-gray-200 border border-dark-50 text-xs font-medium rounded transition-colors flex items-center justify-center gap-2";
 </script>
 
 <template>
   <div
+    data-tour="clips"
     class="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
   >
     <div
@@ -67,7 +78,7 @@ const exportBtn =
               <span class="truncate">{{ clip.name }}</span>
               <span
                 v-if="index === project.editingClipIndex"
-                class="rounded bg-accent-100 px-1 text-[10px] font-normal text-white"
+                class="rounded bg-accent-200 px-1 text-[10px] font-normal text-white"
                 >Editing</span
               >
             </h3>
@@ -89,12 +100,15 @@ const exportBtn =
               <button
                 class="p-1 text-gray-500 transition-colors hover:text-red-400"
                 title="Delete"
-                @click="project.removeClip(index)"
+                @click="deleteClip(index)"
               >
                 <X class="h-4 w-4" />
               </button>
             </div>
           </div>
+          <p class="mb-2 line-clamp-2 text-xs text-gray-400">
+            {{ clip.transcriptions[0]?.transcripcion }}
+          </p>
           <div class="mb-2 flex flex-wrap gap-1.5">
             <span
               class="rounded border border-dark-50 bg-dark-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-400"
@@ -122,12 +136,18 @@ const exportBtn =
 
     <div class="flex-none border-t border-dark-50 bg-dark-100 p-3">
       <div class="grid grid-cols-2 gap-2">
-        <button :class="exportBtn" @click="exportAs('json')">
+        <button
+          :class="exportBtn"
+          :disabled="project.clips.length === 0"
+          class="disabled:cursor-not-allowed disabled:opacity-40"
+          @click="exportAs('json')"
+        >
           <FileJson class="h-3 w-3 text-accent-100" /> JSON
         </button>
         <button
-          class="flex items-center justify-center gap-2 rounded bg-accent-100 px-3 py-2 text-xs font-bold uppercase text-white shadow-lg shadow-accent-100/10 transition-colors hover:bg-accent-200"
-          title="Resolve / Premiere"
+          :disabled="project.clips.length === 0"
+          class="flex items-center justify-center gap-2 rounded bg-accent-200 px-3 py-2 text-xs font-bold uppercase text-white shadow-lg shadow-accent-100/10 transition-colors hover:bg-accent-300 disabled:cursor-not-allowed disabled:opacity-40"
+          title="Timeline for DaVinci Resolve / Premiere"
           @click="exportAs('edl')"
         >
           <Film class="h-4 w-4" /> EDL

@@ -10,6 +10,7 @@ const KEYS = {
   video: "clipperino_video_meta",
   lastLine: "clipperino_last_viewed_line",
 };
+const WELCOME_KEY = "clipperino_welcomed";
 const LEGACY_KEYS = ["clipperino_json_clips"];
 const SAVE_DEBOUNCE_MS = 300;
 
@@ -57,7 +58,26 @@ export function loadSession() {
   if (project.lastViewedLine >= 0) ui.navigateToLine(project.lastViewedLine);
 }
 
+/** True once the welcome prompt has been shown, so it never appears twice. */
+export function hasSeenWelcome() {
+  try {
+    return localStorage.getItem(WELCOME_KEY) !== null;
+  } catch {
+    return true;
+  }
+}
+
+/** Records that the welcome prompt was shown. */
+export function markWelcomeSeen() {
+  try {
+    localStorage.setItem(WELCOME_KEY, "1");
+  } catch (e) {
+    console.error("Error saving onboarding flag:", e);
+  }
+}
+
 function writeSession(project, media, ui) {
+  if (ui.demoActive) return;
   if (!project.isActive && !media.meta.name) {
     clearSavedData();
     return;
@@ -68,6 +88,7 @@ function writeSession(project, media, ui) {
     localStorage.setItem(KEYS.selected, JSON.stringify(project.selected));
     setOrRemove(KEYS.video, media.meta.name ? JSON.stringify(media.meta) : null);
     setOrRemove(KEYS.lastLine, project.lastViewedLine >= 0 ? String(project.lastViewedLine) : null);
+    ui.savedAt = Date.now();
   } catch (e) {
     if (e?.name === "QuotaExceededError") {
       ui.notify(

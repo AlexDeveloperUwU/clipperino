@@ -2,6 +2,37 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.2.0] - 2026-10-19
+
+### Added
+
+- First-run welcome, a six-step guided tour and an empty-state guide with the expected CSV format
+- Bundled demo project (transcript, two clips and a short video) that is never autosaved, with an "Exit demo" banner; also reachable from Help
+- In-app confirmation dialog before clearing data, deleting a clip, clearing the video, replacing the transcript or opening a project
+- Click anywhere on a transcript row to select it; arrow keys seek 5 seconds in Preview
+- Clip cards show the first line of text; export buttons are disabled when there are no clips
+- Help now explains the CSV format, saving, video length rule, keyboard shortcuts and EDL export
+- Drop a CSV, video or `.clpproj` file anywhere in the app and it is routed by type
+- Volume slider and mute button in Preview; the level is remembered
+- A quiet "Saved" tick in the footer after each autosave
+- "Ready to work offline" notice and an "Update available" footer button, so updates no longer reload the page unasked
+- Notice on screens narrower than 700px that the app is built for tablets and larger
+
+### Changed
+
+- CSV import accepts UTF-8 BOM files and `;` delimiters, and reports how many lines were imported and skipped
+- Importing a CSV over an existing transcript removes the clips that referenced the old lines
+- Import CSV and Open Project are real buttons, reachable by keyboard
+- Timeline scrubbing uses pointer events, so it works with touch and pen; header buttons shorten to fit tablet widths
+- Modals have dialog semantics, close on Esc, trap focus and return it on close; tabs expose tab roles
+- Darker filled buttons and muted gray text for better contrast; animations are reduced when the system asks for it
+- Search toasts only report "No matches found"; toasts are announced to screen readers
+
+### Fixed
+
+- Space now plays and pauses right after switching tabs
+- An empty or invalid CSV shows an error instead of silently doing nothing
+
 ## [2.1.0] - 2026-10-19
 
 ### Added

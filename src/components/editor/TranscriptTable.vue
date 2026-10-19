@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { ArrowDownToLine, ArrowUpToLine, List } from "@lucide/vue";
 import SearchBar from "./SearchBar.vue";
+import EmptyTranscript from "./EmptyTranscript.vue";
 import { useProjectStore } from "../../stores/project.js";
 import { useSearchStore } from "../../stores/search.js";
 import { useUiStore } from "../../stores/ui.js";
@@ -50,11 +51,18 @@ watch(
   ({ index }) => navigateTo(index),
 );
 
+/** Clicking anywhere on a free row toggles it (Shift extends the range), unless text is being selected. */
+function onRowClick(index, event) {
+  if (project.usedIndexSet.has(index) || window.getSelection()?.toString()) return;
+  project.select(index, event.shiftKey);
+}
+
 /** CSS classes reflecting a row's flash, clip, selection and search state. */
 function rowClass(row) {
   return {
     "highlight-row": flashIndex.value === row.index,
     "in-clip": project.usedIndexSet.has(row.index),
+    "cursor-pointer": !project.usedIndexSet.has(row.index),
     "bg-accent-100/15": project.selectedIndexSet.has(row.index),
     "bg-yellow-900/20": search.matchSet.has(row.index),
   };
@@ -63,6 +71,7 @@ function rowClass(row) {
 
 <template>
   <div
+    data-tour="table"
     class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
   >
     <div
@@ -94,7 +103,8 @@ function rowClass(row) {
     </div>
 
     <div ref="container" class="flex-1 overflow-y-auto bg-dark-300" @scroll="onScroll">
-      <table class="w-full border-collapse">
+      <EmptyTranscript v-if="total === 0" />
+      <table v-else class="w-full border-collapse">
         <thead class="sticky top-0 z-10 bg-dark-100 shadow-sm">
           <tr class="text-left">
             <th class="th w-24">Start</th>
@@ -110,6 +120,7 @@ function rowClass(row) {
             :data-index="row.index"
             :class="rowClass(row)"
             class="border-b border-dark-50/30 transition-colors hover:bg-dark-100"
+            @click="onRowClick(row.index, $event)"
           >
             <td class="px-4 py-2 font-mono text-xs text-gray-400">
               {{ row.inicio }}
@@ -142,7 +153,6 @@ function rowClass(row) {
                     : 'border-dark-50 bg-dark-100 text-gray-300 hover:bg-dark-50'
                 "
                 class="rounded border px-2 py-1 text-xs font-medium transition-colors"
-                @click="project.select(row.index, $event.shiftKey)"
               >
                 {{ project.selectedIndexSet.has(row.index) ? "Selected" : "Select" }}
               </button>

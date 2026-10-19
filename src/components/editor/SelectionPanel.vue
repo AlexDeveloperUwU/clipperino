@@ -18,6 +18,7 @@ function addClip() {
 
 <template>
   <div
+    data-tour="selection"
     class="flex h-[35%] min-h-[200px] flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
   >
     <div
@@ -41,8 +42,8 @@ function addClip() {
         <button
           :class="
             project.editingClipIndex >= 0
-              ? 'bg-accent-100 hover:bg-accent-200'
-              : 'bg-secondary-100 hover:bg-secondary-200'
+              ? 'bg-accent-200 hover:bg-accent-300'
+              : 'bg-secondary-200 hover:bg-secondary-300'
           "
           class="flex items-center gap-2 rounded px-3 py-1 text-xs font-bold uppercase text-white shadow-sm transition-colors"
           @click="addClip"

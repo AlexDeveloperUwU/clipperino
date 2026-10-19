@@ -5,8 +5,6 @@ import { buildClip } from "../lib/clips.js";
 import { timeToSeconds } from "../lib/timecode.js";
 import { useUiStore } from "./ui.js";
 
-const LARGE_IMPORT_LINES = 500;
-
 const asList = (value) => (Array.isArray(value) ? value : []);
 
 /**
@@ -43,17 +41,30 @@ export const useProjectStore = defineStore("project", () => {
     return set;
   });
 
-  /** Replaces the transcript with the parsed CSV and resets selection and edit state. */
+  /**
+   * Replaces the transcript (and its clips, whose line indices would go stale) with the parsed CSV.
+   * A CSV without valid rows leaves the current project untouched.
+   */
   function importCsv(text) {
-    const lines = parseCsv(text);
+    const { lines, skipped } = parseCsv(text);
+    if (!lines.length) {
+      ui.notify(
+        "No valid rows found. Expected columns: start, end, text (e.g. 00:01:05,00:01:09,Hello).",
+      );
+      return;
+    }
+    ui.demoActive = false;
     transcriptions.value = lines;
+    clips.value = [];
     selected.value = [];
     lastSelectedIndex.value = -1;
     editingClipIndex.value = -1;
     lastViewedLine.value = -1;
-    if (lines.length > LARGE_IMPORT_LINES) {
-      ui.notify(`${lines.length} transcripts loaded successfully`);
-    }
+    ui.notify(
+      skipped
+        ? `${lines.length} lines imported, ${skipped} skipped`
+        : `${lines.length} lines imported`,
+    );
   }
 
   /** Adds or removes one line from the selection. */
@@ -162,6 +173,7 @@ export const useProjectStore = defineStore("project", () => {
 
   /** Wipes transcript, selection and clips. */
   function clearAll() {
+    ui.demoActive = false;
     transcriptions.value = [];
     selected.value = [];
     clips.value = [];
@@ -176,6 +188,7 @@ export const useProjectStore = defineStore("project", () => {
    * @param {{ transcriptions?: unknown, clips?: unknown, selected?: unknown, lastViewedLine?: unknown }} data
    */
   function restore(data) {
+    ui.demoActive = false;
     transcriptions.value = asList(data.transcriptions);
     clips.value = asList(data.clips);
     selected.value = asList(data.selected);

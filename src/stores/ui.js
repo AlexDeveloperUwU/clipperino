@@ -10,7 +10,12 @@ export const useUiStore = defineStore("ui", () => {
   const modalPayload = ref(null);
   const toasts = ref([]);
   const goToLine = ref({ index: -1, nonce: 0 });
+  const demoActive = ref(false);
+  const updateReady = ref(false);
+  const savedAt = ref(0);
+  const tourStep = ref(-1);
   let toastId = 0;
+  let pendingConfirm = null;
 
   /** Shows a toast that dismisses itself. */
   function notify(message) {
@@ -27,10 +32,38 @@ export const useUiStore = defineStore("ui", () => {
     openModal.value = name;
   }
 
-  /** Closes the open modal. */
+  /** Closes the open modal; a pending `confirm` resolves to `false`. */
   function close() {
+    settleConfirm(false);
     openModal.value = null;
     modalPayload.value = null;
+  }
+
+  /** Asks for confirmation in a modal; resolves to whether the user accepted. */
+  function confirm({ title, message, confirmLabel = "Confirm" }) {
+    settleConfirm(false);
+    return new Promise((resolve) => {
+      pendingConfirm = resolve;
+      open("confirm", { title, message, confirmLabel });
+    });
+  }
+
+  /** Resolves the pending `confirm` (if any) and closes its modal. */
+  function answerConfirm(accepted) {
+    settleConfirm(accepted);
+    close();
+  }
+
+  function settleConfirm(accepted) {
+    pendingConfirm?.(accepted);
+    pendingConfirm = null;
+  }
+
+  /** Starts the guided tour from the Editor tab; `TourOverlay` advances `tourStep`, `-1` means no tour. */
+  function startTour() {
+    close();
+    activeTab.value = "editor";
+    tourStep.value = 0;
   }
 
   /** Asks the transcript table to scroll to and flash a line. */
@@ -44,9 +77,16 @@ export const useUiStore = defineStore("ui", () => {
     modalPayload,
     toasts,
     goToLine,
+    demoActive,
+    updateReady,
+    savedAt,
+    tourStep,
     notify,
     open,
     close,
+    confirm,
+    answerConfirm,
+    startTour,
     navigateToLine,
   };
 });

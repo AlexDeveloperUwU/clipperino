@@ -20,7 +20,7 @@ export function useTimelineScrub(track, getBlocks) {
 
   /**
    * Moves the playhead to the pointer, snapping when close to a clip edge.
-   * Seeks at most once per frame: a seek on every mousemove storms the decoder on long videos.
+   * Seeks at most once per frame: a seek on every pointermove storms the decoder on long videos.
    * Positions past the end of the video leave the video at its last frame.
    */
   function scrubTo(event) {
@@ -54,12 +54,14 @@ export function useTimelineScrub(track, getBlocks) {
   }
 
   onMounted(() => {
-    window.addEventListener("mousemove", move);
-    window.addEventListener("mouseup", end);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
   });
   onBeforeUnmount(() => {
-    window.removeEventListener("mousemove", move);
-    window.removeEventListener("mouseup", end);
+    window.removeEventListener("pointermove", move);
+    window.removeEventListener("pointerup", end);
+    window.removeEventListener("pointercancel", end);
   });
 
   return { scrubbing, scrubTime, snapTime, start };

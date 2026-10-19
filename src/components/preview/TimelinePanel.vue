@@ -140,8 +140,8 @@ const zoomBtn = "p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white tra
       <div
         ref="wrapper"
         :style="{ width: hasSpan ? `${zoom * 100}%` : '100%' }"
-        class="relative h-full transition-[width] duration-200 ease-out"
-        @mousedown="onScrubStart"
+        class="relative h-full touch-none transition-[width] duration-200 ease-out"
+        @pointerdown="onScrubStart"
       >
         <div
           class="pointer-events-none relative h-6 w-full select-none border-b border-dark-50/30 bg-dark-200/50 font-mono text-[10px] text-gray-500"
@@ -169,7 +169,7 @@ const zoomBtn = "p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white tra
               :key="i"
               :style="{ left: `${clip.left}%`, width: `${clip.width}%` }"
               class="absolute bottom-2 top-2 cursor-pointer overflow-hidden rounded-sm border border-accent-100/50 bg-accent-100/20 shadow-sm transition-colors hover:border-accent-100 hover:bg-accent-100/40"
-              @mousedown.stop="jumpToClip(clip)"
+              @pointerdown.stop="jumpToClip(clip)"
             >
               <div
                 class="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_5px,#000_5px,#000_10px)] opacity-10"

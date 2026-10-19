@@ -43,7 +43,7 @@ onBeforeUnmount(() => (media.element = null));
         </template>
         <template v-else>
           <h3 class="mb-1 text-lg font-bold text-gray-300">No Video Loaded</h3>
-          <p class="text-sm text-gray-500">Import a video file to preview your clips</p>
+          <p class="text-sm text-gray-500">Use Load Video (top right) or drop a video file here</p>
         </template>
       </div>
     </div>

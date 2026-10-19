@@ -17,14 +17,11 @@ export const useSearchStore = defineStore("search", () => {
   const matches = computed(() => findMatchIndices(project.transcriptions, activeTerm.value));
   const matchSet = computed(() => new Set(matches.value));
 
-  /** Applies a new search term and reports how many lines match. */
+  /** Applies a new search term; only an empty result is toasted, as the search bar already shows the match count. */
   function setTerm(value) {
     term.value = value.trim();
     current.value = -1;
-    if (!activeTerm.value) return;
-    ui.notify(
-      matches.value.length > 0 ? `Found ${matches.value.length} matches` : "No matches found",
-    );
+    if (activeTerm.value && matches.value.length === 0) ui.notify("No matches found");
   }
 
   /** Moves to the next (+1) or previous (-1) match, wrapping around. */

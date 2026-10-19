@@ -52,7 +52,7 @@ function save() {
     <div class="flex justify-end gap-3">
       <button class="btn-cancel" @click="ui.close()">Cancel</button>
       <button
-        class="rounded bg-secondary-100 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-secondary-100/20 transition-colors hover:bg-secondary-200"
+        class="rounded bg-secondary-200 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-secondary-100/20 transition-colors hover:bg-secondary-300"
         @click="save"
       >
         {{ isUpdate ? "Update Clip" : "Save Clip" }}

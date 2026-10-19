@@ -10,6 +10,8 @@ import { openProject } from "../services/projectFile.js";
 import { forgetVideo, openVideo } from "../services/videoPicker.js";
 
 const videoInput = ref(null);
+const csvInput = ref(null);
+const projectInput = ref(null);
 const ui = useUiStore();
 const project = useProjectStore();
 const media = useMediaStore();
@@ -20,11 +22,11 @@ const TABS = [
 ];
 
 const actionBtn =
-  "px-3 py-1.5 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 bg-accent-100 hover:bg-accent-200 shadow-lg shadow-accent-100/20";
+  "px-3 py-1.5 text-white text-xs font-bold uppercase tracking-wide rounded cursor-pointer transition-colors flex items-center gap-2 whitespace-nowrap bg-accent-200 hover:bg-accent-300 shadow-lg shadow-accent-100/20";
 const dangerBtn =
-  "px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 text-red-400 hover:text-red-300";
+  "px-3 py-1.5 bg-dark-100 hover:bg-red-900/30 text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 whitespace-nowrap text-red-400 hover:text-red-300";
 const projectBtn =
-  "px-3 py-1.5 bg-dark-100 hover:bg-dark-50 text-gray-300 hover:text-white text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2";
+  "px-3 py-1.5 bg-dark-100 hover:bg-dark-50 text-gray-300 hover:text-white text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 whitespace-nowrap";
 
 /** Wraps a file handler for `<input type="file">` and resets the input so the same file can be picked again. */
 function pick(handler) {
@@ -33,6 +35,26 @@ function pick(handler) {
     event.target.value = "";
     if (file) handler(file);
   };
+}
+
+/** Wipes transcript and clips after confirmation. */
+async function onClearData() {
+  const accepted = await ui.confirm({
+    title: "Clear all data?",
+    message: "This removes the transcript, selection and every clip. It cannot be undone.",
+    confirmLabel: "Clear data",
+  });
+  if (accepted) project.clearAll();
+}
+
+/** Unloads the video after confirmation. */
+async function onClearVideo() {
+  const accepted = await ui.confirm({
+    title: "Clear the video?",
+    message: "You will need to load the video file again to preview clips.",
+    confirmLabel: "Clear video",
+  });
+  if (accepted) forgetVideo();
 }
 
 /** Opens the save dialog, or explains why there is nothing to save. */
@@ -54,17 +76,24 @@ function onSaveProject() {
         <BrandMark class="h-8 w-8" /> Clipperino
       </h1>
       <div class="mx-2 h-6 w-px bg-dark-50"></div>
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-1" role="tablist">
         <div
           v-for="tab in TABS"
           :key="tab.id"
+          :data-tour="`tab-${tab.id}`"
+          role="presentation"
           :class="ui.activeTab === tab.id ? 'bg-dark-100' : 'hover:bg-dark-50'"
           class="group flex items-center rounded-md transition-colors"
         >
           <button
+            role="tab"
+            :aria-selected="ui.activeTab === tab.id"
             :class="ui.activeTab === tab.id ? 'text-white' : 'text-gray-400 group-hover:text-white'"
             class="py-1.5 pl-3 pr-1.5 text-sm font-medium transition-colors"
-            @click="ui.activeTab = tab.id"
+            @click="
+              ui.activeTab = tab.id;
+              $event.currentTarget.blur();
+            "
           >
             {{ tab.label }}
           </button>
@@ -81,26 +110,47 @@ function onSaveProject() {
     </div>
 
     <div class="flex items-center gap-3">
-      <div class="mr-1 flex items-center gap-2 border-r border-dark-50 pr-3">
+      <div data-tour="project" class="mr-1 flex items-center gap-2 border-r border-dark-50 pr-3">
         <button
           title="Save the current session as a .clpproj file"
           :class="projectBtn"
           @click="onSaveProject"
         >
-          <Save class="h-4 w-4" /> <span>Save Project</span>
+          <Save class="h-4 w-4" /> <span>Save<span class="hidden lg:inline"> Project</span></span>
         </button>
-        <label title="Open a saved .clpproj project file" :class="projectBtn">
-          <FolderOpen class="h-4 w-4" /> <span>Open Project</span>
-          <input type="file" class="hidden" accept=".clpproj" @change="pick(openProject)($event)" />
-        </label>
+        <button
+          title="Open a saved .clpproj project file"
+          :class="projectBtn"
+          @click="projectInput.click()"
+        >
+          <FolderOpen class="h-4 w-4" />
+          <span>Open<span class="hidden lg:inline"> Project</span></span>
+        </button>
+        <input
+          ref="projectInput"
+          type="file"
+          class="hidden"
+          accept=".clpproj"
+          @change="pick(openProject)($event)"
+        />
       </div>
 
-      <div v-if="ui.activeTab === 'editor'" class="flex items-center gap-2">
-        <label v-if="project.transcriptions.length === 0" :class="actionBtn">
+      <div v-if="ui.activeTab === 'editor'" data-tour="import" class="flex items-center gap-2">
+        <button
+          v-if="project.transcriptions.length === 0"
+          :class="actionBtn"
+          @click="csvInput.click()"
+        >
           <FileSpreadsheet class="h-4 w-4" /> <span>Import CSV</span>
-          <input type="file" class="hidden" accept=".csv" @change="pick(importCsvFile)($event)" />
-        </label>
-        <button v-else :class="dangerBtn" @click="project.clearAll()">
+        </button>
+        <input
+          ref="csvInput"
+          type="file"
+          class="hidden"
+          accept=".csv"
+          @change="pick(importCsvFile)($event)"
+        />
+        <button v-if="project.transcriptions.length > 0" :class="dangerBtn" @click="onClearData()">
           <Trash2 class="h-4 w-4" /> <span>Clear Data</span>
         </button>
       </div>
@@ -122,11 +172,7 @@ function onSaveProject() {
           accept="video/*"
           @change="pick(media.load)($event)"
         />
-        <button
-          v-if="media.hasMedia || media.needsReload"
-          :class="dangerBtn"
-          @click="forgetVideo()"
-        >
+        <button v-if="media.hasMedia || media.needsReload" :class="dangerBtn" @click="onClearVideo">
           <Trash2 class="h-4 w-4" /> <span>Clear Video</span>
         </button>
       </div>

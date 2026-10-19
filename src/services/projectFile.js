@@ -63,9 +63,12 @@ export async function openProject(file) {
 
   const replace =
     !project.isActive ||
-    window.confirm(
-      "Opening this project will replace your current session (transcript, clips and selection). Continue?",
-    );
+    (await ui.confirm({
+      title: "Replace current session?",
+      message:
+        "Opening this project will replace your current session (transcript, clips and selection).",
+      confirmLabel: "Open project",
+    }));
   if (!replace) return;
 
   project.restore({

@@ -1,0 +1,15 @@
+inicio,fin,transcripcion
+00:00:00,00:00:03,Welcome to Clipperino
+00:00:03,00:00:06,This is a demo project so you can try every feature
+00:00:06,00:00:09,Each row is one line of a timestamped transcript
+00:00:09,00:00:12,Click Select on a line to start building a clip
+00:00:12,00:00:15,Hold Shift and click another line to select a whole range
+00:00:15,00:00:18,Press Add Clip and give it a name
+00:00:18,00:00:21,Used lines are greyed out so clips never overlap
+00:00:21,00:00:24,Switch to the Preview tab to see your clips on the timeline
+00:00:24,00:00:27,Click a clip block or use the skip buttons to jump to it
+00:00:27,00:00:30,Press Space to play or pause
+00:00:30,00:00:33,Turn on CC to show the transcript as subtitles
+00:00:33,00:00:36,Export your clips as JSON or as an EDL for your video editor
+00:00:36,00:00:38,Save Project keeps everything in a single file
+00:00:38,00:00:40,Now load your own transcript and video

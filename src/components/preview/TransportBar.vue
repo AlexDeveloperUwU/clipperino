@@ -8,6 +8,8 @@ import {
   SkipBack,
   SkipForward,
   Speaker,
+  Volume2,
+  VolumeX,
 } from "@lucide/vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useUiStore } from "../../stores/ui.js";
@@ -94,12 +96,36 @@ const iconBtn = "p-2 hover:bg-dark-100 rounded text-gray-400 hover:text-white tr
         <span class="text-xs font-medium">CC</span>
       </button>
       <div class="h-4 w-px bg-dark-50"></div>
+      <div class="flex items-center gap-1">
+        <button
+          :class="iconBtn"
+          :title="media.muted ? 'Unmute' : 'Mute'"
+          :aria-label="media.muted ? 'Unmute' : 'Mute'"
+          @click="media.toggleMute()"
+        >
+          <VolumeX v-if="media.muted || media.volume === 0" class="h-4 w-4" />
+          <Volume2 v-else class="h-4 w-4" />
+        </button>
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.05"
+          :value="media.muted ? 0 : media.volume"
+          aria-label="Volume"
+          class="h-1 w-20 cursor-pointer accent-accent-100"
+          @input="media.setVolume(Number($event.target.value))"
+        />
+      </div>
+      <div class="h-4 w-px bg-dark-50"></div>
       <div class="relative">
         <Speaker
           class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500"
         />
         <select
           :disabled="!supported"
+          aria-label="Audio output device"
+          title="Choose where audio plays. The browser may ask for microphone access only to read device names."
           class="max-w-[200px] cursor-pointer appearance-none truncate rounded border border-dark-50 bg-dark-100 py-1.5 pl-9 pr-8 text-xs text-gray-300 transition-colors hover:bg-dark-50 focus:border-accent-100 focus:outline-none"
           @focus="unlockLabels"
           @change="onOutputChange"

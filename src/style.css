@@ -10,7 +10,7 @@
   }
 
   .btn-accent {
-    @apply rounded bg-accent-100 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-200;
+    @apply rounded bg-accent-200 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-300;
   }
 
   .th {
@@ -132,6 +132,16 @@ input[type="number"] {
 .toast-leave-to {
   opacity: 0;
   transform: translateY(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 .changelog-content h1 {

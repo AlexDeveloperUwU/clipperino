@@ -7,7 +7,7 @@ const VIDEO_EXTENSIONS = [".mp4", ".m4v", ".mov", ".webm", ".mkv", ".avi"];
 const VIDEO_TYPES = [{ description: "Video files", accept: { "video/*": VIDEO_EXTENSIONS } }];
 
 /** Whether a file looks like a video, by MIME type or extension (some containers report no type). */
-function isVideoFile(file) {
+export function isVideoFile(file) {
   const name = file.name.toLowerCase();
   return file.type.startsWith("video/") || VIDEO_EXTENSIONS.some((ext) => name.endsWith(ext));
 }

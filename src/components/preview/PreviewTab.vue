@@ -1,27 +1,30 @@
 <script setup>
 import { onBeforeUnmount, onMounted } from "vue";
-import { Film } from "@lucide/vue";
 import VideoPlayer from "./VideoPlayer.vue";
 import TransportBar from "./TransportBar.vue";
 import TimelinePanel from "./TimelinePanel.vue";
-import DropOverlay from "../DropOverlay.vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useUiStore } from "../../stores/ui.js";
-import { dropVideo } from "../../services/videoPicker.js";
-import { useFileDrop } from "../../composables/useFileDrop.js";
 
 const FOCUS_TAGS = ["input", "select", "textarea", "button"];
 
+const SEEK_STEP_SECONDS = 5;
+
 const media = useMediaStore();
 const ui = useUiStore();
-const { dragging, handlers } = useFileDrop(dropVideo);
 
-/** Space toggles playback while the Preview tab is active, unless a control has focus. */
+const SHORTCUTS = {
+  Space: () => media.togglePlay(),
+  ArrowLeft: () => media.seek(Math.max(0, media.currentTime - SEEK_STEP_SECONDS)),
+  ArrowRight: () => media.seek(media.currentTime + SEEK_STEP_SECONDS),
+};
+
+/** Space plays or pauses and the arrow keys seek, while the Preview tab is active and no control has focus. */
 function onKeyDown(event) {
-  if (event.code !== "Space" || ui.activeTab !== "preview") return;
+  if (ui.activeTab !== "preview" || !(event.code in SHORTCUTS)) return;
   if (FOCUS_TAGS.includes(document.activeElement.tagName.toLowerCase())) return;
   event.preventDefault();
-  media.togglePlay();
+  SHORTCUTS[event.code]();
 }
 
 onMounted(() => document.addEventListener("keydown", onKeyDown));
@@ -29,7 +32,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeyDown));
 </script>
 
 <template>
-  <div class="relative flex h-full flex-col p-4" v-bind="handlers">
+  <div class="flex h-full flex-col p-4">
     <div
       class="flex h-full flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
     >
@@ -37,13 +40,5 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeyDown));
       <TransportBar />
       <TimelinePanel />
     </div>
-
-    <DropOverlay
-      :visible="dragging"
-      title="Drop Video File Here"
-      subtitle="Load the video to preview your clips"
-    >
-      <Film class="h-20 w-20 animate-bounce text-accent-100" />
-    </DropOverlay>
   </div>
 </template>

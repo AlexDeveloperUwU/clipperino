@@ -6,6 +6,18 @@ import { formatTime, timeToSeconds } from "../lib/timecode.js";
 
 const CLIP_SKIP_TOLERANCE = 0.5;
 const VIDEO_LENGTH_SLACK = 3;
+const VOLUME_KEY = "clipperino_volume";
+
+/** Last volume and mute state, or full volume when nothing valid is stored. */
+function readVolume() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(VOLUME_KEY));
+    const volume = Number(saved?.volume);
+    return { volume: volume >= 0 && volume <= 1 ? volume : 1, muted: saved?.muted === true };
+  } catch {
+    return { volume: 1, muted: false };
+  }
+}
 
 /** The loaded video, its playback state, and the subtitle overlay setting. */
 export const useMediaStore = defineStore("media", () => {
@@ -20,6 +32,9 @@ export const useMediaStore = defineStore("media", () => {
   const elementDuration = ref(0);
   const paused = ref(true);
   const showSubtitles = ref(false);
+  const initialVolume = readVolume();
+  const volume = ref(initialVolume.volume);
+  const muted = ref(initialVolume.muted);
   let previousMeta = { name: null, duration: 0 };
   let pendingLoad = null;
 
@@ -136,6 +151,36 @@ export const useMediaStore = defineStore("media", () => {
     },
   );
 
+  watch(
+    [volume, muted, element],
+    () => {
+      if (element.value) {
+        element.value.volume = volume.value;
+        element.value.muted = muted.value;
+      }
+      try {
+        localStorage.setItem(
+          VOLUME_KEY,
+          JSON.stringify({ volume: volume.value, muted: muted.value }),
+        );
+      } catch (e) {
+        console.warn("Could not save the volume:", e);
+      }
+    },
+    { immediate: true },
+  );
+
+  /** Sets the volume (0–1); raising it from zero or while muted unmutes. */
+  function setVolume(value) {
+    volume.value = Math.min(1, Math.max(0, value));
+    muted.value = volume.value === 0;
+  }
+
+  /** Mutes or unmutes without losing the chosen volume. */
+  function toggleMute() {
+    muted.value = !muted.value;
+  }
+
   /** Restores saved metadata, ignoring malformed values. */
   function restoreMeta(value) {
     meta.value =
@@ -207,6 +252,10 @@ export const useMediaStore = defineStore("media", () => {
     elementDuration,
     paused,
     showSubtitles,
+    volume,
+    muted,
+    setVolume,
+    toggleMute,
     hasMedia,
     needsReload,
     duration,
