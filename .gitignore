@@ -1,0 +1,9 @@
+node_modules
+dist
+dev-dist
+*.local
+server.exe
+/full_project_context.md
+/concat.ps1
+CLAUDE.md
+.claude/

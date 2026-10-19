@@ -1,0 +1,185 @@
+@import "@fontsource-variable/inter";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-cancel {
+    @apply rounded bg-dark-100 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-dark-50;
+  }
+
+  .btn-accent {
+    @apply rounded bg-accent-100 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-200;
+  }
+
+  .th {
+    @apply px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(18, 18, 18, 1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  border: 2px solid rgba(18, 18, 18, 1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) rgba(18, 18, 18, 1);
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.subtitle-text {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes flash {
+  0% {
+    background-color: rgba(59, 130, 246, 0.8);
+  }
+
+  50% {
+    background-color: rgba(59, 130, 246, 0.4);
+  }
+
+  100% {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+}
+
+.fade-in,
+.clip-item {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.highlight-row {
+  background-color: rgba(59, 130, 246, 0.3) !important;
+  animation: flash 1.5s ease-out;
+}
+
+.in-clip {
+  background-color: rgba(16, 185, 129, 0.05) !important;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal-enter-active .modal-card,
+.modal-leave-active .modal-card {
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .modal-card,
+.modal-leave-to .modal-card {
+  opacity: 0;
+  transform: scale(0.96) translateY(8px);
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.changelog-content h1 {
+  display: none;
+}
+
+.changelog-content h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.changelog-content h2:first-child {
+  margin-top: 0;
+}
+
+.changelog-content h3 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.changelog-content ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.changelog-content li {
+  margin-bottom: 0.2rem;
+}
+
+.changelog-content code {
+  font-family: monospace;
+  font-size: 0.8em;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+}
+
+.changelog-content strong {
+  color: #e5e7eb;
+  font-weight: 600;
+}
