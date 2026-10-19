@@ -1,6 +1,6 @@
 <script setup>
 import { nextTick, ref, watch } from "vue";
-import { Save } from "lucide-vue-next";
+import { Save } from "@lucide/vue";
 import BaseModal from "../BaseModal.vue";
 import { useUiStore } from "../../stores/ui.js";
 import { saveProject, suggestProjectName } from "../../services/projectFile.js";

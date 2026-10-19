@@ -8,7 +8,7 @@ import {
   SkipBack,
   SkipForward,
   Speaker,
-} from "lucide-vue-next";
+} from "@lucide/vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useUiStore } from "../../stores/ui.js";
 

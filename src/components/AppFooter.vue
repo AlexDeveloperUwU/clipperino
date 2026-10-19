@@ -1,5 +1,5 @@
 <script setup>
-import { Scale, Scissors } from "lucide-vue-next";
+import { Scale, Scissors } from "@lucide/vue";
 import { useUiStore } from "../stores/ui.js";
 
 const ui = useUiStore();

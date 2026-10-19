@@ -1,5 +1,5 @@
 <script setup>
-import { Clapperboard, FileJson, FilePen, Film, Pencil, X } from "lucide-vue-next";
+import { Clapperboard, FileJson, FilePen, Film, Pencil, X } from "@lucide/vue";
 import { useProjectStore } from "../../stores/project.js";
 import { useUiStore } from "../../stores/ui.js";
 import { clipsToEdl, clipsToJson } from "../../lib/exporters.js";

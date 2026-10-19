@@ -1,5 +1,5 @@
 <script setup>
-import { CircleCheck, MousePointer2, Plus, RefreshCw } from "lucide-vue-next";
+import { CircleCheck, MousePointer2, Plus, RefreshCw } from "@lucide/vue";
 import { useProjectStore } from "../../stores/project.js";
 import { useUiStore } from "../../stores/ui.js";
 

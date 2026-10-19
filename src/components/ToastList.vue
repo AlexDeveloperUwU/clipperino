@@ -1,5 +1,5 @@
 <script setup>
-import { Info } from "lucide-vue-next";
+import { Info } from "@lucide/vue";
 import { useUiStore } from "../stores/ui.js";
 
 const ui = useUiStore();

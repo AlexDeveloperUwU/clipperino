@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted } from "vue";
-import { Film } from "lucide-vue-next";
+import { Film } from "@lucide/vue";
 import VideoPlayer from "./VideoPlayer.vue";
 import TransportBar from "./TransportBar.vue";
 import TimelinePanel from "./TimelinePanel.vue";

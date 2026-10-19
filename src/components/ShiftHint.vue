@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from "vue";
-import { Keyboard } from "lucide-vue-next";
+import { Keyboard } from "@lucide/vue";
 import { useUiStore } from "../stores/ui.js";
 
 const ui = useUiStore();

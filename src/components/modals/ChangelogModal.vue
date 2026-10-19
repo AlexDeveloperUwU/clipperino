@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
-import { ScrollText, X } from "lucide-vue-next";
+import { ScrollText, X } from "@lucide/vue";
 import BaseModal from "../BaseModal.vue";
 import { useUiStore } from "../../stores/ui.js";
 import changelog from "../../../CHANGELOG.md?raw";

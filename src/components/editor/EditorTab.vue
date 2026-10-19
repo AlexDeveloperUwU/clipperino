@@ -1,5 +1,5 @@
 <script setup>
-import { FileSpreadsheet } from "lucide-vue-next";
+import { FileSpreadsheet } from "@lucide/vue";
 import TranscriptTable from "./TranscriptTable.vue";
 import SelectionPanel from "./SelectionPanel.vue";
 import ClipList from "./ClipList.vue";

@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import { Film } from "lucide-vue-next";
+import { Film } from "@lucide/vue";
 import { useMediaStore } from "../../stores/media.js";
 
 const media = useMediaStore();

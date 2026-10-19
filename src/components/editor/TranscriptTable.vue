@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref, watch } from "vue";
-import { ArrowDownToLine, ArrowUpToLine, List } from "lucide-vue-next";
+import { ArrowDownToLine, ArrowUpToLine, List } from "@lucide/vue";
 import SearchBar from "./SearchBar.vue";
 import { useProjectStore } from "../../stores/project.js";
 import { useSearchStore } from "../../stores/search.js";

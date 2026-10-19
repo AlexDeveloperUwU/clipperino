@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from "vue";
-import { FileSpreadsheet, Film } from "lucide-vue-next";
+import { FileSpreadsheet, Film } from "@lucide/vue";
 import BaseModal from "../BaseModal.vue";
 import { useUiStore } from "../../stores/ui.js";
 

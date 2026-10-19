@@ -2,6 +2,12 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.0.1] - 2026-10-19
+
+### Changed
+
+- Replaced the deprecated `lucide-vue-next` package with `@lucide/vue`
+
 ## [2.0.0] - 2026-10-19
 
 ### Added

@@ -1,14 +1,6 @@
 <script setup>
 import { ref } from "vue";
-import {
-  CircleHelp,
-  FileSpreadsheet,
-  Film,
-  FolderOpen,
-  Save,
-  Scissors,
-  Trash2,
-} from "lucide-vue-next";
+import { CircleHelp, FileSpreadsheet, Film, FolderOpen, Save, Scissors, Trash2 } from "@lucide/vue";
 import { useUiStore } from "../stores/ui.js";
 import { useProjectStore } from "../stores/project.js";
 import { useMediaStore } from "../stores/media.js";

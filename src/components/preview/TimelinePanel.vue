@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { Activity, Magnet, Minus, Plus } from "lucide-vue-next";
+import { Activity, Magnet, Minus, Plus } from "@lucide/vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useProjectStore } from "../../stores/project.js";
 import { formatTime, timeToSeconds } from "../../lib/timecode.js";
