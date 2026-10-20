@@ -1,14 +1,14 @@
 <script setup>
 import { FlaskConical } from "@lucide/vue";
-import { useUiStore } from "../stores/ui.js";
+import { useProjectStore } from "../stores/project.js";
 import { exitDemo } from "../services/demo.js";
 
-const ui = useUiStore();
+const project = useProjectStore();
 </script>
 
 <template>
   <div
-    v-if="ui.demoActive"
+    v-if="project.demoActive"
     class="flex flex-none items-center justify-center gap-3 border-b border-accent-100/30 bg-accent-100/10 px-4 py-1.5 text-xs text-gray-300"
     role="status"
   >

@@ -17,16 +17,11 @@ function addClip() {
 </script>
 
 <template>
-  <div
-    data-tour="selection"
-    class="flex h-[35%] min-h-[200px] flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
-  >
-    <div
-      class="flex h-12 flex-none items-center justify-between border-b border-dark-50 bg-dark-100/50 px-4 py-2"
-    >
+  <div data-tour="selection" class="panel h-[35%] min-h-[200px]">
+    <div class="panel-header h-12 py-2">
       <div class="flex items-center gap-2">
         <CircleCheck class="h-4 w-4 text-secondary-100" />
-        <h2 class="text-sm font-bold uppercase tracking-wider text-white">Current Selection</h2>
+        <h2 class="panel-title">Current Selection</h2>
       </div>
       <div class="flex items-center gap-3">
         <span class="rounded bg-secondary-100/10 px-2 py-0.5 font-mono text-xs text-secondary-100"
@@ -78,10 +73,10 @@ function addClip() {
             :key="item.index"
             class="border-b border-dark-50/30 transition-colors hover:bg-dark-50"
           >
-            <td class="px-4 py-2 font-mono text-xs text-gray-400">
+            <td class="td-time">
               {{ item.inicio }}
             </td>
-            <td class="px-4 py-2 font-mono text-xs text-gray-400">
+            <td class="td-time">
               {{ item.fin }}
             </td>
             <td class="px-4 py-2 text-sm leading-relaxed">

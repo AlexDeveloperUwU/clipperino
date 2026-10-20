@@ -12,7 +12,11 @@ const ui = useUiStore();
     <div class="flex justify-end gap-3">
       <button class="btn-cancel" @click="ui.answerConfirm(false)">Cancel</button>
       <button
-        class="rounded bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700"
+        :class="
+          ui.modalPayload?.tone === 'neutral'
+            ? 'btn-accent'
+            : 'rounded bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700'
+        "
         @click="ui.answerConfirm(true)"
       >
         {{ ui.modalPayload?.confirmLabel }}

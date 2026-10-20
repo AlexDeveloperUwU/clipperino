@@ -1,5 +1,5 @@
 <script setup>
-import { nextTick, ref, watch } from "vue";
+import { ref, watch } from "vue";
 import { Save } from "@lucide/vue";
 import BaseModal from "../BaseModal.vue";
 import { useUiStore } from "../../stores/ui.js";
@@ -11,12 +11,9 @@ const input = ref(null);
 
 watch(
   () => ui.openModal,
-  async (modal) => {
+  (modal) => {
     if (modal !== "save-project") return;
     name.value = suggestProjectName();
-    await nextTick();
-    input.value?.focus();
-    input.value?.select();
   },
 );
 
@@ -26,10 +23,8 @@ async function confirm() {
 </script>
 
 <template>
-  <BaseModal name="save-project">
-    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-      <Save class="h-5 w-5 text-accent-100" /> Save Project
-    </h2>
+  <BaseModal name="save-project" @opened="input.select()">
+    <h2 class="modal-title mb-4"><Save class="h-5 w-5 text-accent-100" /> Save Project</h2>
     <div class="mb-4">
       <label for="saveProjectName" class="mb-1 block text-xs text-gray-400">File name</label>
       <div class="flex items-center gap-2">
@@ -38,7 +33,7 @@ async function confirm() {
           ref="input"
           v-model="name"
           type="text"
-          class="w-full rounded border border-dark-50 bg-dark-300 p-3 text-white focus:outline-none focus:ring-2 focus:ring-accent-100"
+          class="input"
           @keydown.enter.prevent="confirm"
         />
         <span class="font-mono text-sm text-gray-500">.clpproj</span>

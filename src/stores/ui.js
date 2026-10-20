@@ -10,7 +10,6 @@ export const useUiStore = defineStore("ui", () => {
   const modalPayload = ref(null);
   const toasts = ref([]);
   const goToLine = ref({ index: -1, nonce: 0 });
-  const demoActive = ref(false);
   const updateReady = ref(false);
   const savedAt = ref(0);
   const tourStep = ref(-1);
@@ -26,8 +25,9 @@ export const useUiStore = defineStore("ui", () => {
     }, TOAST_MS);
   }
 
-  /** Opens a modal by name; `payload` is readable by that modal. */
+  /** Opens a modal by name; `payload` is readable by that modal. Any other modal declines a pending `confirm`. */
   function open(name, payload = null) {
+    if (name !== "confirm") settleConfirm(false);
     modalPayload.value = payload;
     openModal.value = name;
   }
@@ -39,12 +39,12 @@ export const useUiStore = defineStore("ui", () => {
     modalPayload.value = null;
   }
 
-  /** Asks for confirmation in a modal; resolves to whether the user accepted. */
-  function confirm({ title, message, confirmLabel = "Confirm" }) {
+  /** Asks for confirmation in a modal; `tone` is "danger" (default) or "neutral". Resolves to whether the user accepted. */
+  function confirm({ title, message, confirmLabel = "Confirm", tone = "danger" }) {
     settleConfirm(false);
     return new Promise((resolve) => {
       pendingConfirm = resolve;
-      open("confirm", { title, message, confirmLabel });
+      open("confirm", { title, message, confirmLabel, tone });
     });
   }
 
@@ -77,7 +77,6 @@ export const useUiStore = defineStore("ui", () => {
     modalPayload,
     toasts,
     goToLine,
-    demoActive,
     updateReady,
     savedAt,
     tourStep,

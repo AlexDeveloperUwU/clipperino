@@ -3,21 +3,11 @@ import { defineStore } from "pinia";
 import { useUiStore } from "./ui.js";
 import { useProjectStore } from "./project.js";
 import { formatTime, timeToSeconds } from "../lib/timecode.js";
+import { findNextClipStart, findPrevClipStart } from "../lib/clips.js";
+import { readVolume, writeVolume } from "../services/volumeStorage.js";
 
 const CLIP_SKIP_TOLERANCE = 0.5;
 const VIDEO_LENGTH_SLACK = 3;
-const VOLUME_KEY = "clipperino_volume";
-
-/** Last volume and mute state, or full volume when nothing valid is stored. */
-function readVolume() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(VOLUME_KEY));
-    const volume = Number(saved?.volume);
-    return { volume: volume >= 0 && volume <= 1 ? volume : 1, muted: saved?.muted === true };
-  } catch {
-    return { volume: 1, muted: false };
-  }
-}
 
 /** The loaded video, its playback state, and the subtitle overlay setting. */
 export const useMediaStore = defineStore("media", () => {
@@ -61,12 +51,6 @@ export const useMediaStore = defineStore("media", () => {
     const t = currentTime.value;
     return subtitleEntries.value.find((e) => t >= e.start && t <= e.end)?.text ?? null;
   });
-
-  const clipsByStart = computed(() =>
-    project.clips
-      .map((clip) => ({ clip, start: timeToSeconds(clip.inicio) }))
-      .sort((a, b) => a.start - b.start),
-  );
 
   /** Whether a video of this length can hold the whole transcript; if not, it is probably the wrong one. */
   function coversTranscript(seconds) {
@@ -158,14 +142,7 @@ export const useMediaStore = defineStore("media", () => {
         element.value.volume = volume.value;
         element.value.muted = muted.value;
       }
-      try {
-        localStorage.setItem(
-          VOLUME_KEY,
-          JSON.stringify({ volume: volume.value, muted: muted.value }),
-        );
-      } catch (e) {
-        console.warn("Could not save the volume:", e);
-      }
+      writeVolume({ volume: volume.value, muted: muted.value });
     },
     { immediate: true },
   );
@@ -218,13 +195,13 @@ export const useMediaStore = defineStore("media", () => {
   function togglePlay() {
     const el = element.value;
     if (!el || !hasMedia.value) return;
-    if (el.paused) el.play();
+    if (el.paused) el.play().catch(() => {});
     else el.pause();
   }
 
   /** Jumps to the first clip that starts after the playhead. */
   function skipToNextClip() {
-    const next = clipsByStart.value.find((c) => c.start > currentTime.value + CLIP_SKIP_TOLERANCE);
+    const next = findNextClipStart(project.clips, currentTime.value, CLIP_SKIP_TOLERANCE);
     if (next) {
       jumpTo(next.start, `Skipped to: ${next.clip.name}`);
     } else {
@@ -234,9 +211,7 @@ export const useMediaStore = defineStore("media", () => {
 
   /** Jumps to the closest clip start before the playhead, or to 0. */
   function skipToPrevClip() {
-    const prev = [...clipsByStart.value]
-      .reverse()
-      .find((c) => c.start < currentTime.value - CLIP_SKIP_TOLERANCE);
+    const prev = findPrevClipStart(project.clips, currentTime.value, CLIP_SKIP_TOLERANCE);
     if (prev) {
       jumpTo(prev.start, `Skipped back to: ${prev.clip.name}`);
     } else {
@@ -258,7 +233,6 @@ export const useMediaStore = defineStore("media", () => {
     toggleMute,
     hasMedia,
     needsReload,
-    duration,
     timelineSpan,
     currentSubtitle,
     load,

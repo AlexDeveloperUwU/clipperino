@@ -1,92 +1,104 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useUiStore } from "../stores/ui.js";
+import { TOUR_STEPS } from "../lib/tourSteps.js";
+import { placePopover } from "../lib/popover.js";
 
 const POPOVER_WIDTH = 320;
 const POPOVER_HEIGHT = 190;
-const GAP = 12;
-
-const STEPS = [
-  {
-    target: "import",
-    title: "Start with a transcript",
-    text: "Import a CSV with start, end and text columns. No file handy? Load the demo from the Help window.",
-  },
-  {
-    target: "table",
-    title: "Pick the lines you want",
-    text: "Click Select on a line. Hold Shift and click another one to select a whole range.",
-  },
-  {
-    target: "selection",
-    title: "Build a clip",
-    text: "Your selection appears here. Add Clip saves it under a name of your choice.",
-  },
-  {
-    target: "clips",
-    title: "Manage and export",
-    text: "Edit, rename or delete clips, and export them as JSON or as an EDL for your video editor.",
-  },
-  {
-    target: "tab-preview",
-    title: "Preview against the video",
-    text: "Load the matching video, scrub the timeline and jump between clips.",
-  },
-  {
-    target: "project",
-    title: "Save your work",
-    text: "Save Project writes a .clpproj file you can reopen later. Your session is also autosaved in this browser.",
-  },
-];
 
 const ui = useUiStore();
 const rect = ref(null);
-const step = computed(() => STEPS[ui.tourStep]);
-const isLast = computed(() => ui.tourStep === STEPS.length - 1);
+const popover = ref(null);
+const primary = ref(null);
+const viewport = ref({ width: window.innerWidth, height: window.innerHeight });
+const step = computed(() => TOUR_STEPS[ui.tourStep]);
+const isLast = computed(() => ui.tourStep === TOUR_STEPS.length - 1);
+let targetObserver = null;
+let opener = null;
+
+function findTarget() {
+  return step.value && document.querySelector(`[data-tour="${step.value.target}"]`);
+}
 
 /** Reads the highlighted element's box; null when it is missing or hidden. */
 function measure() {
-  const el = step.value && document.querySelector(`[data-tour="${step.value.target}"]`);
-  const box = el?.getBoundingClientRect();
+  viewport.value = { width: window.innerWidth, height: window.innerHeight };
+  const box = findTarget()?.getBoundingClientRect();
   rect.value = box && box.width > 0 ? box : null;
 }
 
-const popoverStyle = computed(() => {
-  const base = { width: `${POPOVER_WIDTH}px` };
-  const box = rect.value;
-  if (!box) return { ...base, top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-  const left = `${Math.min(Math.max(GAP, box.left), window.innerWidth - POPOVER_WIDTH - GAP)}px`;
-  if (box.bottom + GAP + POPOVER_HEIGHT < window.innerHeight) {
-    return { ...base, left, top: `${box.bottom + GAP}px` };
-  }
-  if (box.top > POPOVER_HEIGHT + GAP) {
-    return { ...base, left, bottom: `${window.innerHeight - box.top + GAP}px` };
-  }
-  return { ...base, left: `${box.left + GAP}px`, top: `${box.top + GAP}px` };
-});
+const popoverStyle = computed(() =>
+  placePopover(rect.value, viewport.value, { width: POPOVER_WIDTH, height: POPOVER_HEIGHT }),
+);
 
 function end() {
   ui.tourStep = -1;
 }
 
 function onKeyDown(event) {
-  if (ui.tourStep >= 0 && event.key === "Escape") end();
+  if (ui.tourStep < 0) return;
+  if (event.key === "Escape") {
+    end();
+    return;
+  }
+  if (event.key !== "Tab" || !popover.value) return;
+  const items = [...popover.value.querySelectorAll("button")];
+  const first = items[0];
+  const last = items[items.length - 1];
+  if (!popover.value.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function observeTarget() {
+  targetObserver?.disconnect();
+  targetObserver = null;
+  const el = findTarget();
+  if (!el) return;
+  targetObserver = new ResizeObserver(measure);
+  targetObserver.observe(el);
 }
 
 watch(
   () => ui.tourStep,
-  async () => {
+  async (current, previous) => {
+    if (current < 0) {
+      targetObserver?.disconnect();
+      targetObserver = null;
+      opener?.focus?.();
+      opener = null;
+      return;
+    }
+    if (previous < 0) opener = document.activeElement;
     await nextTick();
     measure();
+    observeTarget();
+    primary.value?.focus();
+    requestAnimationFrame(() => {
+      if (ui.tourStep !== current) return;
+      measure();
+      observeTarget();
+    });
   },
 );
 
 onMounted(() => {
   window.addEventListener("resize", measure);
+  window.addEventListener("scroll", measure, true);
   document.addEventListener("keydown", onKeyDown);
 });
 onBeforeUnmount(() => {
+  targetObserver?.disconnect();
   window.removeEventListener("resize", measure);
+  window.removeEventListener("scroll", measure, true);
   document.removeEventListener("keydown", onKeyDown);
 });
 </script>
@@ -107,11 +119,12 @@ onBeforeUnmount(() => {
     ></div>
 
     <div
+      ref="popover"
       :style="popoverStyle"
       class="absolute rounded-lg border border-dark-50 bg-dark-200 p-4 shadow-2xl"
     >
       <p class="mb-1 text-xs font-bold uppercase tracking-wider text-accent-100">
-        Step {{ ui.tourStep + 1 }} of {{ STEPS.length }}
+        Step {{ ui.tourStep + 1 }} of {{ TOUR_STEPS.length }}
       </p>
       <h3 class="mb-1 text-base font-bold text-white">{{ step.title }}</h3>
       <p class="mb-4 text-sm text-gray-400">{{ step.text }}</p>
@@ -119,7 +132,7 @@ onBeforeUnmount(() => {
         <button class="text-xs text-gray-500 hover:text-gray-300" @click="end">Skip tour</button>
         <div class="flex gap-2">
           <button v-if="ui.tourStep > 0" class="btn-cancel" @click="ui.tourStep--">Back</button>
-          <button class="btn-accent" @click="isLast ? end() : ui.tourStep++">
+          <button ref="primary" class="btn-accent" @click="isLast ? end() : ui.tourStep++">
             {{ isLast ? "Done" : "Next" }}
           </button>
         </div>

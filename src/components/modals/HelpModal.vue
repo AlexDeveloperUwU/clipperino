@@ -53,17 +53,11 @@ const GUIDES = {
 };
 
 const guide = computed(() => GUIDES[props.tab]);
-
-/** Closes the help window, then runs an onboarding action. */
-function run(action) {
-  ui.close();
-  action();
-}
 </script>
 
 <template>
   <BaseModal :name="`help-${tab}`">
-    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-white">
+    <h2 class="modal-title mb-4">
       <component :is="guide.icon" class="h-5 w-5 text-accent-100" />
       {{ guide.title }}
     </h2>
@@ -86,10 +80,10 @@ function run(action) {
     </ul>
     <div class="flex items-center justify-between gap-3">
       <div class="flex gap-4 text-xs">
-        <button class="text-gray-400 hover:text-white" @click="run(() => ui.startTour())">
+        <button class="text-gray-400 hover:text-white" @click="ui.startTour()">
           Take the tour
         </button>
-        <button class="text-gray-400 hover:text-white" @click="run(loadDemo)">Try the demo</button>
+        <button class="text-gray-400 hover:text-white" @click="loadDemo">Try the demo</button>
       </div>
       <button class="btn-accent" @click="ui.close()">Got it</button>
     </div>

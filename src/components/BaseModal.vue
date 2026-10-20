@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { useUiStore } from "../stores/ui.js";
 
 const FOCUSABLE = "button:not([disabled]), [href], input:not([disabled]), select, textarea";
@@ -9,6 +9,7 @@ const props = defineProps({
   widthClass: { type: String, default: "max-w-md" },
   dismissible: { type: Boolean, default: true },
 });
+const emit = defineEmits(["opened"]);
 
 const ui = useUiStore();
 const isOpen = computed(() => ui.openModal === props.name);
@@ -27,11 +28,15 @@ function onKeydown(e) {
     return;
   }
   if (e.key !== "Tab") return;
+  if (!card.value) return;
   const items = [...card.value.querySelectorAll(FOCUSABLE)];
   if (items.length === 0) return;
   const first = items[0];
   const last = items[items.length - 1];
-  if (e.shiftKey && document.activeElement === first) {
+  if (!card.value.contains(document.activeElement)) {
+    e.preventDefault();
+    (e.shiftKey ? last : first).focus();
+  } else if (e.shiftKey && document.activeElement === first) {
     e.preventDefault();
     last.focus();
   } else if (!e.shiftKey && document.activeElement === last) {
@@ -42,10 +47,12 @@ function onKeydown(e) {
 
 watch(isOpen, async (open) => {
   if (!open) {
+    document.removeEventListener("keydown", onKeydown);
     opener?.focus?.();
     opener = null;
     return;
   }
+  document.addEventListener("keydown", onKeydown);
   opener = document.activeElement;
   await nextTick();
   if (!card.value) return;
@@ -55,7 +62,10 @@ watch(isOpen, async (open) => {
     card.value.setAttribute("aria-labelledby", heading.id);
   }
   if (!card.value.contains(document.activeElement)) card.value.querySelector(FOCUSABLE)?.focus();
+  emit("opened");
 });
+
+onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
 </script>
 
 <template>
@@ -64,7 +74,6 @@ watch(isOpen, async (open) => {
       v-if="isOpen"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
       @mousedown="onBackdrop"
-      @keydown="onKeydown"
     >
       <div
         ref="card"

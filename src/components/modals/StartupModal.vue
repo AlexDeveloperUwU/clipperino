@@ -23,9 +23,7 @@ function startFresh() {
 
 <template>
   <BaseModal name="startup" :dismissible="false">
-    <h2 class="mb-2 flex items-center gap-2 text-lg font-bold text-white">
-      <History class="h-5 w-5 text-secondary-100" /> Welcome back
-    </h2>
+    <h2 class="modal-title mb-2"><History class="h-5 w-5 text-secondary-100" /> Welcome back</h2>
     <p class="mb-6 text-sm text-gray-400">
       We found a saved session from your last visit. Would you like to pick up where you left off,
       or start fresh?
@@ -37,12 +35,7 @@ function startFresh() {
       >
         Start fresh
       </button>
-      <button
-        class="rounded bg-secondary-200 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-secondary-100/20 transition-colors hover:bg-secondary-300"
-        @click="load"
-      >
-        Load previous session
-      </button>
+      <button class="btn-secondary" @click="load">Load previous session</button>
     </div>
   </BaseModal>
 </template>

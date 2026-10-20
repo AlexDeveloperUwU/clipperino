@@ -58,16 +58,15 @@ function parseRecords(data, delimiter) {
   return records;
 }
 
-/** Picks `;` over `,` when the first line has more of them (Excel in comma-decimal locales). */
+/** Uses whichever of `,` or `;` comes first in the first line, so punctuation in the text column can't sway it. */
 function sniffDelimiter(data) {
   const firstLine = data.slice(0, data.indexOf("\n") + 1 || data.length);
-  const count = (char) => firstLine.split(char).length - 1;
-  return count(";") > count(",") ? ";" : ",";
+  return /[,;]/.exec(firstLine)?.[0] ?? ",";
 }
 
 /**
  * Parses a transcript CSV into `{ inicio, fin, transcripcion }` lines plus the number of
- * rows skipped for having fewer than three columns or an invalid start time.
+ * rows skipped for having fewer than three columns, an empty end time or an invalid start time.
  * Columns are positional: start, end, then the text (extra columns are re-joined).
  */
 export function parseCsv(data) {
@@ -80,7 +79,7 @@ export function parseCsv(data) {
   let skipped = 0;
   for (let i = hasHeader ? 1 : 0; i < records.length; i++) {
     const columns = records[i];
-    if (columns.length < 3 || !TIMECODE_START.test(columns[0])) {
+    if (columns.length < 3 || !columns[1] || !TIMECODE_START.test(columns[0])) {
       skipped++;
       continue;
     }

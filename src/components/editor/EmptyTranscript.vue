@@ -1,19 +1,12 @@
 <script setup>
-import { ref } from "vue";
 import { FileSpreadsheet } from "@lucide/vue";
 import { useUiStore } from "../../stores/ui.js";
 import { importCsvFile } from "../../services/importCsv.js";
 import { loadDemo } from "../../services/demo.js";
+import { useFilePicker } from "../../composables/useFilePicker.js";
 
 const ui = useUiStore();
-const input = ref(null);
-
-/** Imports the picked file and resets the input so the same file can be picked again. */
-function onPick(event) {
-  const file = event.target.files[0];
-  event.target.value = "";
-  if (file) importCsvFile(file);
-}
+const { input, open, onChange } = useFilePicker(importCsvFile);
 </script>
 
 <template>
@@ -31,13 +24,8 @@ function onPick(event) {
 00:00:05,00:00:09,Welcome everyone
 00:00:09,00:00:14,Let's get started</pre>
     <div class="flex flex-wrap items-center justify-center gap-3">
-      <button class="btn-accent" @click="input.click()">Import CSV</button>
-      <button
-        class="rounded bg-dark-100 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-dark-50 hover:text-white"
-        @click="loadDemo"
-      >
-        Try the demo
-      </button>
+      <button class="btn-accent" @click="open">Import CSV</button>
+      <button class="btn-neutral" @click="loadDemo">Try the demo</button>
       <button
         class="px-2 py-2 text-sm text-gray-500 transition-colors hover:text-gray-300"
         @click="ui.startTour()"
@@ -45,6 +33,6 @@ function onPick(event) {
         Take the tour
       </button>
     </div>
-    <input ref="input" type="file" class="hidden" accept=".csv" @change="onPick" />
+    <input ref="input" type="file" class="hidden" accept=".csv" @change="onChange" />
   </div>
 </template>

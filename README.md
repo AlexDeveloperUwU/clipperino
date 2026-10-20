@@ -1,4 +1,4 @@
-<p align="center"><img src="public/brand/wordmark-light.svg" alt="Clipperino" height="64" /></p>
+<p align="center"><img src="docs/brand/wordmark-light.svg" alt="Clipperino" height="64" /></p>
 
 # Clipperino
 

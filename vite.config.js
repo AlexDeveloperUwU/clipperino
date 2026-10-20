@@ -43,7 +43,6 @@ export default defineConfig({
     VitePWA({
       registerType: "prompt",
       workbox: { globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest,mp4}"] },
-      includeAssets: ["icon.svg", "icon-maskable.svg"],
       manifest: {
         name: "Clipperino",
         short_name: "Clipperino",

@@ -13,8 +13,40 @@
     @apply rounded bg-accent-200 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-accent-300;
   }
 
+  .btn-secondary {
+    @apply rounded bg-secondary-200 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-secondary-100/20 transition-colors hover:bg-secondary-300;
+  }
+
+  .btn-neutral {
+    @apply rounded bg-dark-100 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:bg-dark-50 hover:text-white;
+  }
+
+  .panel {
+    @apply flex flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg;
+  }
+
+  .panel-header {
+    @apply flex h-14 flex-none items-center justify-between border-b border-dark-50 bg-dark-100/50 px-4 py-3;
+  }
+
+  .panel-title {
+    @apply text-sm font-bold uppercase tracking-wider text-white;
+  }
+
+  .modal-title {
+    @apply flex items-center gap-2 text-lg font-bold text-white;
+  }
+
+  .input {
+    @apply w-full rounded border border-dark-50 bg-dark-300 p-3 text-white focus:outline-none focus:ring-2 focus:ring-accent-100;
+  }
+
   .th {
     @apply px-4 py-2 text-xs font-semibold uppercase tracking-wider text-gray-400;
+  }
+
+  .td-time {
+    @apply px-4 py-2 font-mono text-xs text-gray-400;
   }
 }
 
@@ -83,7 +115,6 @@ input[type="number"] {
   }
 }
 
-.fade-in,
 .clip-item {
   animation: fadeIn 0.3s ease-out forwards;
 }

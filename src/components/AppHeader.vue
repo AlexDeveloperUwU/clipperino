@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from "vue";
 import { CircleHelp, FileSpreadsheet, Film, FolderOpen, Save, Trash2 } from "@lucide/vue";
 import BrandMark from "./BrandMark.vue";
 import { useUiStore } from "../stores/ui.js";
@@ -8,10 +7,23 @@ import { useMediaStore } from "../stores/media.js";
 import { importCsvFile } from "../services/importCsv.js";
 import { openProject } from "../services/projectFile.js";
 import { forgetVideo, openVideo } from "../services/videoPicker.js";
+import { useFilePicker } from "../composables/useFilePicker.js";
 
-const videoInput = ref(null);
-const csvInput = ref(null);
-const projectInput = ref(null);
+const {
+  input: videoInput,
+  open: openVideoPicker,
+  onChange: onVideoChange,
+} = useFilePicker((file) => media.load(file));
+const {
+  input: csvInput,
+  open: openCsvPicker,
+  onChange: onCsvChange,
+} = useFilePicker(importCsvFile);
+const {
+  input: projectInput,
+  open: openProjectPicker,
+  onChange: onProjectChange,
+} = useFilePicker(openProject);
 const ui = useUiStore();
 const project = useProjectStore();
 const media = useMediaStore();
@@ -28,13 +40,9 @@ const dangerBtn =
 const projectBtn =
   "px-3 py-1.5 bg-dark-100 hover:bg-dark-50 text-gray-300 hover:text-white text-xs font-medium rounded cursor-pointer transition-colors flex items-center gap-2 whitespace-nowrap";
 
-/** Wraps a file handler for `<input type="file">` and resets the input so the same file can be picked again. */
-function pick(handler) {
-  return (event) => {
-    const file = event.target.files[0];
-    event.target.value = "";
-    if (file) handler(file);
-  };
+/** Opens the video picker, falling back to the hidden file input where the browser has none. */
+async function onLoadVideo() {
+  if (!(await openVideo())) openVideoPicker();
 }
 
 /** Wipes transcript and clips after confirmation. */
@@ -121,7 +129,7 @@ function onSaveProject() {
         <button
           title="Open a saved .clpproj project file"
           :class="projectBtn"
-          @click="projectInput.click()"
+          @click="openProjectPicker"
         >
           <FolderOpen class="h-4 w-4" />
           <span>Open<span class="hidden lg:inline"> Project</span></span>
@@ -131,7 +139,7 @@ function onSaveProject() {
           type="file"
           class="hidden"
           accept=".clpproj"
-          @change="pick(openProject)($event)"
+          @change="onProjectChange"
         />
       </div>
 
@@ -139,17 +147,11 @@ function onSaveProject() {
         <button
           v-if="project.transcriptions.length === 0"
           :class="actionBtn"
-          @click="csvInput.click()"
+          @click="openCsvPicker"
         >
           <FileSpreadsheet class="h-4 w-4" /> <span>Import CSV</span>
         </button>
-        <input
-          ref="csvInput"
-          type="file"
-          class="hidden"
-          accept=".csv"
-          @change="pick(importCsvFile)($event)"
-        />
+        <input ref="csvInput" type="file" class="hidden" accept=".csv" @change="onCsvChange" />
         <button v-if="project.transcriptions.length > 0" :class="dangerBtn" @click="onClearData()">
           <Trash2 class="h-4 w-4" /> <span>Clear Data</span>
         </button>
@@ -160,7 +162,7 @@ function onSaveProject() {
           v-if="!media.hasMedia"
           :class="actionBtn"
           :title="media.needsReload ? `Reopen ${media.meta.name}` : 'Choose a video file'"
-          @click="openVideo(videoInput)"
+          @click="onLoadVideo"
         >
           <Film class="h-4 w-4" />
           <span>{{ media.needsReload ? "Re-import Video" : "Load Video" }}</span>
@@ -170,7 +172,7 @@ function onSaveProject() {
           type="file"
           class="hidden"
           accept="video/*"
-          @change="pick(media.load)($event)"
+          @change="onVideoChange"
         />
         <button v-if="media.hasMedia || media.needsReload" :class="dangerBtn" @click="onClearVideo">
           <Trash2 class="h-4 w-4" /> <span>Clear Video</span>

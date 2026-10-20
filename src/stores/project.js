@@ -20,6 +20,7 @@ export const useProjectStore = defineStore("project", () => {
   const lastSelectedIndex = ref(-1);
   const editingClipIndex = ref(-1);
   const lastViewedLine = ref(-1);
+  const demoActive = ref(false);
 
   const isActive = computed(() => transcriptions.value.length > 0 || clips.value.length > 0);
   const selectedIndexSet = computed(() => new Set(selected.value.map((t) => t.index)));
@@ -53,13 +54,7 @@ export const useProjectStore = defineStore("project", () => {
       );
       return;
     }
-    ui.demoActive = false;
-    transcriptions.value = lines;
-    clips.value = [];
-    selected.value = [];
-    lastSelectedIndex.value = -1;
-    editingClipIndex.value = -1;
-    lastViewedLine.value = -1;
+    restore({ transcriptions: lines });
     ui.notify(
       skipped
         ? `${lines.length} lines imported, ${skipped} skipped`
@@ -70,7 +65,7 @@ export const useProjectStore = defineStore("project", () => {
   /** Adds or removes one line from the selection. */
   function toggleSelect(index) {
     const line = transcriptions.value[index];
-    if (!line) return;
+    if (!line || usedIndexSet.value.has(index)) return;
     selected.value = selectedIndexSet.value.has(index)
       ? selected.value.filter((t) => t.index !== index)
       : [...selected.value, { ...line, index }];
@@ -85,7 +80,7 @@ export const useProjectStore = defineStore("project", () => {
     const next = [...selected.value];
     let added = 0;
     for (let i = start; i <= end; i++) {
-      if (selectedIndexSet.value.has(i)) continue;
+      if (selectedIndexSet.value.has(i) || usedIndexSet.value.has(i)) continue;
       next.push({ ...transcriptions.value[i], index: i });
       added++;
     }
@@ -125,7 +120,7 @@ export const useProjectStore = defineStore("project", () => {
       return false;
     }
 
-    const clip = buildClip(selected.value, name);
+    const clip = buildClip(selected.value, name, new Date().toISOString());
     const next = [...clips.value];
     if (editingClipIndex.value >= 0) {
       next[editingClipIndex.value] = clip;
@@ -173,13 +168,7 @@ export const useProjectStore = defineStore("project", () => {
 
   /** Wipes transcript, selection and clips. */
   function clearAll() {
-    ui.demoActive = false;
-    transcriptions.value = [];
-    selected.value = [];
-    clips.value = [];
-    lastSelectedIndex.value = -1;
-    editingClipIndex.value = -1;
-    lastViewedLine.value = -1;
+    restore({});
     ui.notify("All data cleared successfully");
   }
 
@@ -188,7 +177,7 @@ export const useProjectStore = defineStore("project", () => {
    * @param {{ transcriptions?: unknown, clips?: unknown, selected?: unknown, lastViewedLine?: unknown }} data
    */
   function restore(data) {
-    ui.demoActive = false;
+    demoActive.value = false;
     transcriptions.value = asList(data.transcriptions);
     clips.value = asList(data.clips);
     selected.value = asList(data.selected);
@@ -198,12 +187,18 @@ export const useProjectStore = defineStore("project", () => {
     lastViewedLine.value = typeof last === "number" && last >= 0 ? last : -1;
   }
 
+  /** Marks the loaded session as the bundled demo, which is never autosaved. */
+  function setDemoActive(value) {
+    demoActive.value = value;
+  }
+
   return {
     transcriptions,
     clips,
     selected,
     editingClipIndex,
     lastViewedLine,
+    demoActive,
     isActive,
     endSeconds,
     selectedIndexSet,
@@ -219,5 +214,6 @@ export const useProjectStore = defineStore("project", () => {
     editClip,
     clearAll,
     restore,
+    setDemoActive,
   };
 });

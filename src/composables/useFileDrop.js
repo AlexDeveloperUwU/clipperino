@@ -1,4 +1,4 @@
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 /**
  * Drag-and-drop state for a drop zone: bind `handlers` to the element and show an overlay while `dragging`.
@@ -25,6 +25,25 @@ export function useFileDrop(onDrop) {
       onDrop(event.dataTransfer);
     },
   };
+
+  const carriesFiles = (event) => event.dataTransfer?.types?.includes("Files");
+  const blockNavigation = (event) => {
+    if (carriesFiles(event)) event.preventDefault();
+  };
+  const resetDepth = () => {
+    depth.value = 0;
+  };
+
+  onMounted(() => {
+    window.addEventListener("dragover", blockNavigation);
+    window.addEventListener("drop", blockNavigation);
+    window.addEventListener("drop", resetDepth);
+  });
+  onBeforeUnmount(() => {
+    window.removeEventListener("dragover", blockNavigation);
+    window.removeEventListener("drop", blockNavigation);
+    window.removeEventListener("drop", resetDepth);
+  });
 
   return { dragging: computed(() => depth.value > 0), handlers };
 }

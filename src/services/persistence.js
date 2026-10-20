@@ -15,6 +15,7 @@ const LEGACY_KEYS = ["clipperino_json_clips"];
 const SAVE_DEBOUNCE_MS = 300;
 
 let started = false;
+let quotaWarned = false;
 
 function readJson(key) {
   try {
@@ -77,25 +78,41 @@ export function markWelcomeSeen() {
 }
 
 function writeSession(project, media, ui) {
-  if (ui.demoActive) return;
+  if (project.demoActive) return;
   if (!project.isActive && !media.meta.name) {
     clearSavedData();
     return;
   }
+  let previous = null;
   try {
-    localStorage.setItem(KEYS.transcriptions, JSON.stringify(project.transcriptions));
-    localStorage.setItem(KEYS.clips, JSON.stringify(project.clips));
-    localStorage.setItem(KEYS.selected, JSON.stringify(project.selected));
-    setOrRemove(KEYS.video, media.meta.name ? JSON.stringify(media.meta) : null);
-    setOrRemove(KEYS.lastLine, project.lastViewedLine >= 0 ? String(project.lastViewedLine) : null);
+    const next = {
+      [KEYS.transcriptions]: JSON.stringify(project.transcriptions),
+      [KEYS.clips]: JSON.stringify(project.clips),
+      [KEYS.selected]: JSON.stringify(project.selected),
+      [KEYS.video]: media.meta.name ? JSON.stringify(media.meta) : null,
+      [KEYS.lastLine]: project.lastViewedLine >= 0 ? String(project.lastViewedLine) : null,
+    };
+    previous = Object.fromEntries(Object.keys(next).map((key) => [key, localStorage.getItem(key)]));
+    Object.entries(next).forEach(([key, value]) => setOrRemove(key, value));
+    quotaWarned = false;
     ui.savedAt = Date.now();
   } catch (e) {
-    if (e?.name === "QuotaExceededError") {
+    if (previous) rollback(previous);
+    if (e?.name === "QuotaExceededError" && !quotaWarned) {
+      quotaWarned = true;
       ui.notify(
         "Storage limit reached — recent changes are not being saved. Export your clips or remove data.",
       );
     }
     console.error("Error saving to localStorage:", e);
+  }
+}
+
+function rollback(previous) {
+  try {
+    Object.entries(previous).forEach(([key, value]) => setOrRemove(key, value));
+  } catch (e) {
+    console.error("Error restoring the previous session:", e);
   }
 }
 

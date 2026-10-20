@@ -22,6 +22,7 @@ const SHORTCUTS = {
 /** Space plays or pauses and the arrow keys seek, while the Preview tab is active and no control has focus. */
 function onKeyDown(event) {
   if (ui.activeTab !== "preview" || !(event.code in SHORTCUTS)) return;
+  if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
   if (FOCUS_TAGS.includes(document.activeElement.tagName.toLowerCase())) return;
   event.preventDefault();
   SHORTCUTS[event.code]();

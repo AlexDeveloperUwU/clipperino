@@ -33,14 +33,11 @@ async function reopen(handle) {
 /**
  * Loads a video. Browsers with the File System Access API reopen the saved video directly
  * when it is the one the project expects, and otherwise open the picker in its folder;
- * other browsers use the plain file input.
- * @param {HTMLInputElement} fallbackInput Hidden `<input type="file">` for browsers without the API.
+ * other browsers need the caller's plain file input.
+ * @returns {Promise<boolean>} False when the API is unavailable and the caller must use its file input.
  */
-export async function openVideo(fallbackInput) {
-  if (!("showOpenFilePicker" in window)) {
-    fallbackInput.click();
-    return;
-  }
+export async function openVideo() {
+  if (!("showOpenFilePicker" in window)) return false;
 
   const media = useMediaStore();
   const saved = await loadVideoHandle();
@@ -49,7 +46,7 @@ export async function openVideo(fallbackInput) {
     const file = await reopen(saved);
     if (file) {
       media.load(file);
-      return;
+      return true;
     }
   }
 
@@ -64,19 +61,16 @@ export async function openVideo(fallbackInput) {
   } catch (error) {
     if (error.name !== "AbortError") useUiStore().notify("Could not open that video");
   }
+  return true;
 }
 
 /**
- * Loads the first dropped file as the video, and remembers its file handle where the browser provides one.
+ * Loads the first dropped file as the video (the caller has already checked its type), and remembers its file handle where the browser provides one.
  * The handle must be requested before the first `await`, while the drop event is still live.
  */
 export async function dropVideo(dataTransfer) {
   const file = dataTransfer.files[0];
   if (!file) return;
-  if (!isVideoFile(file)) {
-    useUiStore().notify("Invalid file type. Please drop a video file.");
-    return;
-  }
 
   const handlePending = dataTransfer.items[0]?.getAsFileSystemHandle?.();
   useMediaStore().load(file);

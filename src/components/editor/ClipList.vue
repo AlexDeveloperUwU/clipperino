@@ -2,27 +2,10 @@
 import { Clapperboard, FileJson, FilePen, Film, Pencil, X } from "@lucide/vue";
 import { useProjectStore } from "../../stores/project.js";
 import { useUiStore } from "../../stores/ui.js";
-import { clipsToEdl, clipsToJson } from "../../lib/exporters.js";
-import { downloadFile } from "../../services/download.js";
+import { exportClips } from "../../services/exportClips.js";
 
 const project = useProjectStore();
 const ui = useUiStore();
-
-const EXPORTS = {
-  json: ["clips.json", "application/json", clipsToJson, "JSON"],
-  edl: ["Timeline 1.edl", "text/plain", clipsToEdl, "EDL"],
-};
-
-/** Downloads all clips in one of the `EXPORTS` formats. */
-function exportAs(kind) {
-  if (project.clips.length === 0) {
-    ui.notify("No clips to export");
-    return;
-  }
-  const [fileName, type, build, label] = EXPORTS[kind];
-  downloadFile(build(project.clips), fileName, type);
-  ui.notify(`Clips exported as ${label}`);
-}
 
 /** Removes a clip after confirmation. */
 async function deleteClip(index) {
@@ -39,14 +22,9 @@ const exportBtn =
 </script>
 
 <template>
-  <div
-    data-tour="clips"
-    class="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
-  >
-    <div
-      class="flex h-14 flex-none items-center justify-between border-b border-dark-50 bg-dark-100/50 px-4 py-3"
-    >
-      <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+  <div data-tour="clips" class="panel h-full min-h-0">
+    <div class="panel-header">
+      <h2 class="panel-title flex items-center gap-2">
         <Clapperboard class="h-4 w-4 text-gray-500" /> Created Clips
       </h2>
       <span class="rounded bg-dark-50 px-2 py-0.5 font-mono text-xs text-gray-300">{{
@@ -140,7 +118,7 @@ const exportBtn =
           :class="exportBtn"
           :disabled="project.clips.length === 0"
           class="disabled:cursor-not-allowed disabled:opacity-40"
-          @click="exportAs('json')"
+          @click="exportClips('json')"
         >
           <FileJson class="h-3 w-3 text-accent-100" /> JSON
         </button>
@@ -148,7 +126,7 @@ const exportBtn =
           :disabled="project.clips.length === 0"
           class="flex items-center justify-center gap-2 rounded bg-accent-200 px-3 py-2 text-xs font-bold uppercase text-white shadow-lg shadow-accent-100/10 transition-colors hover:bg-accent-300 disabled:cursor-not-allowed disabled:opacity-40"
           title="Timeline for DaVinci Resolve / Premiere"
-          @click="exportAs('edl')"
+          @click="exportClips('edl')"
         >
           <Film class="h-4 w-4" /> EDL
         </button>

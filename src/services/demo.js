@@ -14,6 +14,7 @@ const DEMO_CLIPS = [
 /** Loads the bundled demo transcript, clips and video; the demo is never autosaved. */
 export async function loadDemo() {
   const ui = useUiStore();
+  ui.close();
   const project = useProjectStore();
   const media = useMediaStore();
 
@@ -22,27 +23,32 @@ export async function loadDemo() {
       title: "Load the demo?",
       message: "The demo replaces your current transcript, clips and video.",
       confirmLabel: "Load demo",
+      tone: "neutral",
     });
     if (!accepted) return;
   }
 
   const { lines } = parseCsv(demoCsv);
+  const timestamp = new Date().toISOString();
   const clips = DEMO_CLIPS.map(({ name, indices }) =>
     buildClip(
       indices.map((index) => ({ ...lines[index], index })),
       name,
+      timestamp,
     ),
   );
   project.restore({ transcriptions: lines, clips });
   media.clear({ silent: true });
-  ui.demoActive = true;
+  project.setDemoActive(true);
   ui.activeTab = "editor";
   ui.notify("Demo loaded — explore it, then exit from the banner");
 
   try {
     const response = await fetch(`${import.meta.env.BASE_URL}${DEMO_VIDEO}`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    media.load(new File([await response.blob()], "demo.mp4", { type: "video/mp4" }));
+    const blob = await response.blob();
+    if (!project.demoActive) return;
+    media.load(new File([blob], "demo.mp4", { type: "video/mp4" }));
   } catch (e) {
     console.error("Error loading demo video:", e);
     ui.notify("Demo video unavailable — the editor still works without it");

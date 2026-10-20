@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, ref, watch } from "vue";
 import { Tag } from "@lucide/vue";
 import BaseModal from "../BaseModal.vue";
 import { useUiStore } from "../../stores/ui.js";
@@ -8,17 +8,14 @@ import { useProjectStore } from "../../stores/project.js";
 const ui = useUiStore();
 const project = useProjectStore();
 const name = ref("");
-const input = ref(null);
 
 const isUpdate = computed(() => project.editingClipIndex >= 0);
 
 watch(
   () => ui.openModal,
-  async (modal) => {
+  (modal) => {
     if (modal !== "name-clip") return;
     name.value = isUpdate.value ? project.clips[project.editingClipIndex].name : "";
-    await nextTick();
-    input.value?.focus();
   },
 );
 
@@ -29,20 +26,17 @@ function save() {
 
 <template>
   <BaseModal name="name-clip">
-    <h2 class="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-      <Tag class="h-5 w-5 text-secondary-100" /> Name Clip
-    </h2>
+    <h2 class="modal-title mb-4"><Tag class="h-5 w-5 text-secondary-100" /> Name Clip</h2>
     <div class="mb-4">
       <label for="clipName" class="mb-2 block text-xs font-bold uppercase text-gray-400"
         >Clip Name</label
       >
       <input
         id="clipName"
-        ref="input"
         v-model="name"
         type="text"
         placeholder="Ex: Epic Intro"
-        class="w-full rounded border border-dark-50 bg-dark-300 p-3 text-white focus:border-transparent focus:outline-none focus:ring-2 focus:ring-secondary-100"
+        class="input focus:border-transparent focus:ring-secondary-100"
         @keydown.enter.prevent="save"
       />
     </div>
@@ -51,10 +45,7 @@ function save() {
     </p>
     <div class="flex justify-end gap-3">
       <button class="btn-cancel" @click="ui.close()">Cancel</button>
-      <button
-        class="rounded bg-secondary-200 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-secondary-100/20 transition-colors hover:bg-secondary-300"
-        @click="save"
-      >
+      <button class="btn-secondary" @click="save">
         {{ isUpdate ? "Update Clip" : "Save Clip" }}
       </button>
     </div>

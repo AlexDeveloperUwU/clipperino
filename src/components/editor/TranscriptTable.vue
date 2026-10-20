@@ -70,14 +70,9 @@ function rowClass(row) {
 </script>
 
 <template>
-  <div
-    data-tour="table"
-    class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
-  >
-    <div
-      class="flex h-14 flex-none items-center justify-between border-b border-dark-50 bg-dark-100/50 px-4 py-3"
-    >
-      <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white">
+  <div data-tour="table" class="panel min-h-0 flex-1">
+    <div class="panel-header">
+      <h2 class="panel-title flex items-center gap-2">
         <List class="h-4 w-4 text-gray-500" /> Transcripts
       </h2>
       <div class="flex items-center gap-3">
@@ -122,10 +117,10 @@ function rowClass(row) {
             class="border-b border-dark-50/30 transition-colors hover:bg-dark-100"
             @click="onRowClick(row.index, $event)"
           >
-            <td class="px-4 py-2 font-mono text-xs text-gray-400">
+            <td class="td-time">
               {{ row.inicio }}
             </td>
-            <td class="px-4 py-2 font-mono text-xs text-gray-400">
+            <td class="td-time">
               {{ row.fin }}
             </td>
             <td class="px-4 py-2 text-sm leading-relaxed">

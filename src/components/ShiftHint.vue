@@ -7,7 +7,9 @@ const ui = useUiStore();
 const visible = ref(false);
 
 const onKeyDown = (e) => {
-  if (e.key === "Shift" && ui.activeTab === "editor") visible.value = true;
+  if (e.key !== "Shift" || ui.activeTab !== "editor" || ui.openModal) return;
+  if (e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+  visible.value = true;
 };
 const onKeyUp = (e) => {
   if (e.key === "Shift") visible.value = false;

@@ -2,6 +2,28 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.2.1] - 2026-10-20
+
+### Fixed
+
+- Dropping a file while a dialog is open no longer makes the browser leave the app
+- Esc and Tab in dialogs keep working after clicking text inside them
+- Shift-range selection no longer picks lines already used by another clip
+- Exiting the demo while its video is loading no longer loads the video into your own session
+- Space and arrow shortcuts ignore modifier keys, so Alt+Left (browser back) works again in Preview
+- The Shift hint no longer appears while typing in a field or dialog
+- CSV delimiter detection ignores punctuation in the text column, and rows with an empty end time are skipped
+- Autosave writes all fields or none, and the storage-full warning shows once instead of on every save
+- Pausing or swapping the video no longer logs an unhandled error, and downloads release their file URL after the click
+
+### Changed
+
+- The guided tour traps keyboard focus, re-measures when the layout shifts and returns focus when it ends
+- Confirmations for non-destructive actions, like loading the demo, use a blue button instead of red
+- The changelog viewer loads on demand, cutting the initial bundle by about a third
+- Brand assets moved to `docs/brand` and are no longer shipped with the app
+- Internal cleanup: pure `lib/`, volume and project-file code moved to services, timeline zoom, audio outputs, file picking and export extracted from components, shared Tailwind classes, and unused code removed
+
 ## [2.2.0] - 2026-10-19
 
 ### Added

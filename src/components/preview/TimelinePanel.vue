@@ -1,16 +1,12 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { Activity, Magnet, Minus, Plus } from "@lucide/vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useProjectStore } from "../../stores/project.js";
-import { formatTime, timeToSeconds } from "../../lib/timecode.js";
-import { buildRulerMarks } from "../../lib/timeline.js";
+import { formatTime } from "../../lib/timecode.js";
+import { buildClipBlocks, buildRulerMarks } from "../../lib/timeline.js";
 import { useTimelineScrub } from "../../composables/useTimelineScrub.js";
-
-const MIN_ZOOM = 0.1;
-const MIN_MAX_ZOOM = 50;
-const MIN_VISIBLE_SECONDS = 5;
-const ZOOM_FACTOR = 1.5;
+import { useTimelineZoom } from "../../composables/useTimelineZoom.js";
 
 const media = useMediaStore();
 const project = useProjectStore();
@@ -18,26 +14,14 @@ const project = useProjectStore();
 const scroller = ref(null);
 const wrapper = ref(null);
 const scrollerWidth = ref(0);
-const zoom = ref(1);
+const { zoom, maxZoom, zoomBy, onZoomInput } = useTimelineZoom(scroller);
 let observer = null;
 
 const span = computed(() => media.timelineSpan);
 const hasSpan = computed(() => span.value > 0);
 const rulerMarks = computed(() => buildRulerMarks(span.value, scrollerWidth.value * zoom.value));
 
-const clipBlocks = computed(() =>
-  project.clips.map((clip) => {
-    const start = timeToSeconds(clip.inicio);
-    const end = timeToSeconds(clip.fin);
-    return {
-      name: clip.name,
-      start,
-      end,
-      left: (start / span.value) * 100,
-      width: ((end - start) / span.value) * 100,
-    };
-  }),
-);
+const clipBlocks = computed(() => buildClipBlocks(project.clips, span.value));
 
 const {
   scrubbing,
@@ -50,35 +34,6 @@ const playheadPercent = computed(() => {
   if (!hasSpan.value) return 0;
   return ((scrubbing.value ? scrubTime.value : media.currentTime) / span.value) * 100;
 });
-
-/** Highest zoom: at least 5000%, and enough to fit a few seconds of a very long timeline on screen. */
-const maxZoom = computed(() => Math.max(MIN_MAX_ZOOM, span.value / MIN_VISIBLE_SECONDS));
-
-/** Sets the zoom factor (1 = whole timeline in view), clamped to the allowed range. */
-function setZoom(value) {
-  zoom.value = Math.round(Math.min(maxZoom.value, Math.max(MIN_ZOOM, value)) * 100) / 100;
-}
-
-/** Zooms in (+1) or out (-1) by a constant factor, so long timelines stay reachable. */
-function zoomBy(direction) {
-  setZoom(direction > 0 ? zoom.value * ZOOM_FACTOR : zoom.value / ZOOM_FACTOR);
-}
-
-/** Zooms so the loaded video fills the view, keeping its clips usable on a much longer timeline. */
-function fitToVideo() {
-  if (!(media.elementDuration > 0)) return;
-  setZoom(Math.max(1, span.value / media.elementDuration));
-  if (scroller.value) scroller.value.scrollLeft = 0;
-}
-
-watch(() => media.elementDuration, fitToVideo, { immediate: true });
-
-/** Applies a typed percentage and writes the clamped value back to the input. */
-function onZoomInput(event) {
-  const value = parseInt(event.target.value, 10);
-  setZoom((isNaN(value) ? 100 : value) / 100);
-  event.target.value = Math.round(zoom.value * 100);
-}
 
 /** Seeks to the start of a clip block. */
 function jumpToClip(clip) {

@@ -4,15 +4,51 @@ import { useUiStore } from "../stores/ui.js";
 import { downloadFile } from "./download.js";
 import {
   PROJECT_EXTENSION,
-  decodeProject,
-  encodeProject,
+  buildEnvelope,
+  parseEnvelope,
   sanitizeFileName,
   suggestFileName,
 } from "../lib/projectFormat.js";
 
+const hasCompression =
+  typeof CompressionStream !== "undefined" && typeof DecompressionStream !== "undefined";
+
+async function gzip(text) {
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream("gzip"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+async function gunzip(buffer) {
+  const stream = new Blob([buffer]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).text();
+}
+
+/** Serialises a session to a gzip blob body, or plain JSON where compression is unavailable. */
+async function encodeProject(data, appVersion) {
+  const json = JSON.stringify(buildEnvelope(data, appVersion, new Date().toISOString()));
+  return {
+    body: hasCompression ? await gzip(json) : json,
+    mimeType: hasCompression ? "application/gzip" : "application/json",
+  };
+}
+
+/**
+ * Parses project file bytes, accepting gzip or plain JSON.
+ * @returns {Promise<object | null>} The session data, or null when not a Clipperino project.
+ */
+async function decodeProject(buffer) {
+  let json;
+  try {
+    json = hasCompression ? await gunzip(buffer) : new TextDecoder().decode(buffer);
+  } catch {
+    json = new TextDecoder().decode(buffer);
+  }
+  return parseEnvelope(JSON.parse(json));
+}
+
 /** Default name offered in the save dialog. */
 export function suggestProjectName() {
-  return suggestFileName(useMediaStore().meta.name);
+  return suggestFileName(useMediaStore().meta.name, new Date());
 }
 
 /** Downloads the session as a `.clpproj` file; resolves to whether it succeeded. */
