@@ -1,10 +1,19 @@
 <script setup>
-import { CircleHelp, FileSpreadsheet, Film, FolderOpen, Save, Trash2 } from "@lucide/vue";
+import {
+  CircleHelp,
+  FileSpreadsheet,
+  FlaskConical,
+  Film,
+  FolderOpen,
+  Save,
+  Trash2,
+} from "@lucide/vue";
 import BrandMark from "./BrandMark.vue";
 import { useUiStore } from "../stores/ui.js";
 import { useProjectStore } from "../stores/project.js";
 import { useMediaStore } from "../stores/media.js";
 import { importCsvFile } from "../services/importCsv.js";
+import { loadDemo } from "../services/demo.js";
 import { openProject } from "../services/projectFile.js";
 import { forgetVideo, openVideo } from "../services/videoPicker.js";
 import { useFilePicker } from "../composables/useFilePicker.js";
@@ -133,6 +142,15 @@ function onSaveProject() {
         >
           <FolderOpen class="h-4 w-4" />
           <span>Open<span class="hidden lg:inline"> Project</span></span>
+        </button>
+        <button
+          v-if="!project.demoActive"
+          title="Explore a ready-made demo project"
+          :class="projectBtn"
+          @click="loadDemo"
+        >
+          <FlaskConical class="h-4 w-4" />
+          <span>Demo<span class="hidden lg:inline"> Project</span></span>
         </button>
         <input
           ref="projectInput"

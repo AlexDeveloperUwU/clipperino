@@ -2,6 +2,19 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.4.0] - 2026-10-20
+
+### Added
+
+- A "Demo Project" button next to Open Project in the header opens the demo without the tour, and the demo banner offers "Take the tour" to start it later
+- The demo project now fades in instead of appearing at once: the workspace fades out, the demo swaps in, the banner slides down and the clips appear one after another
+
+### Changed
+
+- Switching between the Editor and Preview tabs cross-fades, and the first switch no longer freezes for a moment
+- The tour's dark overlay fades in and out, and a dialog opened during the tour hides it instead of dimming the dialog
+- The empty editor, transcript table, empty clip list, "screen too small" notice and update button fade in, and the changelog text fades in once loaded
+
 ## [2.3.0] - 2026-10-20
 
 ### Added

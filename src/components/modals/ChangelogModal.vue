@@ -29,7 +29,8 @@ async function loadChangelog() {
         </button>
       </div>
       <div
-        class="changelog-content flex-1 overflow-y-auto text-sm text-gray-300"
+        :class="html ? 'opacity-100' : 'opacity-0'"
+        class="changelog-content min-h-[50vh] flex-1 overflow-y-auto text-sm text-gray-300 transition-opacity duration-300"
         v-html="html"
       ></div>
     </div>

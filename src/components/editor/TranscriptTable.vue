@@ -98,8 +98,8 @@ function rowClass(row) {
     </div>
 
     <div ref="container" class="flex-1 overflow-y-auto bg-dark-300" @scroll="onScroll">
-      <EmptyTranscript v-if="total === 0" />
-      <table v-else class="w-full border-collapse">
+      <EmptyTranscript v-if="total === 0" class="fade-in" />
+      <table v-else class="fade-in w-full border-collapse">
         <thead class="sticky top-0 z-10 bg-dark-100 shadow-sm">
           <tr class="text-left">
             <th class="th w-24">Start</th>

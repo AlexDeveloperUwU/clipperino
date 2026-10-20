@@ -32,6 +32,12 @@ import {
 const ui = useUiStore();
 const { dragging, handlers } = useFileDrop(routeDrop);
 
+/** Both tabs stay laid out and cross-fade; the inactive one is inert so the video and timeline are never rebuilt on a switch. */
+const tabClass = (id) => [
+  "absolute inset-0 transition-opacity duration-300 ease-out",
+  ui.activeTab === id ? "opacity-100" : "pointer-events-none opacity-[0.001]",
+];
+
 onMounted(() => {
   if (hasSavedData()) {
     ui.open("startup");
@@ -49,9 +55,12 @@ onMounted(() => {
   <div class="relative flex h-full flex-col" v-bind="handlers">
     <AppHeader />
     <DemoBanner />
-    <main class="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden">
-      <EditorTab v-show="ui.activeTab === 'editor'" />
-      <PreviewTab v-show="ui.activeTab === 'preview'" />
+    <main
+      :class="ui.swapping ? 'pointer-events-none opacity-0' : 'opacity-100'"
+      class="relative flex min-h-0 w-full flex-1 flex-col overflow-hidden transition-opacity duration-300 ease-out"
+    >
+      <EditorTab :inert="ui.activeTab !== 'editor'" :class="tabClass('editor')" />
+      <PreviewTab :inert="ui.activeTab !== 'preview'" :class="tabClass('preview')" />
     </main>
     <AppFooter />
 

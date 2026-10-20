@@ -39,7 +39,8 @@ function findTarget() {
 /** Reads the target's box; a target that is momentarily gone keeps the last highlight, a hidden one (other tab) or none clears it. */
 function measure() {
   viewport.value = { width: window.innerWidth, height: window.innerHeight };
-  const box = findTarget()?.getBoundingClientRect();
+  const el = findTarget();
+  const box = el?.closest("[inert]") ? { width: 0 } : el?.getBoundingClientRect();
   if (box?.width > 0) rect.value = box;
   else if (box || !step.value?.target) rect.value = null;
 }
@@ -153,6 +154,12 @@ watch(
   { flush: "post" },
 );
 
+watch(
+  () => ui.activeTab,
+  () => measure(),
+  { flush: "post" },
+);
+
 watch(popover, (el) => {
   popoverObserver?.disconnect();
   popoverObserver = null;
@@ -186,64 +193,66 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="step" v-show="visible" class="pointer-events-none fixed inset-0 z-[60]">
-    <div
-      class="absolute rounded-lg transition-[top,left,width,height,box-shadow] duration-300 ease-out"
-      :style="spotlightStyle"
-    ></div>
+  <Transition name="tour-dim">
+    <div v-if="step" v-show="visible" class="pointer-events-none fixed inset-0 z-[60]">
+      <div
+        class="absolute rounded-lg transition-[top,left,width,height,box-shadow] duration-300 ease-out"
+        :style="spotlightStyle"
+      ></div>
 
-    <div
-      ref="popover"
-      :style="popoverStyle"
-      role="dialog"
-      aria-label="Guided tour"
-      aria-live="polite"
-      class="pointer-events-auto absolute flex min-h-[220px] flex-col rounded-lg border border-dark-50 bg-dark-200 p-4 shadow-2xl transition-[top,left] duration-300 ease-out"
-    >
-      <div class="grid flex-1">
-        <Transition name="tour-fade" @after-enter="focusPrimary">
-          <div :key="ui.tourStep" class="col-start-1 row-start-1 flex flex-col">
-            <p class="mb-1 text-xs font-bold uppercase tracking-wider text-accent-100">
-              Step {{ ui.tourStep + 1 }} of {{ TOUR_STEPS.length }}
-            </p>
-            <h3 class="mb-1 text-base font-bold text-white">{{ step.title }}</h3>
-            <p class="mb-3 text-sm text-gray-400">{{ step.text }}</p>
-            <p v-if="step.until" class="mb-3 text-xs font-medium text-accent-100">
-              {{
-                step.needsVideo && !media.hasMedia
-                  ? "The demo video isn't loaded, so use Skip step."
-                  : "Try it — the tour continues when you do."
-              }}
-            </p>
-            <div class="mt-auto flex items-center justify-between">
-              <button class="text-xs text-gray-500 hover:text-gray-300" @click="end">
-                Skip tour
-              </button>
-              <div class="flex gap-2">
-                <button v-if="ui.tourStep > 0" class="btn-cancel" @click="ui.tourStep--">
-                  Back
+      <div
+        ref="popover"
+        :style="popoverStyle"
+        role="dialog"
+        aria-label="Guided tour"
+        aria-live="polite"
+        class="pointer-events-auto absolute flex min-h-[220px] flex-col rounded-lg border border-dark-50 bg-dark-200 p-4 shadow-2xl transition-[top,left] duration-300 ease-out"
+      >
+        <div class="grid flex-1">
+          <Transition name="tour-fade" @after-enter="focusPrimary">
+            <div :key="ui.tourStep" class="col-start-1 row-start-1 flex flex-col">
+              <p class="mb-1 text-xs font-bold uppercase tracking-wider text-accent-100">
+                Step {{ ui.tourStep + 1 }} of {{ TOUR_STEPS.length }}
+              </p>
+              <h3 class="mb-1 text-base font-bold text-white">{{ step.title }}</h3>
+              <p class="mb-3 text-sm text-gray-400">{{ step.text }}</p>
+              <p v-if="step.until" class="mb-3 text-xs font-medium text-accent-100">
+                {{
+                  step.needsVideo && !media.hasMedia
+                    ? "The demo video isn't loaded, so use Skip step."
+                    : "Try it — the tour continues when you do."
+                }}
+              </p>
+              <div class="mt-auto flex items-center justify-between">
+                <button class="text-xs text-gray-500 hover:text-gray-300" @click="end">
+                  Skip tour
                 </button>
-                <button
-                  v-if="step.until"
-                  class="btn-cancel"
-                  title="Move on without doing it"
-                  @click="ui.tourStep++"
-                >
-                  Skip step
-                </button>
-                <button
-                  v-else
-                  ref="primary"
-                  class="btn-accent"
-                  @click="isLast ? end() : ui.tourStep++"
-                >
-                  {{ isLast ? "Done" : "Next" }}
-                </button>
+                <div class="flex gap-2">
+                  <button v-if="ui.tourStep > 0" class="btn-cancel" @click="ui.tourStep--">
+                    Back
+                  </button>
+                  <button
+                    v-if="step.until"
+                    class="btn-cancel"
+                    title="Move on without doing it"
+                    @click="ui.tourStep++"
+                  >
+                    Skip step
+                  </button>
+                  <button
+                    v-else
+                    ref="primary"
+                    class="btn-accent"
+                    @click="isLast ? end() : ui.tourStep++"
+                  >
+                    {{ isLast ? "Done" : "Next" }}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        </Transition>
+          </Transition>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>

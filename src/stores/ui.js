@@ -13,6 +13,7 @@ export const useUiStore = defineStore("ui", () => {
   const updateReady = ref(false);
   const savedAt = ref(0);
   const tourStep = ref(-1);
+  const swapping = ref(false);
   const signals = ref(new Set());
   let toastId = 0;
   let pendingConfirm = null;
@@ -79,6 +80,7 @@ export const useUiStore = defineStore("ui", () => {
     updateReady,
     savedAt,
     tourStep,
+    swapping,
     signals,
     notify,
     open,

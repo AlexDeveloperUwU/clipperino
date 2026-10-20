@@ -45,14 +45,16 @@ watch(
         >
           Clipperino v{{ version }}
         </button>
-        <button
-          v-if="ui.updateReady"
-          class="flex items-center gap-1 rounded bg-accent-200 px-2 py-0.5 font-medium text-white transition-colors hover:bg-accent-300"
-          title="Reload to use the new version"
-          @click="applyUpdate"
-        >
-          <RefreshCw class="h-3 w-3" /> Update available
-        </button>
+        <Transition name="fade">
+          <button
+            v-if="ui.updateReady"
+            class="flex items-center gap-1 rounded bg-accent-200 px-2 py-0.5 font-medium text-white transition-colors hover:bg-accent-300"
+            title="Reload to use the new version"
+            @click="applyUpdate"
+          >
+            <RefreshCw class="h-3 w-3" /> Update available
+          </button>
+        </Transition>
       </div>
       <div class="flex-1 text-right">
         <a

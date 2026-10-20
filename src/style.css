@@ -116,7 +116,51 @@ input[type="number"] {
 }
 
 .clip-item {
-  animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.3s ease-out both;
+}
+
+@keyframes fadeOnly {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeOnly 0.3s ease-out both;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.banner-enter-active,
+.banner-leave-active {
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.banner-enter-from,
+.banner-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+.banner-enter-to,
+.banner-leave-from {
+  max-height: 3rem;
+  opacity: 1;
 }
 
 .highlight-row {
@@ -143,6 +187,16 @@ input[type="number"] {
 
 .modal-enter-from,
 .modal-leave-to {
+  opacity: 0;
+}
+
+.tour-dim-enter-active,
+.tour-dim-leave-active {
+  transition: opacity 0.35s ease;
+}
+
+.tour-dim-enter-from,
+.tour-dim-leave-to {
   opacity: 0;
 }
 
