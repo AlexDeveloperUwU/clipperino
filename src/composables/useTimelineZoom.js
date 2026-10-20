@@ -1,5 +1,6 @@
 import { computed, ref, watch } from "vue";
 import { useMediaStore } from "../stores/media.js";
+import { useUiStore } from "../stores/ui.js";
 
 const MIN_ZOOM = 0.1;
 const MIN_MAX_ZOOM = 50;
@@ -12,6 +13,7 @@ const ZOOM_FACTOR = 1.5;
  */
 export function useTimelineZoom(scroller) {
   const media = useMediaStore();
+  const ui = useUiStore();
   const zoom = ref(1);
 
   /** Highest zoom: at least 5000%, and enough to fit a few seconds of a very long timeline on screen. */
@@ -23,6 +25,7 @@ export function useTimelineZoom(scroller) {
 
   /** Zooms in (+1) or out (-1) by a constant factor, so long timelines stay reachable. */
   function zoomBy(direction) {
+    ui.signal("zoom");
     setZoom(direction > 0 ? zoom.value * ZOOM_FACTOR : zoom.value / ZOOM_FACTOR);
   }
 
@@ -36,6 +39,7 @@ export function useTimelineZoom(scroller) {
 
   /** Applies a typed percentage and writes the clamped value back to the input. */
   function onZoomInput(event) {
+    ui.signal("zoom");
     const value = parseInt(event.target.value, 10);
     setZoom((isNaN(value) ? 100 : value) / 100);
     event.target.value = Math.round(zoom.value * 100);

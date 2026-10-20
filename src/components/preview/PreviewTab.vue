@@ -6,30 +6,50 @@ import TimelinePanel from "./TimelinePanel.vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useUiStore } from "../../stores/ui.js";
 
-const FOCUS_TAGS = ["input", "select", "textarea", "button"];
+const FIELD_TAGS = ["input", "select", "textarea"];
 
 const SEEK_STEP_SECONDS = 5;
 
 const media = useMediaStore();
 const ui = useUiStore();
 
-const SHORTCUTS = {
-  Space: () => media.togglePlay(),
-  ArrowLeft: () => media.seek(Math.max(0, media.currentTime - SEEK_STEP_SECONDS)),
-  ArrowRight: () => media.seek(media.currentTime + SEEK_STEP_SECONDS),
+let keySeeked = false;
+
+const seekBy = (seconds) => {
+  if (media.seek(Math.max(0, media.currentTime + seconds))) keySeeked = true;
 };
 
-/** Space plays or pauses and the arrow keys seek, while the Preview tab is active and no control has focus. */
+/** Reports a keyboard seek once the arrow key is released, so a held key finishes first. */
+function onKeyUp(event) {
+  if (!keySeeked || !event.code.startsWith("Arrow")) return;
+  keySeeked = false;
+  ui.signal("keySeek");
+}
+
+const SHORTCUTS = {
+  Space: () => media.togglePlay(),
+  ArrowLeft: () => seekBy(-SEEK_STEP_SECONDS),
+  ArrowRight: () => seekBy(SEEK_STEP_SECONDS),
+};
+
+/** Space plays or pauses and the arrows seek, on the Preview tab; fields keep their keys, and a focused button keeps Space. */
 function onKeyDown(event) {
   if (ui.activeTab !== "preview" || !(event.code in SHORTCUTS)) return;
   if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
-  if (FOCUS_TAGS.includes(document.activeElement.tagName.toLowerCase())) return;
+  const tag = document.activeElement.tagName.toLowerCase();
+  if (FIELD_TAGS.includes(tag) || (tag === "button" && event.code === "Space")) return;
   event.preventDefault();
   SHORTCUTS[event.code]();
 }
 
-onMounted(() => document.addEventListener("keydown", onKeyDown));
-onBeforeUnmount(() => document.removeEventListener("keydown", onKeyDown));
+onMounted(() => {
+  document.addEventListener("keydown", onKeyDown);
+  document.addEventListener("keyup", onKeyUp);
+});
+onBeforeUnmount(() => {
+  document.removeEventListener("keydown", onKeyDown);
+  document.removeEventListener("keyup", onKeyUp);
+});
 </script>
 
 <template>
@@ -38,8 +58,10 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeyDown));
       class="flex h-full flex-col overflow-hidden rounded-lg border border-dark-50 bg-dark-200 shadow-lg"
     >
       <VideoPlayer />
-      <TransportBar />
-      <TimelinePanel />
+      <div class="flex flex-none flex-col">
+        <TransportBar />
+        <TimelinePanel />
+      </div>
     </div>
   </div>
 </template>

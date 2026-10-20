@@ -2,6 +2,21 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.3.0] - 2026-10-20
+
+### Added
+
+- The guided tour is now an interactive walkthrough of the demo project. It asks you to do each action (select lines, build and edit a clip, export, then play, skip, subtitles, volume, scrub, seek, zoom and swap the video on the Preview tab) and moves on when you do, with Back, Skip step and a closing screen
+- Shift-click on a line's text now selects a range instead of being blocked by text selection
+- Arrow keys seek on the Preview tab even after clicking a button
+
+### Changed
+
+- "Take the interactive tour" replaces the separate tour and demo buttons; the tour loads the demo project
+- Tour highlight and popup glide between steps, and the popup text cross-fades
+- The dev server no longer flashes a white border on load (stylesheet linked from `index.html`, dark background set before first paint)
+- Demo transcript lines reworded to match the new tour
+
 ## [2.2.2] - 2026-10-20
 
 ### Changed

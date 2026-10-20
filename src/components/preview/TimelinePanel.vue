@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { Activity, Magnet, Minus, Plus } from "@lucide/vue";
 import { useMediaStore } from "../../stores/media.js";
 import { useProjectStore } from "../../stores/project.js";
+import { useUiStore } from "../../stores/ui.js";
 import { formatTime } from "../../lib/timecode.js";
 import { buildClipBlocks, buildRulerMarks } from "../../lib/timeline.js";
 import { useTimelineScrub } from "../../composables/useTimelineScrub.js";
@@ -10,6 +11,7 @@ import { useTimelineZoom } from "../../composables/useTimelineZoom.js";
 
 const media = useMediaStore();
 const project = useProjectStore();
+const ui = useUiStore();
 
 const scroller = ref(null);
 const wrapper = ref(null);
@@ -37,7 +39,7 @@ const playheadPercent = computed(() => {
 
 /** Seeks to the start of a clip block. */
 function jumpToClip(clip) {
-  media.jumpTo(clip.start, `Jumped to clip: ${clip.name}`);
+  if (media.jumpTo(clip.start, `Jumped to clip: ${clip.name}`)) ui.signal("clipBlock");
 }
 
 onMounted(() => {
@@ -51,7 +53,10 @@ const zoomBtn = "p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white tra
 </script>
 
 <template>
-  <div class="relative flex h-64 select-none flex-col border-t border-dark-50 bg-dark-100">
+  <div
+    data-tour="timeline"
+    class="relative flex h-64 select-none flex-col border-t border-dark-50 bg-dark-100"
+  >
     <div
       class="z-10 flex flex-none items-center justify-between border-b border-dark-50/50 bg-dark-200 px-4 py-2"
     >
@@ -62,7 +67,7 @@ const zoomBtn = "p-1 hover:bg-dark-50 rounded text-gray-400 hover:text-white tra
           <Activity class="h-3 w-3" /> Timeline
         </h3>
         <div class="h-3 w-px bg-dark-50"></div>
-        <div class="flex items-center gap-2">
+        <div data-tour="zoom" class="flex items-center gap-2">
           <button :class="zoomBtn" title="Zoom Out" @click="zoomBy(-1)">
             <Minus class="h-3 w-3" />
           </button>

@@ -146,6 +146,26 @@ input[type="number"] {
   opacity: 0;
 }
 
+.tour-fade-enter-active {
+  transition:
+    opacity 0.25s ease 0.05s,
+    transform 0.25s ease 0.05s;
+}
+
+.tour-fade-leave-active {
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.tour-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.tour-fade-leave-to {
+  opacity: 0;
+}
+
 .modal-enter-from .modal-card,
 .modal-leave-to .modal-card {
   opacity: 0;

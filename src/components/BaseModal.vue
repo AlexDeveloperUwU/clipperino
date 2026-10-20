@@ -8,6 +8,7 @@ const props = defineProps({
   name: { type: String, required: true },
   widthClass: { type: String, default: "max-w-md" },
   dismissible: { type: Boolean, default: true },
+  tour: { type: String, default: undefined },
 });
 const emit = defineEmits(["opened"]);
 
@@ -79,6 +80,7 @@ onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
         ref="card"
         role="dialog"
         aria-modal="true"
+        :data-tour="tour"
         :class="widthClass"
         class="modal-card w-full rounded-lg border border-dark-50 bg-dark-200 p-6 shadow-2xl"
       >

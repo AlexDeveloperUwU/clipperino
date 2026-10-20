@@ -3,7 +3,7 @@ import { computed } from "vue";
 import { FileSpreadsheet, Film } from "@lucide/vue";
 import BaseModal from "../BaseModal.vue";
 import { useUiStore } from "../../stores/ui.js";
-import { loadDemo } from "../../services/demo.js";
+import { startTour } from "../../services/demo.js";
 
 const props = defineProps({
   tab: { type: String, required: true },
@@ -79,12 +79,9 @@ const guide = computed(() => GUIDES[props.tab]);
       <li>Everything stays in your browser; nothing is uploaded.</li>
     </ul>
     <div class="flex items-center justify-between gap-3">
-      <div class="flex gap-4 text-xs">
-        <button class="text-gray-400 hover:text-white" @click="ui.startTour()">
-          Take the tour
-        </button>
-        <button class="text-gray-400 hover:text-white" @click="loadDemo">Try the demo</button>
-      </div>
+      <button class="text-xs text-gray-400 hover:text-white" @click="startTour">
+        Take the interactive tour
+      </button>
       <button class="btn-accent" @click="ui.close()">Got it</button>
     </div>
   </BaseModal>

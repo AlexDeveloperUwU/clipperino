@@ -178,17 +178,21 @@ export const useMediaStore = defineStore("media", () => {
     return true;
   }
 
-  /** Seeks to `seconds` and announces `message`, or explains why the position can't be reached. */
+  /**
+   * Seeks to `seconds` and announces `message`, or explains why the position can't be reached.
+   * @returns {boolean} Whether the jump happened.
+   */
   function jumpTo(seconds, message) {
     if (seek(seconds)) {
       ui.notify(message);
-    } else {
-      ui.notify(
-        hasMedia.value
-          ? `${formatTime(seconds)} is past the end of the video`
-          : "Load the video to jump to a clip",
-      );
+      return true;
     }
+    ui.notify(
+      hasMedia.value
+        ? `${formatTime(seconds)} is past the end of the video`
+        : "Load the video to jump to a clip",
+    );
+    return false;
   }
 
   /** Plays or pauses; ignored when no video is loaded. */
@@ -203,7 +207,7 @@ export const useMediaStore = defineStore("media", () => {
   function skipToNextClip() {
     const next = findNextClipStart(project.clips, currentTime.value, CLIP_SKIP_TOLERANCE);
     if (next) {
-      jumpTo(next.start, `Skipped to: ${next.clip.name}`);
+      if (jumpTo(next.start, `Skipped to: ${next.clip.name}`)) ui.signal("skip");
     } else {
       ui.notify("No more clips ahead");
     }
@@ -213,7 +217,7 @@ export const useMediaStore = defineStore("media", () => {
   function skipToPrevClip() {
     const prev = findPrevClipStart(project.clips, currentTime.value, CLIP_SKIP_TOLERANCE);
     if (prev) {
-      jumpTo(prev.start, `Skipped back to: ${prev.clip.name}`);
+      if (jumpTo(prev.start, `Skipped back to: ${prev.clip.name}`)) ui.signal("skip");
     } else {
       seek(0);
     }

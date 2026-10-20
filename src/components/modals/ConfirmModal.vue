@@ -6,7 +6,7 @@ const ui = useUiStore();
 </script>
 
 <template>
-  <BaseModal name="confirm">
+  <BaseModal name="confirm" tour="confirm">
     <h2 class="mb-2 text-lg font-bold text-white">{{ ui.modalPayload?.title }}</h2>
     <p class="mb-6 text-sm text-gray-400">{{ ui.modalPayload?.message }}</p>
     <div class="flex justify-end gap-3">

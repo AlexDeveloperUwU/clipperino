@@ -115,6 +115,7 @@ function rowClass(row) {
             :data-index="row.index"
             :class="rowClass(row)"
             class="border-b border-dark-50/30 transition-colors hover:bg-dark-100"
+            @mousedown.shift.prevent
             @click="onRowClick(row.index, $event)"
           >
             <td class="td-time">

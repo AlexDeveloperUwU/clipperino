@@ -86,7 +86,10 @@ export const useProjectStore = defineStore("project", () => {
     }
     selected.value = next;
     lastSelectedIndex.value = end;
-    if (added > 0) ui.notify(`${added} lines selected`);
+    if (added > 0) {
+      ui.notify(`${added} lines selected`);
+      ui.signal("range");
+    }
   }
 
   /** Plain click toggles one line; with Shift it extends from the last click. */

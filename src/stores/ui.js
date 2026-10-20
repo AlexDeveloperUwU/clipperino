@@ -13,6 +13,7 @@ export const useUiStore = defineStore("ui", () => {
   const updateReady = ref(false);
   const savedAt = ref(0);
   const tourStep = ref(-1);
+  const signals = ref(new Set());
   let toastId = 0;
   let pendingConfirm = null;
 
@@ -59,11 +60,9 @@ export const useUiStore = defineStore("ui", () => {
     pendingConfirm = null;
   }
 
-  /** Starts the guided tour from the Editor tab; `TourOverlay` advances `tourStep`, `-1` means no tour. */
-  function startTour() {
-    close();
-    activeTab.value = "editor";
-    tourStep.value = 0;
+  /** Records that the user did something a tour step waits for (`range`, `export`, `skip`, `clipBlock`, `scrub`, `keySeek`, `volume`, `zoom`). */
+  function signal(name) {
+    signals.value.add(name);
   }
 
   /** Asks the transcript table to scroll to and flash a line. */
@@ -80,12 +79,13 @@ export const useUiStore = defineStore("ui", () => {
     updateReady,
     savedAt,
     tourStep,
+    signals,
     notify,
     open,
     close,
     confirm,
     answerConfirm,
-    startTour,
+    signal,
     navigateToLine,
   };
 });

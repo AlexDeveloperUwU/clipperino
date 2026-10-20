@@ -11,18 +11,36 @@ const DEMO_CLIPS = [
   { name: "Preview and export", indices: [9, 10, 11] },
 ];
 
-/** Loads the bundled demo transcript, clips and video; the demo is never autosaved. */
-export async function loadDemo() {
+async function loadDemoVideo() {
+  const project = useProjectStore();
+  try {
+    const response = await fetch(`${import.meta.env.BASE_URL}${DEMO_VIDEO}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const blob = await response.blob();
+    if (!project.demoActive) return;
+    useMediaStore().load(new File([blob], "demo.mp4", { type: "video/mp4" }));
+  } catch (e) {
+    console.error("Error loading demo video:", e);
+    useUiStore().notify("Demo video unavailable — the editor still works without it");
+  }
+}
+
+/**
+ * Starts the interactive tour on the bundled demo project (never autosaved); the video loads in the background.
+ * Does nothing when the user declines to replace their current work.
+ */
+export async function startTour() {
   const ui = useUiStore();
   ui.close();
   const project = useProjectStore();
   const media = useMediaStore();
 
-  if (project.isActive || media.meta.name) {
+  if (!project.demoActive && (project.isActive || media.meta.name)) {
     const accepted = await ui.confirm({
-      title: "Load the demo?",
-      message: "The demo replaces your current transcript, clips and video.",
-      confirmLabel: "Load demo",
+      title: "Start the tour?",
+      message:
+        "The tour opens a demo project that replaces your current transcript, clips and video.",
+      confirmLabel: "Start tour",
       tone: "neutral",
     });
     if (!accepted) return;
@@ -41,18 +59,8 @@ export async function loadDemo() {
   media.clear({ silent: true });
   project.setDemoActive(true);
   ui.activeTab = "editor";
-  ui.notify("Demo loaded — explore it, then exit from the banner");
-
-  try {
-    const response = await fetch(`${import.meta.env.BASE_URL}${DEMO_VIDEO}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const blob = await response.blob();
-    if (!project.demoActive) return;
-    media.load(new File([blob], "demo.mp4", { type: "video/mp4" }));
-  } catch (e) {
-    console.error("Error loading demo video:", e);
-    ui.notify("Demo video unavailable — the editor still works without it");
-  }
+  ui.tourStep = 0;
+  loadDemoVideo();
 }
 
 /** Removes the demo transcript, clips and video. */

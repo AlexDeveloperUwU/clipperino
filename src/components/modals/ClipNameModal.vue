@@ -25,7 +25,7 @@ function save() {
 </script>
 
 <template>
-  <BaseModal name="name-clip">
+  <BaseModal name="name-clip" tour="name-clip">
     <h2 class="modal-title mb-4"><Tag class="h-5 w-5 text-secondary-100" /> Name Clip</h2>
     <div class="mb-4">
       <label for="clipName" class="mb-2 block text-xs font-bold uppercase text-gray-400"

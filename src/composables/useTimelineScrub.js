@@ -1,5 +1,6 @@
 import { onBeforeUnmount, onMounted, ref } from "vue";
 import { useMediaStore } from "../stores/media.js";
+import { useUiStore } from "../stores/ui.js";
 import { findSnapTime } from "../lib/timeline.js";
 
 const SNAP_PX = 15;
@@ -11,6 +12,7 @@ const SNAP_PX = 15;
  */
 export function useTimelineScrub(track, getBlocks) {
   const media = useMediaStore();
+  const ui = useUiStore();
 
   const scrubbing = ref(false);
   const scrubTime = ref(0);
@@ -49,6 +51,7 @@ export function useTimelineScrub(track, getBlocks) {
   }
 
   function end() {
+    if (scrubbing.value) ui.signal("scrub");
     scrubbing.value = false;
     snapTime.value = null;
   }

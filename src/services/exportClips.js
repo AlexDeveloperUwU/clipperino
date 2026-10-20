@@ -19,4 +19,5 @@ export function exportClips(kind) {
   const { fileName, mimeType, build, label } = FORMATS[kind];
   downloadFile(build(project.clips), fileName, mimeType);
   ui.notify(`Clips exported as ${label}`);
+  ui.signal("export");
 }

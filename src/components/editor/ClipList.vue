@@ -22,7 +22,7 @@ const exportBtn =
 </script>
 
 <template>
-  <div data-tour="clips" class="panel h-full min-h-0">
+  <div class="panel h-full min-h-0">
     <div class="panel-header">
       <h2 class="panel-title flex items-center gap-2">
         <Clapperboard class="h-4 w-4 text-gray-500" /> Created Clips
@@ -64,6 +64,7 @@ const exportBtn =
               <button
                 class="p-1 text-gray-500 transition-colors hover:text-accent-100"
                 title="Edit Content"
+                :data-tour="index === 0 ? 'clip-edit' : undefined"
                 @click="project.editClip(index)"
               >
                 <FilePen class="h-3.5 w-3.5" />
@@ -113,7 +114,7 @@ const exportBtn =
     </div>
 
     <div class="flex-none border-t border-dark-50 bg-dark-100 p-3">
-      <div class="grid grid-cols-2 gap-2">
+      <div data-tour="export" class="grid grid-cols-2 gap-2">
         <button
           :class="exportBtn"
           :disabled="project.clips.length === 0"

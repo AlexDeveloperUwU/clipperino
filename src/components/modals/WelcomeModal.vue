@@ -2,7 +2,7 @@
 import BaseModal from "../BaseModal.vue";
 import BrandMark from "../BrandMark.vue";
 import { useUiStore } from "../../stores/ui.js";
-import { loadDemo } from "../../services/demo.js";
+import { startTour } from "../../services/demo.js";
 
 const ui = useUiStore();
 </script>
@@ -15,8 +15,7 @@ const ui = useUiStore();
       runs entirely in your browser — nothing is uploaded.
     </p>
     <div class="flex flex-col gap-3">
-      <button class="btn-accent" @click="ui.startTour()">Take a 1-minute tour</button>
-      <button class="btn-neutral" @click="loadDemo">Try the demo project</button>
+      <button class="btn-accent" @click="startTour">Take the interactive tour</button>
       <button class="text-xs text-gray-500 hover:text-gray-300" @click="ui.close()">
         Skip, I'll explore on my own
       </button>

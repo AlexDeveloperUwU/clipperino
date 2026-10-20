@@ -143,7 +143,7 @@ function onSaveProject() {
         />
       </div>
 
-      <div v-if="ui.activeTab === 'editor'" data-tour="import" class="flex items-center gap-2">
+      <div v-if="ui.activeTab === 'editor'" class="flex items-center gap-2">
         <button
           v-if="project.transcriptions.length === 0"
           :class="actionBtn"
@@ -157,7 +157,7 @@ function onSaveProject() {
         </button>
       </div>
 
-      <div v-else class="flex items-center gap-2">
+      <div v-else data-tour="video" class="flex items-center gap-2">
         <button
           v-if="!media.hasMedia"
           :class="actionBtn"
