@@ -49,8 +49,8 @@ function addClip() {
       </div>
     </div>
 
-    <div class="flex-1 overflow-y-auto bg-dark-300">
-      <table class="w-full border-collapse">
+    <div class="flex flex-1 flex-col overflow-y-auto bg-dark-300">
+      <table class="w-full flex-none border-collapse">
         <thead class="sticky top-0 z-10 bg-dark-200 shadow-sm">
           <tr class="text-left">
             <th class="th w-24">Start</th>
@@ -60,14 +60,6 @@ function addClip() {
           </tr>
         </thead>
         <tbody class="divide-y divide-dark-50">
-          <tr v-if="project.selected.length === 0">
-            <td colspan="4" class="px-5 py-8 text-center text-sm text-gray-500">
-              <div class="flex flex-col items-center gap-2 opacity-50">
-                <MousePointer2 class="h-5 w-5" />
-                <span>Select lines from the table above</span>
-              </div>
-            </td>
-          </tr>
           <tr
             v-for="item in project.sortedSelected"
             :key="item.index"
@@ -93,6 +85,13 @@ function addClip() {
           </tr>
         </tbody>
       </table>
+      <div
+        v-if="project.selected.length === 0"
+        class="flex flex-1 flex-col items-center justify-center gap-2 text-sm text-gray-500 opacity-50"
+      >
+        <MousePointer2 class="h-5 w-5" />
+        <span>Select lines from the table above</span>
+      </div>
     </div>
   </div>
 </template>

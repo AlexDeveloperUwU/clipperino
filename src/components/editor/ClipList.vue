@@ -35,7 +35,7 @@ const exportBtn =
     <div class="flex-1 overflow-y-auto bg-dark-300 p-3">
       <p
         v-if="project.clips.length === 0"
-        class="flex flex-col items-center gap-2 py-10 text-center text-xs text-gray-500"
+        class="flex h-full flex-col items-center justify-center gap-2 text-center text-xs text-gray-500"
       >
         <Film class="h-8 w-8 opacity-20" />
         <span>No clips created</span>

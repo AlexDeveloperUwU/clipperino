@@ -2,6 +2,16 @@
 
 All notable changes to Clipperino are documented here.
 
+## [2.2.2] - 2026-10-20
+
+### Changed
+
+- The demo video is now a 1280×720, 30 fps animation with each transcript line revealed word by word in sync with its timestamps, a step progress bar and an end card, instead of a tiny test pattern. It has no audio
+
+### Fixed
+
+- The "No clips created" and "Select lines from the table above" empty states are now centered in their panels
+
 ## [2.2.1] - 2026-10-20
 
 ### Fixed
